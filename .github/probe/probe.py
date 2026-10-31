@@ -1,28 +1,22 @@
-import json, requests
+import requests
 S = requests.Session()
 def get(url, **kw):
     r = S.get(url, timeout=120, **kw); print(f"\n### {r.status_code} {r.url}"); return r
-# 1. Eurostat TOC: HICP- und Energiepreis-Datensätze
-r = get("https://ec.europa.eu/eurostat/api/dissemination/catalogue/toc/txt?lang=en")
-for line in r.text.splitlines():
-    l = line.lower()
-    if ("hicp" in l or "nrg_pc_20" in l) and "dataset" in l:
-        print(line[:200])
-# 2. Struktur nrg_pc_204/205/202/203 (nur geo=DE)
-for ds in ["nrg_pc_204", "nrg_pc_205", "nrg_pc_202", "nrg_pc_203"]:
-    r = get(f"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/{ds}", params={"format": "JSON", "lang": "en", "geo": "DE", "lastTimePeriod": 1})
-    try:
-        j = r.json()
-        for d in j["id"]:
-            cats = list(j["dimension"][d]["category"]["index"].keys())
-            print(d, len(cats), cats[:25])
-    except Exception as e:
-        print("ERR", e, r.text[:300])
-# 3. prc_hicp_manr: coicop-Codes mit Daten 2026
-r = get("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_manr", params={"format": "JSON", "lang": "en", "geo": "DE", "unit": "RCH_A", "sinceTimePeriod": "2026-01"})
-print(r.text[:600])
-# 4. EZB ICP DE: alle ANR-Reihen mit letzter Beobachtung
-r = get("https://data-api.ecb.europa.eu/service/data/ICP/M.DE.N..4.ANR", params={"lastNObservations": 1, "format": "csvdata", "detail": "dataonly"})
-print("\n".join(r.text.splitlines()[:60]))
-r = get("https://data-api.ecb.europa.eu/service/data/ICP/M.U2.N..4.ANR", params={"lastNObservations": 1, "format": "csvdata", "detail": "dataonly", "startPeriod": "2026-01"})
-print("\n".join(r.text.splitlines()[:40]))
+r = get("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr", params={"format": "JSON", "lang": "en", "geo": "DE", "lastTimePeriod": 1})
+j = r.json()
+for d in j["id"]:
+    cat = j["dimension"][d]["category"]
+    codes = list(cat["index"].keys())
+    print(d, len(codes), [(c, cat.get("label", {}).get(c, "")[:40]) for c in codes[:14]])
+    if d.startswith("coicop") or d == "coicop":
+        for c in codes:
+            lab = cat["label"].get(c, "")
+            if any(k in lab.lower() for k in ["all-items", "overall", "energy", "excluding", "total"]):
+                print("   ", c, "|", lab)
+for flt in ["ICP/M.DE.N..4.ANR", "ICP/M.DE...."]:
+    r = get(f"https://data-api.ecb.europa.eu/service/data/{flt}", params={"startPeriod": "2026-06", "lastNObservations": 1, "format": "csvdata", "detail": "dataonly"})
+    lines = r.text.splitlines()
+    print(len(lines)); print("\n".join(lines[:12]))
+    print("\n".join(l for l in lines if any(k in l for k in ["000000", "TOTAL", "NRG", "XEF", "_T"]))[:2000])
+r = get("https://data-api.ecb.europa.eu/service/dataflow/ECB")
+print("\n".join(l.strip()[:160] for l in r.text.splitlines() if "ICP" in l)[:1500])
