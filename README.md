@@ -59,6 +59,7 @@ pytest -q
 - Eine kaputte Reihe bricht den Lauf nicht ab. Scheitert der Abruf, bleiben die Werte des letzten erfolgreichen Laufs erhalten (Status `stale`). Gab es noch nie Daten, lautet der Status `failed`.
 - Ohne GENESIS-Zugang werden Destatis-Reihen übersprungen (Status `skipped`) und im Lauf-Log gemeldet.
 - Das Blatt Info und die Zusammenfassung jedes Actions-Laufs zeigen den Status jeder Reihe.
+- Liegt die letzte Periode ungewöhnlich weit zurück (etwa eine Monatsreihe mehr als vier Monate), meldet der Lauf die Reihe als veraltet. Das deutet meist auf einen eingestellten Datensatz hin.
 
 ## Konventionen
 
@@ -69,7 +70,7 @@ pytest -q
 
 ## Reihen-Übersicht
 
-Startjahr ist 2000, soweit die Quelle so weit zurückreicht. Die Eurostat-Energiepreise beginnen 2007.
+Startjahr ist 2000, soweit die Quelle so weit zurückreicht. Die Eurostat-Energiepreise beginnen 2007, die MFI-Kredite 2003. Alle HVPI-Reihen stammen aus dem Eurostat-Datensatz `prc_hicp_minr` (seit 2026 Klassifikation ECOICOP ver. 2); der alte Datensatz und die EZB-Reihen enden im Dezember 2025.
 
 **Konjunktur Deutschland**
 
@@ -79,8 +80,8 @@ Startjahr ist 2000, soweit die Quelle so weit zurückreicht. Die Eurostat-Energi
 | `de_gdp_yoy` | BIP real, % gg. Vorjahresquartal | % gg. Vorjahresquartal | quartalsw. | Eurostat |
 | `de_cpi` | Verbraucherpreisindex (VPI) | Index 2020=100 | monatl. | Destatis GENESIS |
 | `de_cpi_yoy` | VPI, % gg. Vorjahresmonat (berechnet) | % gg. Vorjahresmonat | monatl. | eigene Berechnung |
-| `de_hicp_yoy` | HVPI, % gg. Vorjahresmonat | % gg. Vorjahresmonat | monatl. | EZB |
-| `de_hicp_core_yoy` | HVPI ohne Energie und Nahrungsmittel | % gg. Vorjahresmonat | monatl. | EZB |
+| `de_hicp_yoy` | HVPI, % gg. Vorjahresmonat | % gg. Vorjahresmonat | monatl. | Eurostat |
+| `de_hicp_core_yoy` | HVPI ohne Energie und Nahrungsmittel | % gg. Vorjahresmonat | monatl. | Eurostat |
 | `de_unemp_ilo` | Erwerbslosenquote (ILO-Konzept) | % der Erwerbspersonen | monatl. | Eurostat |
 | `de_employment` | Erwerbstätige (Inlandskonzept) | Tsd. Personen | quartalsw. | Eurostat |
 | `de_ip` | Produktion in der Industrie (ohne Bau) | Index 2021=100 | monatl. | Eurostat |
@@ -97,7 +98,7 @@ Startjahr ist 2000, soweit die Quelle so weit zurückreicht. Die Eurostat-Energi
 | `de_ppi_total` | Erzeugerpreise Industrie (Inlandsabsatz) | Index 2021=100 | monatl. | Eurostat |
 | `de_ppi_energy` | Erzeugerpreise Energie (Inlandsabsatz) | Index 2021=100 | monatl. | Eurostat |
 | `de_ppi_destatis` | Erzeugerpreisindex gewerblicher Produkte | Index 2021=100 | monatl. | Destatis GENESIS |
-| `de_hicp_energy_yoy` | HVPI Energie | % gg. Vorjahresmonat | monatl. | EZB |
+| `de_hicp_energy_yoy` | HVPI Energie | % gg. Vorjahresmonat | monatl. | Eurostat |
 | `de_energy_gae` | Bruttoenergieverbrauch | Tsd. t RÖE | jährl. | Eurostat |
 | `de_energy_fec` | Endenergieverbrauch (energetisch) | Tsd. t RÖE | jährl. | Eurostat |
 
