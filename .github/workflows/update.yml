@@ -15,7 +15,8 @@ permissions:
 
 concurrency:
   group: update-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: false
+  # bei Pull Requests ersetzt ein neuer Push den laufenden Lauf
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   update:
@@ -56,10 +57,17 @@ jobs:
           git add data/processed output
           if git diff --cached --quiet; then
             echo "Keine Änderungen."
-          else
-            git commit -m "Daten aktualisiert ($(date -u +%Y-%m-%d))"
-            git push
+            exit 0
           fi
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          BASE=$(git rev-parse HEAD)
+          git fetch --quiet origin "$BRANCH"
+          if [ "$BASE" != "$(git rev-parse FETCH_HEAD)" ]; then
+            echo "::warning::Branch $BRANCH wurde während des Laufs geändert; Daten-Commit übersprungen (der nächste Lauf holt das nach)."
+            exit 0
+          fi
+          git commit -m "Daten aktualisiert ($(date -u +%Y-%m-%d))"
+          git push origin "HEAD:$BRANCH"
 
       - name: Pages-Artefakt hochladen
         if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
