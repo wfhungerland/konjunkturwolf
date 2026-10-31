@@ -114,3 +114,18 @@ def test_genesis_unknown_attribute_lists_options(fixture_text):
 def test_genesis_error_json():
     with pytest.raises(ParseError, match="GENESIS-Fehler"):
         parse_genesis_ffcsv('{"Status": {"Code": 98, "Content": "Fehler bei der Anmeldung"}}')
+
+
+def test_sdmx_start_matches_frequency():
+    from konjunkturwolf.catalog import SeriesSpec
+    from konjunkturwolf.fetchers import sdmx_start
+
+    def spec(freq):
+        return SeriesSpec(id="x", source="bundesbank", key="A/B", title="t", unit="u", frequency=freq,
+                          adjustment="-", block="b", start="2000-04-01")
+
+    assert sdmx_start(spec("M")) == "2000-04"
+    assert sdmx_start(spec("Q")) == "2000-Q2"
+    assert sdmx_start(spec("D")) == "2000-04-01"
+    assert sdmx_start(spec("A")) == "2000"
+    assert sdmx_start(spec("S")) == "2000-S1"

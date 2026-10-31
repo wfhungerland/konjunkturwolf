@@ -125,9 +125,11 @@ series:
 
   - id: de_hicp_yoy
     block: konjunktur
-    source: ecb
-    key: ICP/M.DE.N.000000.4.ANR
+    source: eurostat
+    key: prc_hicp_minr
+    params: {geo: DE, unit: RCH_A, coicop18: TOTAL}
     title: HVPI, % gg. Vorjahresmonat
+    note: Seit 2026 Klassifikation ECOICOP ver. 2 (Eurostat prc_hicp_minr); der alte Datensatz prc_hicp_manr endet 2025-12.
     unit: "% gg. Vorjahresmonat"
     frequency: M
     adjustment: nicht bereinigt
@@ -136,8 +138,9 @@ series:
 
   - id: de_hicp_core_yoy
     block: konjunktur
-    source: ecb
-    key: ICP/M.DE.N.XEF000.4.ANR
+    source: eurostat
+    key: prc_hicp_minr
+    params: {geo: DE, unit: RCH_A, coicop18: TOT_X_NRG_FOOD}
     title: HVPI ohne Energie und Nahrungsmittel, % gg. Vorjahresmonat
     unit: "% gg. Vorjahresmonat"
     frequency: M
@@ -201,7 +204,7 @@ series:
     block: energie
     source: eurostat
     key: nrg_pc_204
-    params: {geo: DE, product: "6000", nrg_cons: KWH2500-4999, unit: KWH, tax: I_TAX, currency: EUR}
+    params: {geo: DE, nrg_cons: KWH2500-4999, unit: KWH, tax: I_TAX, currency: EUR}
     title: Strompreis Haushalte (2500-5000 kWh/Jahr), inkl. Steuern
     unit: EUR/kWh
     frequency: S
@@ -214,7 +217,7 @@ series:
     block: energie
     source: eurostat
     key: nrg_pc_202
-    params: {geo: DE, product: "4100", nrg_cons: GJ20-199, unit: KWH, tax: I_TAX, currency: EUR}
+    params: {geo: DE, nrg_cons: GJ20-199, unit: KWH, tax: I_TAX, currency: EUR}
     title: Gaspreis Haushalte (20-200 GJ/Jahr), inkl. Steuern
     unit: EUR/kWh
     frequency: S
@@ -227,7 +230,7 @@ series:
     block: energie
     source: eurostat
     key: nrg_pc_205
-    params: {geo: DE, product: "6000", nrg_cons: MWH500-1999, unit: KWH, tax: X_VAT, currency: EUR}
+    params: {geo: DE, nrg_cons: MWH500-1999, unit: KWH, tax: X_VAT, currency: EUR}
     title: Strompreis Nicht-Haushalte (500-2000 MWh/Jahr), ohne MwSt.
     unit: EUR/kWh
     frequency: S
@@ -240,7 +243,7 @@ series:
     block: energie
     source: eurostat
     key: nrg_pc_203
-    params: {geo: DE, product: "4100", nrg_cons: GJ10000-99999, unit: KWH, tax: X_VAT, currency: EUR}
+    params: {geo: DE, nrg_cons: GJ10000-99999, unit: KWH, tax: X_VAT, currency: EUR}
     title: Gaspreis Nicht-Haushalte (10.000-100.000 GJ/Jahr), ohne MwSt.
     unit: EUR/kWh
     frequency: S
@@ -288,8 +291,9 @@ series:
 
   - id: de_hicp_energy_yoy
     block: energie
-    source: ecb
-    key: ICP/M.DE.N.NRGY00.4.ANR
+    source: eurostat
+    key: prc_hicp_minr
+    params: {geo: DE, unit: RCH_A, coicop18: NRG}
     title: HVPI Energie, % gg. Vorjahresmonat
     unit: "% gg. Vorjahresmonat"
     frequency: M
@@ -513,8 +517,8 @@ series:
     expand: {geo: [DE, FR, IT, ES, NL, PL, EU27_2020]}
     block: eu
     source: eurostat
-    key: prc_hicp_manr
-    params: {geo: "{geo}", coicop: CP00, unit: RCH_A}
+    key: prc_hicp_minr
+    params: {geo: "{geo}", coicop18: TOTAL, unit: RCH_A}
     title: "HVPI-Inflationsrate {geo_name}"
     unit: "% gg. Vorjahresmonat"
     frequency: M
@@ -540,7 +544,7 @@ series:
     block: eu
     source: eurostat
     key: nrg_pc_204
-    params: {geo: "{geo}", product: "6000", nrg_cons: KWH2500-4999, unit: KWH, tax: I_TAX, currency: EUR}
+    params: {geo: "{geo}", nrg_cons: KWH2500-4999, unit: KWH, tax: I_TAX, currency: EUR}
     title: "Strompreis Haushalte {geo_name}, inkl. Steuern"
     unit: EUR/kWh
     frequency: S
@@ -554,7 +558,7 @@ series:
     block: eu
     source: eurostat
     key: nrg_pc_205
-    params: {geo: "{geo}", product: "6000", nrg_cons: MWH500-1999, unit: KWH, tax: X_VAT, currency: EUR}
+    params: {geo: "{geo}", nrg_cons: MWH500-1999, unit: KWH, tax: X_VAT, currency: EUR}
     title: "Strompreis Nicht-Haushalte {geo_name}, ohne MwSt."
     unit: EUR/kWh
     frequency: S

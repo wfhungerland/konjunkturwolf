@@ -18,6 +18,7 @@ HINTS = [
     "Abrufzeiten in UTC. Status 'stale': Abruf gescheitert, Werte des letzten erfolgreichen Laufs.",
     "Destatis-Reihen (GENESIS) benötigen die Secrets GENESIS_USER und GENESIS_PASSWORD; ohne sie fehlen sie.",
     "Abgeleitete Reihen sind eigene Berechnungen aus der genannten Basisreihe.",
+    "'veraltet': letzte Periode liegt ungewöhnlich weit zurück (z. B. Monatsreihe > 4 Monate); Quelle prüfen.",
     "Werte unverändert aus der Quelle; keine eigenen Saisonbereinigungen.",
 ]
 
@@ -70,6 +71,7 @@ def _info_sheet(wb, fmt, catalog: Catalog, result: RunResult) -> None:
         ("davon mit Daten", sum(v for k, v in counts.items() if k in ("ok", "cache", "stale"))),
         ("davon ohne Daten", counts.get("failed", 0) + counts.get("skipped", 0)),
         ("Status-Zählung", ", ".join(f"{k}: {v}" for k, v in sorted(counts.items()))),
+        ("Veraltete Reihen", ", ".join(s.series_id for s in result.statuses if s.outdated) or "keine"),
         ("Repository", "https://github.com/wfhungerland/konjunkturwolf"),
     ]
     r = 2

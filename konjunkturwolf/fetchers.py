@@ -32,6 +32,18 @@ class FetchResult:
     from_cache: bool
 
 
+def sdmx_start(spec: SeriesSpec) -> str:
+    """Startperiode im Format, das zur Frequenz passt (Bundesbank verlangt das)."""
+    y, m, d = spec.start[:4], int(spec.start[5:7]), spec.start[8:10]
+    return {
+        "D": spec.start,
+        "M": f"{y}-{m:02d}",
+        "Q": f"{y}-Q{(m - 1) // 3 + 1}",
+        "S": f"{y}-S{1 if m <= 6 else 2}",
+        "A": y,
+    }[spec.frequency]
+
+
 def _since(df: pd.DataFrame, spec: SeriesSpec) -> pd.DataFrame:
     return df[df["date"] >= pd.Timestamp(spec.start)].reset_index(drop=True)
 
@@ -40,7 +52,7 @@ def fetch_ecb(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     flow, _, key = spec.key.partition("/")
     resp = client.get(
         f"{ECB_BASE}/{flow}/{key}",
-        params={"startPeriod": str(spec.start_year), "format": "csvdata", "detail": "dataonly"},
+        params={"startPeriod": sdmx_start(spec), "format": "csvdata", "detail": "dataonly"},
     )
     return FetchResult(_since(parse_sdmx(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
 
@@ -49,7 +61,7 @@ def fetch_bundesbank(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     flow, _, key = spec.key.partition("/")
     resp = client.get(
         f"{BUNDESBANK_BASE}/{flow}/{key}",
-        params={"startPeriod": str(spec.start_year), "detail": "dataonly"},
+        params={"startPeriod": sdmx_start(spec), "detail": "dataonly"},
         accept=SDMX_CSV,
     )
     return FetchResult(_since(parse_sdmx(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
@@ -112,10 +124,10 @@ def api_url_hint(spec: SeriesSpec) -> str:
 
     if spec.source == "ecb":
         flow, _, key = spec.key.partition("/")
-        return f"{ECB_BASE}/{flow}/{key}?startPeriod={spec.start_year}&format=csvdata"
+        return f"{ECB_BASE}/{flow}/{key}?startPeriod={sdmx_start(spec)}&format=csvdata"
     if spec.source == "bundesbank":
         flow, _, key = spec.key.partition("/")
-        return f"{BUNDESBANK_BASE}/{flow}/{key}?startPeriod={spec.start_year}&format=sdmx_csv"
+        return f"{BUNDESBANK_BASE}/{flow}/{key}?startPeriod={sdmx_start(spec)}"
     if spec.source == "eurostat":
         params = {"format": "JSON", "lang": "en", **{k: str(v) for k, v in spec.params.items()}}
         return f"{EUROSTAT_BASE}/{spec.key}?{urlencode(params)}"

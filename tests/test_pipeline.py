@@ -87,3 +87,11 @@ def test_failed_fetch_keeps_previous_data(project, monkeypatch):
     assert st.status == "stale"
     assert st.n_obs == 36
     assert "Server down" in st.message
+
+
+def test_is_outdated():
+    today = pd.Timestamp("2026-10-31")
+    assert pipeline.is_outdated(pd.Timestamp("2025-12-01"), "M", today)
+    assert not pipeline.is_outdated(pd.Timestamp("2026-08-01"), "M", today)
+    assert not pipeline.is_outdated(pd.Timestamp("2024-01-01"), "A", today)
+    assert pipeline.is_outdated(pd.Timestamp("2026-08-15"), "D", today)

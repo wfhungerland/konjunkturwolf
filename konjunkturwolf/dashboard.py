@@ -40,6 +40,7 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
                 "link": spec.web_link,
                 "style": spec.style,
                 "status": st.status if st else "failed",
+                "outdated": bool(st.outdated) if st else False,
                 "message": (st.message if st else "")[:300],
                 "x": [],
                 "y": [],

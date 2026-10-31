@@ -39,6 +39,7 @@ class SeriesStatus:
     retrieved_at: str = ""
     api_url: str = ""
     message: str = ""
+    outdated: bool = False
 
 
 @dataclass
@@ -116,12 +117,24 @@ def _tidy(spec: SeriesSpec, data: pd.DataFrame, retrieved_at: str) -> pd.DataFra
     )
 
 
+# Höchstabstand (Monate) zwischen letzter Periode und Laufdatum, bevor eine Reihe als veraltet gilt
+MAX_LAG_MONTHS = {"D": 1, "M": 4, "Q": 7, "S": 13, "A": 36}
+
+
+def is_outdated(last: pd.Timestamp, frequency: str, today: pd.Timestamp | None = None) -> bool:
+    today = today or pd.Timestamp.now(tz="UTC").tz_localize(None)
+    months = (today.year - last.year) * 12 + (today.month - last.month)
+    return months > MAX_LAG_MONTHS[frequency]
+
+
 def _fill_status(st: SeriesStatus, spec: SeriesSpec, df: pd.DataFrame) -> None:
     st.n_obs = len(df)
     if len(df):
+        last = pd.Timestamp(df["date"].max())
         st.first = period_label(df["date"].min().date(), spec.frequency)
-        st.last = period_label(df["date"].max().date(), spec.frequency)
+        st.last = period_label(last.date(), spec.frequency)
         st.last_value = float(df.sort_values("date")["value"].iloc[-1])
+        st.outdated = is_outdated(last, spec.frequency)
 
 
 def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | None = None) -> RunResult:
@@ -164,6 +177,9 @@ def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | No
             frames.append(_tidy(spec, data, retrieved))
             _fill_status(st, spec, data)
             log.info("%-28s %-7s %5d Werte  %s bis %s", spec.id, st.status, st.n_obs, st.first, st.last)
+            if st.outdated:
+                st.message = (st.message + "; " if st.message else "") + f"veraltet: letzte Periode {st.last}"
+                log.warning("%-28s letzte Periode %s liegt ungewöhnlich weit zurück", spec.id, st.last)
         except Exception as exc:  # eine kaputte Reihe bricht den Lauf nicht ab
             skipped = isinstance(exc, SkipSeries)
             st.message = str(exc)[:500]
@@ -211,6 +227,7 @@ def save(result: RunResult, paths: Paths) -> None:
         "started_at": result.started_at,
         "finished_at": result.finished_at,
         "counts": result.counts(),
+        "outdated": [s.series_id for s in result.statuses if s.outdated],
         "series": [asdict(s) for s in result.statuses],
     }
     paths.status.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -221,6 +238,7 @@ def load_status(paths: Paths) -> RunResult | None:
         return None
     payload = json.loads(paths.status.read_text(encoding="utf-8"))
     res = RunResult(started_at=payload.get("started_at", ""), finished_at=payload.get("finished_at", ""))
-    res.statuses = [SeriesStatus(**s) for s in payload.get("series", [])]
+    fields = set(SeriesStatus.__dataclass_fields__)
+    res.statuses = [SeriesStatus(**{k: v for k, v in s.items() if k in fields}) for s in payload.get("series", [])]
     res.observations = load_previous(paths)
     return res

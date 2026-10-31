@@ -174,6 +174,12 @@ function build() {
       const src = document.createElement("div"); src.className = "src";
       src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
       card.appendChild(src);
+      const old = chart.series.filter(s => s.x.length && s.outdated);
+      if (old.length) {
+        const o = document.createElement("div"); o.className = "missing";
+        o.textContent = "Veraltet (Quelle liefert keine neuen Werte): " + old.map(s => s.label).join(", ");
+        card.appendChild(o);
+      }
       if (missing.length) {
         const m = document.createElement("div"); m.className = "missing";
         m.textContent = "Ohne Daten: " + missing.map(s => `${s.label} (${s.status})`).join(", ");
