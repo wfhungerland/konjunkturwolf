@@ -1,0 +1,564 @@
+# Reihen-Katalog von konjunkturwolf
+#
+# Neue Reihe = ein Eintrag unter "series". Pflichtfelder:
+#   id, source, key (ausser bei source: derived), title, unit, frequency,
+#   adjustment, block
+# Optionale Felder:
+#   params      Filter/Abfrageparameter der Quelle (Eurostat: Dimensionen,
+#               GENESIS: value_variable, filters, query)
+#   link        Direktlink zur Reihe auf der Website der Quelle
+#               (fehlt er, wird ein Standardlink erzeugt)
+#   chart       Diagramm-ID aus "charts" (mehrere Reihen in einem Diagramm)
+#   label       Legendenbeschriftung im Diagramm (Standard: title)
+#   style       line | step
+#   start       Beginn als ISO-Datum (Standard: defaults.start)
+#   note        Hinweis, erscheint im Excel-Blatt Quellen
+#   expand      Vervielfacht den Eintrag, z. B. {geo: [DE, FR]};
+#               Platzhalter {geo} und {geo_name} in allen Textfeldern
+#   derive      Abgeleitete Reihe, z. B. {from: de_cpi, op: yoy_pct}
+#
+# Frequenzen: D (täglich), M (monatlich), Q (quartalsweise),
+#             S (halbjährlich), A (jährlich)
+# Quellen:    ecb, bundesbank, eurostat, genesis, derived
+
+defaults:
+  start: "2000-01-01"
+
+blocks:
+  - id: konjunktur
+    title: Konjunktur Deutschland
+    sheet: Konjunktur DE
+  - id: energie
+    title: Energie und Preise
+    sheet: Energie & Preise
+  - id: finanzen
+    title: Finanzen und Zinsen
+    sheet: Finanzen & Zinsen
+  - id: eu
+    title: EU-Vergleich
+    sheet: EU-Vergleich
+
+geo_names:
+  DE: Deutschland
+  FR: Frankreich
+  IT: Italien
+  ES: Spanien
+  NL: Niederlande
+  PL: Polen
+  EU27_2020: EU27
+
+charts:
+  de_gdp: {title: "BIP real, Veränderung in %"}
+  de_cpi: {title: "Verbraucherpreise (VPI), Index"}
+  de_inflation: {title: "Inflation Deutschland, % gg. Vorjahresmonat"}
+  de_labour_rate: {title: "Arbeitslosenquote (ILO)"}
+  de_employment: {title: "Erwerbstätige (Inland)"}
+  de_production: {title: "Industrieproduktion und Auftragseingang, Index"}
+  de_energy_prices_hh: {title: "Strom- und Gaspreise Haushalte"}
+  de_energy_prices_nonhh: {title: "Strom- und Gaspreise Nicht-Haushalte"}
+  de_ppi: {title: "Erzeugerpreise gewerblicher Produkte, Index"}
+  de_energy_use: {title: "Energieverbrauch Deutschland"}
+  ecb_rates: {title: "EZB-Leitzinsen"}
+  de_yields: {title: "Renditen deutscher Bundeswertpapiere"}
+  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand"}
+  de_loans_growth: {title: "Kredite an Unternehmen und Haushalte, Wachstum"}
+  fx_major: {title: "Wechselkurse: USD, GBP, CHF je Euro"}
+  fx_asia: {title: "Wechselkurse: JPY, CNY je Euro"}
+  eu_gdp: {title: "BIP real, % gg. Vorjahresquartal"}
+  eu_hicp: {title: "HVPI-Inflationsrate, % gg. Vorjahresmonat"}
+  eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
+  eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
+  eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
+
+series:
+
+  # ------------------------------------------------------------------
+  # 1. Konjunktur Deutschland
+  # ------------------------------------------------------------------
+  - id: de_gdp_qoq
+    block: konjunktur
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: DE, na_item: B1GQ, unit: CLV_PCH_PRE, s_adj: SCA}
+    title: BIP real, % gg. Vorquartal
+    unit: "% gg. Vorquartal"
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: de_gdp
+    label: Vorquartal
+
+  - id: de_gdp_yoy
+    block: konjunktur
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: DE, na_item: B1GQ, unit: CLV_PCH_SM, s_adj: SCA}
+    title: BIP real, % gg. Vorjahresquartal
+    unit: "% gg. Vorjahresquartal"
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: de_gdp
+    label: Vorjahresquartal
+
+  - id: de_cpi
+    block: konjunktur
+    source: genesis
+    key: "61111-0002"
+    params: {value_variable: PREIS1}
+    title: Verbraucherpreisindex (VPI)
+    unit: Index 2020=100
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_cpi
+    note: GENESIS-Zugang erforderlich (Secrets GENESIS_USER/GENESIS_PASSWORD).
+
+  - id: de_cpi_yoy
+    block: konjunktur
+    source: derived
+    derive: {from: de_cpi, op: yoy_pct}
+    title: VPI, % gg. Vorjahresmonat (berechnet)
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_inflation
+    label: VPI (berechnet aus Index)
+    note: Aus dem VPI-Index berechnet; kann von der amtlich gerundeten Rate um 0,1 Punkte abweichen.
+
+  - id: de_hicp_yoy
+    block: konjunktur
+    source: ecb
+    key: ICP/M.DE.N.000000.4.ANR
+    title: HVPI, % gg. Vorjahresmonat
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_inflation
+    label: HVPI gesamt
+
+  - id: de_hicp_core_yoy
+    block: konjunktur
+    source: ecb
+    key: ICP/M.DE.N.XEF000.4.ANR
+    title: HVPI ohne Energie und Nahrungsmittel, % gg. Vorjahresmonat
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_inflation
+    label: HVPI ohne Energie, Nahrungsmittel, Alkohol, Tabak
+
+  - id: de_unemp_ilo
+    block: konjunktur
+    source: eurostat
+    key: une_rt_m
+    params: {geo: DE, s_adj: SA, age: TOTAL, sex: T, unit: PC_ACT}
+    title: Erwerbslosenquote (ILO-Konzept)
+    unit: "% der Erwerbspersonen"
+    frequency: M
+    adjustment: saisonbereinigt
+    chart: de_labour_rate
+
+  - id: de_employment
+    block: konjunktur
+    source: eurostat
+    key: namq_10_pe
+    params: {geo: DE, na_item: EMP_DC, unit: THS_PER, s_adj: SCA}
+    title: Erwerbstätige (Inlandskonzept)
+    unit: Tsd. Personen
+    frequency: Q
+    adjustment: saison- und kalenderbereinigt
+    chart: de_employment
+
+  - id: de_ip
+    block: konjunktur
+    source: eurostat
+    key: sts_inpr_m
+    params: {geo: DE, indic_bt: PRD, nace_r2: B-D, s_adj: SCA, unit: I21}
+    title: Produktion in der Industrie (ohne Bau)
+    unit: Index 2021=100
+    frequency: M
+    adjustment: saison- und kalenderbereinigt
+    chart: de_production
+    label: Produktion Industrie (Eurostat)
+
+  - id: de_orders
+    block: konjunktur
+    source: genesis
+    key: "42151-0004"
+    params:
+      value_variable: AUF103
+      filters: {WZ08V2: WZ08-C, BERWE5: X13JDKSB}
+    title: Auftragseingang im Verarbeitenden Gewerbe, real
+    unit: Index 2021=100
+    frequency: M
+    adjustment: saison- und kalenderbereinigt (X13 JDemetra+)
+    chart: de_production
+    label: Auftragseingang Verarb. Gewerbe (Destatis)
+    note: GENESIS-Zugang erforderlich. Merkmals-Codes ungeprüft; bei Fehler listet das Lauf-Log die verfügbaren Codes.
+
+  # ------------------------------------------------------------------
+  # 2. Energie und Preise
+  # ------------------------------------------------------------------
+  - id: de_elec_hh
+    block: energie
+    source: eurostat
+    key: nrg_pc_204
+    params: {geo: DE, product: "6000", nrg_cons: KWH2500-4999, unit: KWH, tax: I_TAX, currency: EUR}
+    title: Strompreis Haushalte (2500-5000 kWh/Jahr), inkl. Steuern
+    unit: EUR/kWh
+    frequency: S
+    adjustment: nicht bereinigt
+    chart: de_energy_prices_hh
+    label: Strom
+    start: "2007-01-01"
+
+  - id: de_gas_hh
+    block: energie
+    source: eurostat
+    key: nrg_pc_202
+    params: {geo: DE, product: "4100", nrg_cons: GJ20-199, unit: KWH, tax: I_TAX, currency: EUR}
+    title: Gaspreis Haushalte (20-200 GJ/Jahr), inkl. Steuern
+    unit: EUR/kWh
+    frequency: S
+    adjustment: nicht bereinigt
+    chart: de_energy_prices_hh
+    label: Gas
+    start: "2007-01-01"
+
+  - id: de_elec_nonhh
+    block: energie
+    source: eurostat
+    key: nrg_pc_205
+    params: {geo: DE, product: "6000", nrg_cons: MWH500-1999, unit: KWH, tax: X_VAT, currency: EUR}
+    title: Strompreis Nicht-Haushalte (500-2000 MWh/Jahr), ohne MwSt.
+    unit: EUR/kWh
+    frequency: S
+    adjustment: nicht bereinigt
+    chart: de_energy_prices_nonhh
+    label: Strom
+    start: "2007-01-01"
+
+  - id: de_gas_nonhh
+    block: energie
+    source: eurostat
+    key: nrg_pc_203
+    params: {geo: DE, product: "4100", nrg_cons: GJ10000-99999, unit: KWH, tax: X_VAT, currency: EUR}
+    title: Gaspreis Nicht-Haushalte (10.000-100.000 GJ/Jahr), ohne MwSt.
+    unit: EUR/kWh
+    frequency: S
+    adjustment: nicht bereinigt
+    chart: de_energy_prices_nonhh
+    label: Gas
+    start: "2007-01-01"
+
+  - id: de_ppi_total
+    block: energie
+    source: eurostat
+    key: sts_inppd_m
+    params: {geo: DE, indic_bt: PRC_PRR_DOM, nace_r2: B-E36, s_adj: NSA, unit: I21}
+    title: Erzeugerpreise Industrie (Inlandsabsatz), gesamt
+    unit: Index 2021=100
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_ppi
+    label: Industrie gesamt (Eurostat)
+
+  - id: de_ppi_energy
+    block: energie
+    source: eurostat
+    key: sts_inppd_m
+    params: {geo: DE, indic_bt: PRC_PRR_DOM, nace_r2: MIG_NRG, s_adj: NSA, unit: I21}
+    title: Erzeugerpreise Energie (Inlandsabsatz)
+    unit: Index 2021=100
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_ppi
+    label: Energie (Eurostat)
+
+  - id: de_ppi_destatis
+    block: energie
+    source: genesis
+    key: "61241-0002"
+    params: {value_variable: PREIS1}
+    title: Erzeugerpreisindex gewerblicher Produkte (Inlandsabsatz)
+    unit: Index 2021=100
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_ppi
+    label: Gewerbliche Produkte gesamt (Destatis)
+    note: GENESIS-Zugang erforderlich.
+
+  - id: de_hicp_energy_yoy
+    block: energie
+    source: ecb
+    key: ICP/M.DE.N.NRGY00.4.ANR
+    title: HVPI Energie, % gg. Vorjahresmonat
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_inflation
+    label: HVPI Energie
+
+  - id: de_energy_gae
+    block: energie
+    source: eurostat
+    key: nrg_bal_c
+    params: {geo: DE, nrg_bal: GAE, siec: TOTAL, unit: KTOE}
+    title: Bruttoenergieverbrauch (Gross available energy)
+    unit: Tsd. t RÖE
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: de_energy_use
+    label: Bruttoenergieverbrauch
+
+  - id: de_energy_fec
+    block: energie
+    source: eurostat
+    key: nrg_bal_c
+    params: {geo: DE, nrg_bal: FC_E, siec: TOTAL, unit: KTOE}
+    title: Endenergieverbrauch (energetisch)
+    unit: Tsd. t RÖE
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: de_energy_use
+    label: Endenergieverbrauch
+
+  # ------------------------------------------------------------------
+  # 3. Finanzen und Zinsen
+  # ------------------------------------------------------------------
+  - id: ecb_dfr
+    block: finanzen
+    source: ecb
+    key: FM/D.U2.EUR.4F.KR.DFR.LEV
+    title: EZB-Einlagesatz
+    unit: "% p. a."
+    frequency: D
+    adjustment: nicht bereinigt
+    chart: ecb_rates
+    label: Einlagesatz
+    style: step
+
+  - id: ecb_mro
+    block: finanzen
+    source: ecb
+    key: FM/D.U2.EUR.4F.KR.MRR_FR.LEV
+    title: EZB-Hauptrefinanzierungssatz (Festsatz)
+    unit: "% p. a."
+    frequency: D
+    adjustment: nicht bereinigt
+    chart: ecb_rates
+    label: Hauptrefinanzierungssatz
+    style: step
+    note: Festsatz erst seit Oktober 2008; davor Zinstender mit Mindestbietungssatz.
+
+  - id: ecb_mlf
+    block: finanzen
+    source: ecb
+    key: FM/D.U2.EUR.4F.KR.MLFR.LEV
+    title: EZB-Spitzenrefinanzierungssatz
+    unit: "% p. a."
+    frequency: D
+    adjustment: nicht bereinigt
+    chart: ecb_rates
+    label: Spitzenrefinanzierungssatz
+    style: step
+
+  - id: de_bund10_bbk
+    block: finanzen
+    source: bundesbank
+    key: BBSIS/M.I.ZST.ZI.EUR.S1311.B.A604.R10XX.R.A.A._Z._Z.A
+    title: Rendite Bundeswertpapiere, Restlaufzeit 10 Jahre (Zinsstruktur)
+    unit: "% p. a."
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_yields
+    label: 10 Jahre (Bundesbank)
+
+  - id: de_bund2_bbk
+    block: finanzen
+    source: bundesbank
+    key: BBSIS/M.I.ZST.ZI.EUR.S1311.B.A604.R02XX.R.A.A._Z._Z.A
+    title: Rendite Bundeswertpapiere, Restlaufzeit 2 Jahre (Zinsstruktur)
+    unit: "% p. a."
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_yields
+    label: 2 Jahre (Bundesbank)
+
+  - id: de_ltir_ecb
+    block: finanzen
+    source: ecb
+    key: IRS/M.DE.L.L40.CI.0000.EUR.N.Z
+    title: Langfristiger Zinssatz Deutschland (Konvergenzkriterium, 10 Jahre)
+    unit: "% p. a."
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_yields
+    label: 10 Jahre, Konvergenzzins (EZB)
+
+  - id: de_loans_nfc
+    block: finanzen
+    source: ecb
+    key: BSI/M.DE.N.A.A20.A.1.U2.2240.Z01.E
+    title: Kredite deutscher MFIs an nichtfinanzielle Unternehmen, Bestand
+    unit: Mio. EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_loans_stock
+    label: Unternehmen
+
+  - id: de_loans_hh
+    block: finanzen
+    source: ecb
+    key: BSI/M.DE.N.A.A20.A.1.U2.2250.Z01.E
+    title: Kredite deutscher MFIs an private Haushalte, Bestand
+    unit: Mio. EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_loans_stock
+    label: Private Haushalte
+
+  - id: de_loans_nfc_growth
+    block: finanzen
+    source: ecb
+    key: BSI/M.DE.N.A.A20.A.I.U2.2240.Z01.A
+    title: Kredite an nichtfinanzielle Unternehmen, Jahreswachstumsrate
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt, um Umgruppierungen bereinigt
+    chart: de_loans_growth
+    label: Unternehmen
+
+  - id: de_loans_hh_growth
+    block: finanzen
+    source: ecb
+    key: BSI/M.DE.N.A.A20.A.I.U2.2250.Z01.A
+    title: Kredite an private Haushalte, Jahreswachstumsrate
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt, um Umgruppierungen bereinigt
+    chart: de_loans_growth
+    label: Private Haushalte
+
+  - id: fx_usd
+    block: finanzen
+    source: ecb
+    key: EXR/M.USD.EUR.SP00.A
+    title: Wechselkurs US-Dollar je Euro (Monatsdurchschnitt)
+    unit: USD je EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: fx_major
+    label: USD
+
+  - id: fx_gbp
+    block: finanzen
+    source: ecb
+    key: EXR/M.GBP.EUR.SP00.A
+    title: Wechselkurs Pfund Sterling je Euro (Monatsdurchschnitt)
+    unit: GBP je EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: fx_major
+    label: GBP
+
+  - id: fx_chf
+    block: finanzen
+    source: ecb
+    key: EXR/M.CHF.EUR.SP00.A
+    title: Wechselkurs Schweizer Franken je Euro (Monatsdurchschnitt)
+    unit: CHF je EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: fx_major
+    label: CHF
+
+  - id: fx_jpy
+    block: finanzen
+    source: ecb
+    key: EXR/M.JPY.EUR.SP00.A
+    title: Wechselkurs Yen je Euro (Monatsdurchschnitt)
+    unit: JPY je EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: fx_asia
+    label: JPY
+
+  - id: fx_cny
+    block: finanzen
+    source: ecb
+    key: EXR/M.CNY.EUR.SP00.A
+    title: Wechselkurs Renminbi je Euro (Monatsdurchschnitt)
+    unit: CNY je EUR
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: fx_asia
+    label: CNY
+
+  # ------------------------------------------------------------------
+  # 4. EU-Vergleich (je Land eine Reihe über "expand")
+  # ------------------------------------------------------------------
+  - id: eu_gdp_yoy
+    expand: {geo: [DE, FR, IT, ES, NL, PL, EU27_2020]}
+    block: eu
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: "{geo}", na_item: B1GQ, unit: CLV_PCH_SM, s_adj: SCA}
+    title: "BIP real {geo_name}, % gg. Vorjahresquartal"
+    unit: "% gg. Vorjahresquartal"
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: eu_gdp
+    label: "{geo_name}"
+
+  - id: eu_hicp
+    expand: {geo: [DE, FR, IT, ES, NL, PL, EU27_2020]}
+    block: eu
+    source: eurostat
+    key: prc_hicp_manr
+    params: {geo: "{geo}", coicop: CP00, unit: RCH_A}
+    title: "HVPI-Inflationsrate {geo_name}"
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: eu_hicp
+    label: "{geo_name}"
+
+  - id: eu_unemp
+    expand: {geo: [DE, FR, IT, ES, NL, PL, EU27_2020]}
+    block: eu
+    source: eurostat
+    key: une_rt_m
+    params: {geo: "{geo}", s_adj: SA, age: TOTAL, sex: T, unit: PC_ACT}
+    title: "Erwerbslosenquote (ILO) {geo_name}"
+    unit: "% der Erwerbspersonen"
+    frequency: M
+    adjustment: saisonbereinigt
+    chart: eu_unemp
+    label: "{geo_name}"
+
+  - id: eu_elec_hh
+    expand: {geo: [DE, FR, IT, ES, NL, PL, EU27_2020]}
+    block: eu
+    source: eurostat
+    key: nrg_pc_204
+    params: {geo: "{geo}", product: "6000", nrg_cons: KWH2500-4999, unit: KWH, tax: I_TAX, currency: EUR}
+    title: "Strompreis Haushalte {geo_name}, inkl. Steuern"
+    unit: EUR/kWh
+    frequency: S
+    adjustment: nicht bereinigt
+    chart: eu_elec_hh
+    label: "{geo_name}"
+    start: "2007-01-01"
+
+  - id: eu_elec_nonhh
+    expand: {geo: [DE, FR, IT, ES, NL, PL, EU27_2020]}
+    block: eu
+    source: eurostat
+    key: nrg_pc_205
+    params: {geo: "{geo}", product: "6000", nrg_cons: MWH500-1999, unit: KWH, tax: X_VAT, currency: EUR}
+    title: "Strompreis Nicht-Haushalte {geo_name}, ohne MwSt."
+    unit: EUR/kWh
+    frequency: S
+    adjustment: nicht bereinigt
+    chart: eu_elec_nonhh
+    label: "{geo_name}"
+    start: "2007-01-01"

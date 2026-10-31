@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>konjunkturwolf: Wirtschaftsdaten</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d232b; --muted: #5d6673; --line: #dfe3e8;
+    --accent: #1f5fbf; --warn: #a33a00; --grid: #e6e9ee;
+  }
+  [data-theme="dark"] {
+    --bg: #12161c; --card: #1b2129; --text: #e6e9ee; --muted: #9aa4b1; --line: #2c3540;
+    --accent: #7fb0ff; --warn: #ffb085; --grid: #2a323c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px;
+         align-items: center; flex-wrap: wrap; }
+  .bar h1 { font-size: 18px; margin: 0 12px 0 0; }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  nav a, .btn { color: var(--text); text-decoration: none; padding: 5px 10px; border: 1px solid var(--line);
+                border-radius: 6px; background: transparent; font: inherit; font-size: 14px; cursor: pointer; }
+  nav a:hover, .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--card); border-color: var(--accent); }
+  main { max-width: 1280px; margin: 0 auto; padding: 16px; }
+  .meta { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
+  section { margin: 0 0 32px; scroll-margin-top: 70px; }
+  section > h2 { font-size: 20px; margin: 8px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 8px; }
+  .card h3 { font-size: 16px; margin: 0 0 2px; }
+  .card .sub { color: var(--muted); font-size: 13px; }
+  .card .chart { height: 320px; margin-top: 6px; }
+  .card .src { color: var(--muted); font-size: 12px; margin: 4px 0; }
+  .card .src a { color: var(--accent); }
+  .missing { color: var(--warn); font-size: 13px; }
+  .ranges { display: flex; gap: 4px; margin-left: auto; }
+  .ranges .btn { padding: 3px 8px; font-size: 13px; }
+  .ranges .btn.on { border-color: var(--accent); color: var(--accent); }
+  footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; text-align: center; }
+  footer a { color: var(--accent); }
+  @media (max-width: 700px) {
+    header { position: static; }
+    .bar { gap: 8px; }
+    nav { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; }
+    nav a { white-space: nowrap; }
+    .ranges { margin-left: 0; }
+    .card .chart { height: 260px; }
+    .bar h1 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>konjunkturwolf</h1>
+    <nav id="nav"></nav>
+    <div class="ranges" id="ranges">
+      <button class="btn" data-years="5">5 J.</button>
+      <button class="btn on" data-years="10">10 J.</button>
+      <button class="btn" data-years="0">Alles</button>
+    </div>
+    <a class="btn primary" href="konjunkturwolf.xlsx" download>Excel</a>
+    <button class="btn" id="theme" aria-label="Hell/Dunkel umschalten">Hell/Dunkel</button>
+  </div>
+</header>
+<main>
+  <p class="meta" id="meta"></p>
+  <div id="content"></div>
+</main>
+<footer>
+  Daten: Destatis, Deutsche Bundesbank, EZB, Eurostat. Werte unverändert aus den offiziellen Schnittstellen.
+  Perioden sind auf ihren ersten Tag datiert. Details und Direktlinks im
+  <a href="konjunkturwolf.xlsx" download>Excel-Workbook</a> (Blatt Quellen) und auf
+  <a href="https://github.com/wfhungerland/konjunkturwolf">GitHub</a>.
+</footer>
+<script>
+const DATA = /*__DATA__*/null;
+const PALETTE = ["#1f5fbf", "#d1495b", "#2a9d8f", "#e9a23b", "#6a4c93", "#4d908e", "#8a5a44", "#577590"];
+const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
+let rangeYears = 10;
+const rendered = [];
+
+function theme() { return document.documentElement.dataset.theme; }
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem("kw-theme", t); } catch (e) {}
+  rendered.forEach(r => Plotly.relayout(r.el, layoutColors()));
+}
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function layoutColors() {
+  return {
+    paper_bgcolor: css("--card"), plot_bgcolor: css("--card"), "font.color": css("--text"),
+    "xaxis.gridcolor": css("--grid"), "yaxis.gridcolor": css("--grid"),
+    "xaxis.linecolor": css("--line"), "yaxis.zerolinecolor": css("--line"),
+  };
+}
+function xRange(series) {
+  let max = null;
+  series.forEach(s => { if (s.x.length) { const d = s.x[s.x.length - 1]; if (!max || d > max) max = d; } });
+  if (!max || !rangeYears) return null;
+  const end = new Date(max); const start = new Date(end); start.setFullYear(end.getFullYear() - rangeYears);
+  end.setMonth(end.getMonth() + 1);
+  return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)];
+}
+function yRange(series, range) {
+  let lo = Infinity, hi = -Infinity;
+  series.forEach(s => s.x.forEach((x, i) => {
+    if (!range || (x >= range[0] && x <= range[1])) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
+  }));
+  if (!isFinite(lo)) return null;
+  const pad = (hi - lo) * 0.06 || Math.abs(hi) * 0.05 || 1;
+  return [lo - pad, hi + pad];
+}
+function lastLine(s) {
+  if (!s.x.length) return "";
+  return `${s.label}: ${fmt.format(s.y[s.y.length - 1])} ${s.unit} (${s.x[s.x.length - 1]})`;
+}
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function renderChart(el, chart) {
+  const withData = chart.series.filter(s => s.x.length);
+  const units = [...new Set(withData.map(s => s.unit))];
+  const traces = withData.map((s, i) => ({
+    x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
+    line: { color: PALETTE[i % PALETTE.length], width: 2, shape: s.style === "step" ? "hv" : "linear" },
+    hovertemplate: `%{x|%Y-%m-%d}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  const range = xRange(withData);
+  const layout = Object.assign({
+    margin: { l: 52, r: 12, t: 8, b: 36 }, hovermode: "x unified", showlegend: traces.length > 1,
+    legend: { orientation: "h", y: -0.18 }, font: { size: 12 },
+    xaxis: { type: "date", range: range || undefined, autorange: !range },
+    yaxis: { title: { text: units.length === 1 ? units[0] : "", font: { size: 11 } },
+             range: yRange(withData, range) || undefined, autorange: !range, separatethousands: true },
+    separators: ",.",
+  });
+  Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false,
+    modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"], locale: "de" })
+    .then(() => Plotly.relayout(el, layoutColors()));
+  rendered.push({ el, chart });
+}
+
+function build() {
+  const nav = document.getElementById("nav"), content = document.getElementById("content");
+  const c = DATA.counts || {};
+  const okCount = (c.ok || 0) + (c.cache || 0) + (c.stale || 0);
+  const total = Object.values(c).reduce((a, b) => a + b, 0);
+  document.getElementById("meta").textContent =
+    `Stand: ${DATA.generated_at.replace("T", " ").replace("Z", " UTC")} · ${okCount} von ${total} Reihen mit Daten`;
+  const observer = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { observer.unobserve(e.target); renderChart(e.target, e.target._chart); } });
+  }, { rootMargin: "300px" }) : null;
+
+  DATA.blocks.forEach(block => {
+    const a = document.createElement("a"); a.href = `#${block.id}`; a.textContent = block.title; nav.appendChild(a);
+    const sec = document.createElement("section"); sec.id = block.id;
+    sec.innerHTML = `<h2>${esc(block.title)}</h2>`;
+    const grid = document.createElement("div"); grid.className = "grid"; sec.appendChild(grid);
+    block.charts.forEach(chart => {
+      const card = document.createElement("div"); card.className = "card";
+      const units = [...new Set(chart.series.map(s => s.unit))].join(" / ");
+      const sources = [...new Map(chart.series.map(s => [s.link || s.source, s])).values()]
+        .map(s => s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.source)}</a>` : esc(s.source));
+      const missing = chart.series.filter(s => !s.x.length);
+      const lasts = chart.series.filter(s => s.x.length).map(lastLine);
+      card.innerHTML = `<h3>${esc(chart.title)}</h3>
+        <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
+      const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
+      const src = document.createElement("div"); src.className = "src";
+      src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
+      card.appendChild(src);
+      if (missing.length) {
+        const m = document.createElement("div"); m.className = "missing";
+        m.textContent = "Ohne Daten: " + missing.map(s => `${s.label} (${s.status})`).join(", ");
+        card.appendChild(m);
+      }
+      if (!chart.series.some(s => s.x.length)) { el.style.height = "auto"; el.textContent = "Keine Daten verfügbar."; }
+      else if (observer) observer.observe(el); else renderChart(el, chart);
+      grid.appendChild(card);
+    });
+    content.appendChild(sec);
+  });
+
+  document.querySelectorAll("#ranges .btn").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll("#ranges .btn").forEach(b => b.classList.remove("on"));
+    btn.classList.add("on"); rangeYears = Number(btn.dataset.years);
+    rendered.forEach(r => {
+      const data = r.chart.series.filter(s => s.x.length), range = xRange(data);
+      Plotly.relayout(r.el, range ? { "xaxis.range": range, "yaxis.range": yRange(data, range) }
+                                  : { "xaxis.autorange": true, "yaxis.autorange": true });
+    });
+  }));
+}
+
+(function init() {
+  let t = null; try { t = localStorage.getItem("kw-theme"); } catch (e) {}
+  if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  document.documentElement.dataset.theme = t;
+  document.getElementById("theme").addEventListener("click", () => setTheme(theme() === "dark" ? "light" : "dark"));
+  if (!DATA) { document.getElementById("meta").textContent = "Keine Daten eingebettet."; return; }
+  build();
+})();
+</script>
+</body>
+</html>

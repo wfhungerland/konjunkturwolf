@@ -1,0 +1,9 @@
+{"version": "2.0", "class": "dataset", "label": "HICP - annual rate of change",
+ "id": ["freq", "unit", "coicop", "geo", "time"], "size": [1, 1, 1, 2, 3],
+ "dimension": {
+  "freq": {"category": {"index": {"M": 0}, "label": {"M": "Monthly"}}},
+  "unit": {"category": {"index": {"RCH_A": 0}, "label": {"RCH_A": "Annual rate of change"}}},
+  "coicop": {"category": {"index": {"CP00": 0}, "label": {"CP00": "All-items HICP"}}},
+  "geo": {"category": {"index": {"DE": 0, "FR": 1}, "label": {"DE": "Germany", "FR": "France"}}},
+  "time": {"category": {"index": {"2024-01": 0, "2024-02": 1, "2024-03": 2}, "label": {}}}},
+ "value": {"0": 3.1, "1": 2.7, "2": 2.3, "3": 3.4, "5": 2.4}}
