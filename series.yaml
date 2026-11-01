@@ -40,6 +40,10 @@ blocks:
   - id: eu
     title: EU-Vergleich
     sheet: EU-Vergleich
+  - id: lang
+    title: Langfristig (seit 1870)
+    sheet: Langfristig
+    history: true
 
 # Vergleichsdiagramme: Fokusland hervorgehoben, Vergleichsländer als graue Spanne (Minimum bis Maximum)
 comparison:
@@ -54,6 +58,14 @@ geo_names:
   NL: Niederlande
   PL: Polen
   EU27_2020: EU27
+  DEU: Deutschland
+  FRA: Frankreich
+  ITA: Italien
+  ESP: Spanien
+  NLD: Niederlande
+  POL: Polen
+  GBR: Vereinigtes Königreich
+  USA: USA
 
 names:
   land:
@@ -99,6 +111,15 @@ charts:
   eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
+  lang_infl: {title: "Inflation, % gg. Vorjahr"}
+  lang_growth: {title: "Reales BIP, % gg. Vorjahr"}
+  lang_debt: {title: "Staatsschulden, % des BIP"}
+  lang_unemp: {title: "Arbeitslosenquote, %"}
+  lang_ca: {title: "Leistungsbilanz, % des BIP"}
+  lang_ltrate: {title: "Langfristiger Zins, % p. a."}
+  lang_stir: {title: "Kurzfristiger Zins, % p. a."}
+  lang_credit: {title: "Kredite an den privaten Sektor, % des BIP"}
+  lang_house: {title: "Reale Hauspreise, Index 1990=100"}
 
 series:
 
@@ -687,3 +708,145 @@ series:
     chart: eu_elec_nonhh
     label: "{geo_name}"
     start: "2007-01-01"
+
+  # ------------------------------------------------------------------
+  # 5. Langfristig: Global Macro Database (Makro) und JST (Finanzen)
+  # ------------------------------------------------------------------
+  - id: lang_infl
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, POL, GBR, USA]}
+    block: lang
+    source: gmd
+    key: infl
+    params: {country: "{geo}"}
+    title: "Inflation {geo_name}"
+    unit: "% gg. Vorjahr"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_infl
+    label: "{geo_name}"
+    start: "1870-01-01"
+    note: Global Macro Database (Müller, Xu, Lehbib, Chen 2025), neueste Fassung über das Python-Paket; ohne Prognosejahre. Lizenz nicht-kommerziell mit Quellenangabe.
+
+  - id: lang_growth
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, POL, GBR, USA]}
+    block: lang
+    source: gmd
+    key: rGDP
+    params: {country: "{geo}", transform: pct_change}
+    title: "Reales BIP {geo_name}"
+    unit: "% gg. Vorjahr"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_growth
+    label: "{geo_name}"
+    start: "1870-01-01"
+    note: Global Macro Database (Müller, Xu, Lehbib, Chen 2025), neueste Fassung über das Python-Paket; ohne Prognosejahre. Lizenz nicht-kommerziell mit Quellenangabe.
+
+  - id: lang_debt
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, POL, GBR, USA]}
+    block: lang
+    source: gmd
+    key: govdebt_GDP
+    params: {country: "{geo}"}
+    title: "Staatsschulden {geo_name}"
+    unit: "% des BIP"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_debt
+    label: "{geo_name}"
+    start: "1870-01-01"
+    note: Global Macro Database (Müller, Xu, Lehbib, Chen 2025), neueste Fassung über das Python-Paket; ohne Prognosejahre. Lizenz nicht-kommerziell mit Quellenangabe.
+
+  - id: lang_unemp
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, POL, GBR, USA]}
+    block: lang
+    source: gmd
+    key: unemp
+    params: {country: "{geo}"}
+    title: "Arbeitslosenquote {geo_name}"
+    unit: "% der Erwerbspersonen"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_unemp
+    label: "{geo_name}"
+    start: "1870-01-01"
+    note: Global Macro Database (Müller, Xu, Lehbib, Chen 2025), neueste Fassung über das Python-Paket; ohne Prognosejahre. Lizenz nicht-kommerziell mit Quellenangabe.
+
+  - id: lang_ca
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, POL, GBR, USA]}
+    block: lang
+    source: gmd
+    key: CA_GDP
+    params: {country: "{geo}"}
+    title: "Leistungsbilanz {geo_name}"
+    unit: "% des BIP"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_ca
+    label: "{geo_name}"
+    start: "1870-01-01"
+    note: Global Macro Database (Müller, Xu, Lehbib, Chen 2025), neueste Fassung über das Python-Paket; ohne Prognosejahre. Lizenz nicht-kommerziell mit Quellenangabe.
+
+  - id: lang_ltrate
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, GBR, USA]}
+    block: lang
+    source: jst
+    key: ltrate
+    params: {country: "{geo}"}
+    title: "Langfristiger Zins {geo_name}"
+    unit: "% p. a."
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_ltrate
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: JST Macrohistory Database, Release 6 (Jordà, Schularick, Taylor 2017), endet 2020. Lizenz CC BY-NC-SA 4.0.
+
+  - id: lang_stir
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, GBR, USA]}
+    block: lang
+    source: jst
+    key: stir
+    params: {country: "{geo}"}
+    title: "Kurzfristiger Zins {geo_name}"
+    unit: "% p. a."
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_stir
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: JST Macrohistory Database, Release 6 (Jordà, Schularick, Taylor 2017), endet 2020. Lizenz CC BY-NC-SA 4.0.
+
+  - id: lang_credit
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, GBR, USA]}
+    block: lang
+    source: jst
+    key: tloans
+    params: {country: "{geo}", divide_by: gdp, scale: 100}
+    title: "Kredite an den privaten Sektor {geo_name}"
+    unit: "% des BIP"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_credit
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: JST Macrohistory Database, Release 6 (Jordà, Schularick, Taylor 2017), endet 2020. Lizenz CC BY-NC-SA 4.0.
+
+  - id: lang_house
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD, GBR, USA]}
+    block: lang
+    source: jst
+    key: hpnom
+    params: {country: "{geo}", divide_by: cpi, scale: 100}
+    title: "Reale Hauspreise {geo_name}"
+    unit: "Index 1990=100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_house
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: JST Macrohistory Database, Release 6 (Jordà, Schularick, Taylor 2017), endet 2020. Lizenz CC BY-NC-SA 4.0.

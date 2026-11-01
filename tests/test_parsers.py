@@ -176,3 +176,34 @@ def test_genesis_stops_after_rejected_login(tmp_path, monkeypatch):
     with pytest.raises(SkipSeries):
         fetch_genesis(spec, client)
     assert len(calls) == 1
+
+
+def test_panel_series_transforms():
+    from konjunkturwolf.catalog import SeriesSpec
+    from konjunkturwolf.fetchers import panel_series
+
+    panel = pd.DataFrame({
+        "iso": ["DEU"] * 4 + ["FRA"] * 4,
+        "year": [2020, 2021, 2022, 2023] * 2,
+        "cpi": [100.0, 102.0, 110.16, None, 50.0, 51.0, 52.0, 53.0],
+        "tloans": [80.0, 90.0, 99.0, 100.0, 1, 1, 1, 1],
+        "gdp": [100.0, 100.0, 110.0, 125.0, 1, 1, 1, 1],
+    })
+
+    def spec(key, **params):
+        return SeriesSpec(id="x", source="jst", key=key, title="t", unit="u", frequency="A",
+                          adjustment="-", block="b", params={"country": "DEU", "max_year": 2030, **params})
+
+    infl = panel_series(panel, spec("cpi", transform="pct_change"), "iso")
+    assert infl["value"].round(4).tolist() == [2.0, 8.0]
+    assert infl["date"].iloc[0] == pd.Timestamp("2021-01-01")
+
+    credit = panel_series(panel, spec("tloans", divide_by="gdp", scale=100), "iso")
+    assert credit["value"].round(1).tolist() == [80.0, 90.0, 90.0, 80.0]
+
+    cut = panel_series(panel, spec("tloans", max_year=2021), "iso")
+    assert cut["date"].max() == pd.Timestamp("2021-01-01")
+
+    with pytest.raises(ParseError, match="Land"):
+        panel_series(panel, SeriesSpec(id="x", source="jst", key="cpi", title="t", unit="u", frequency="A",
+                                       adjustment="-", block="b", params={"country": "XXX"}), "iso")

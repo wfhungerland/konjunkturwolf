@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "derived"}
+SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step"}
 DERIVE_OPS = {"yoy_pct"}
@@ -23,6 +23,8 @@ SOURCE_LABELS = {
     "bundesbank": "Deutsche Bundesbank",
     "eurostat": "Eurostat",
     "genesis": "Destatis GENESIS-Online",
+    "jst": "JST Macrohistory Database",
+    "gmd": "Global Macro Database",
     "derived": "Eigene Berechnung",
 }
 
@@ -40,6 +42,7 @@ class Block:
     id: str
     title: str
     sheet: str
+    history: bool = False  # Langfristblock: Dashboard zeigt immer den ganzen Zeitraum
 
 
 @dataclass(frozen=True)
@@ -67,6 +70,7 @@ class SeriesSpec:
     note: str = ""
     derive: dict[str, Any] = field(default_factory=dict)
     member: str = ""  # erster expand-Wert, z.B. Ländercode
+    stale_after_months: int = 0  # 0 = Standard je Frequenz
 
     @property
     def source_label(self) -> str:
@@ -131,6 +135,10 @@ def default_link(spec: SeriesSpec) -> str:
         )
     if spec.source == "eurostat":
         return f"https://ec.europa.eu/eurostat/databrowser/view/{spec.key}/default/table?lang=de"
+    if spec.source == "jst":
+        return "https://www.macrohistory.net/database/"
+    if spec.source == "gmd":
+        return "https://www.globalmacrodata.com"
     if spec.source == "genesis":
         stat = spec.key.split("-")[0]
         return f"https://www-genesis.destatis.de/datenbank/online/statistic/{stat}/table/{spec.key}"
@@ -201,7 +209,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
         sheet = str(b.get("sheet") or b["title"])
         if len(sheet) > 31 or re.search(r"[\[\]:*?/\\]", sheet):
             errors.append(f"Themenblock {b['id']}: Blattname '{sheet}' ist in Excel unzulässig.")
-        blocks.append(Block(id=str(b["id"]), title=str(b["title"]), sheet=sheet))
+        blocks.append(Block(id=str(b["id"]), title=str(b["title"]), sheet=sheet, history=bool(b.get("history"))))
     if not blocks:
         errors.append("Keine Themenblöcke definiert.")
     block_ids = {b.id for b in blocks}
@@ -253,6 +261,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                     note=str(e.get("note") or ""),
                     derive=dict(e.get("derive") or {}),
                     member=str(e.get("member") or ""),
+                    stale_after_months=int(e.get("stale_after_months") or 0),
                 )
             )
 
