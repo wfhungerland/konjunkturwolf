@@ -57,6 +57,9 @@
   }
   .card .dl { font-family: "Arial Narrow", Arial, sans-serif; font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
   .card .dl a { color: var(--accent); margin-right: 8px; }
+  .card .dl.io a { margin-right: 0; }
+  .cite { font-size: 13px; background: #fff; border-left: 3px solid #0070C0; padding: 8px 12px; margin: 0 0 14px; }
+  .cite a { color: var(--accent); }
   .card .sub { color: var(--muted); font-size: 13px; }
   .head2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .head2 h2 { margin: 8px 0 12px; }
@@ -100,7 +103,7 @@
   <div id="content"></div>
 </main>
 <footer>
-  Daten: Destatis, Deutsche Bundesbank, EZB, Eurostat, Global Macro Database (Müller u. a. 2025), JST Macrohistory Database (Jordà, Schularick, Taylor), NBER Macrohistory Database, TRADHIST (Fouquin, Hugot 2017). Werte unverändert aus den Quellen.
+  Daten: Destatis, Deutsche Bundesbank, EZB, Eurostat, Global Macro Database (Müller u. a. 2025), JST Macrohistory Database (Jordà, Schularick, Taylor), NBER Macrohistory Database, TRADHIST (Fouquin, Hugot 2017), Input-Output-Tabelle 1936 (Fremdling, Stäglin 2014). Werte unverändert aus den Quellen.
   Perioden sind auf ihren ersten Tag datiert. Alle weiteren Reihen, Details und Direktlinks im
   <a href="konjunkturwolf.xlsx" download>Excel-Workbook</a> (Blatt Quellen) und auf
   <a href="https://github.com/wfhungerland/konjunkturwolf">GitHub</a>.
@@ -509,6 +512,62 @@ function buildOverview() {
     body.appendChild(tr);
   });
 }
+// Verflechtung 1936 und heute: zitierte Daten, eigene Verdichtung, kein Datendownload
+function ioCard(title, sub, draw, io) {
+  chartNo += 1;
+  const card = document.createElement("div"); card.className = "card";
+  card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(title)}</h3><div class="sub">${esc(sub)}</div>`;
+  const el = document.createElement("div"); el.className = "chart"; el.style.aspectRatio = "auto"; el.style.height = "420px";
+  card.appendChild(el);
+  const c = io.citation;
+  const src = document.createElement("div"); src.className = "src";
+  src.innerHTML = `Quelle: 1936: Fremdling und Stäglin (2014), <a href="${c.doi}" target="_blank" rel="noopener">DOI 10.1515/jbwg-2014-0018</a>; `
+    + `heute: <a href="${c.now_link}" target="_blank" rel="noopener">Eurostat naio_10_cp1700</a>; eigene Berechnung.`;
+  card.appendChild(src);
+  const dl = document.createElement("div"); dl.className = "dl";
+  dl.className = "dl io"; dl.innerHTML = `Daten: nur von der Originalquelle erhältlich (<a href="${c.doi}" target="_blank" rel="noopener">Fremdling und Stäglin 2014</a>, <a href="${c.now_link}" target="_blank" rel="noopener">Eurostat</a>).`;
+  card.appendChild(dl);
+  setTimeout(() => draw(el), 0);
+  return card;
+}
+function buildIO(content) {
+  const io = DATA.io; if (!io) return;
+  const S = io.sectors, Y = String(io.now_year).slice(0, 4);
+  const F = { family: HS.font, size: 12, color: "#000" };
+  const base = { font: F, paper_bgcolor: "#fff", plot_bgcolor: "#fff", separators: ",.", margin: { l: 8, r: 8, t: 36, b: 30 },
+                 legend: { orientation: "h", x: 0, y: 1.02, yanchor: "bottom" }, hoverlabel: { font: F } };
+  const cfg = { displaylogo: false, responsive: true, displayModeBar: false };
+  const bars = (a, b, fmt) => el => Plotly.newPlot(el, [
+      { type: "bar", orientation: "h", y: S, x: a, name: "1936", marker: { color: PALETTE[0] }, hovertemplate: "%{y}: %{x:" + fmt + "}<extra>1936</extra>" },
+      { type: "bar", orientation: "h", y: S, x: b, name: Y, marker: { color: PALETTE[2] }, hovertemplate: "%{y}: %{x:" + fmt + "}<extra>" + Y + "</extra>" }],
+      Object.assign({}, base, { barmode: "group", yaxis: { autorange: "reversed", automargin: true }, xaxis: { gridcolor: HS.gridH, zeroline: false } }), cfg);
+  const heat = A => el => Plotly.newPlot(el, [{ type: "heatmap", z: A.map(r => r.map(v => Math.round(v * 1000) / 10)), x: S, y: S, zmin: 0, zmax: 30,
+      colorscale: [[0, "#ffffff"], [0.15, "#C1E5F5"], [0.5, "#0070C0"], [1, "#002060"]], hovertemplate: "%{y} an %{x}: %{z:.1f} %<extra></extra>",
+      colorbar: { thickness: 10, ticksuffix: " %" } }],
+      Object.assign({}, base, { xaxis: { tickangle: -45, automargin: true }, yaxis: { autorange: "reversed", automargin: true }, margin: { l: 8, r: 8, t: 8, b: 8 } }), cfg);
+  const wavg = (m, w) => m.reduce((s, v, i) => s + v * w[i], 0) / w.reduce((s, v) => s + v, 0);
+  const avg = a => a.reduce((s, v) => s + v, 0) / a.length;
+  const sec = document.createElement("section"); sec.id = "verflechtung";
+  sec.innerHTML = `<div class="head2"><h2>Verflechtung 1936 und heute</h2></div>`
+    + `<p class="question">Ist die deutsche Wirtschaft heute stärker verflochten als 1936? Dazu Abb. ${chartNo + 1} bis ${chartNo + 5}.</p>`
+    + `<p class="cite">Die Werte für 1936 beruhen auf der Input-Output-Tabelle von <b>Rainer Fremdling und Reiner Stäglin</b>, zitiert nach: ${esc(io.citation.y1936)} `
+    + `<a href="${io.citation.doi}" target="_blank" rel="noopener">${io.citation.doi}</a>. Die Rechte an der Tabelle liegen bei den Autoren und beim Verlag; `
+    + `diese Seite zeigt nur eigene, daraus abgeleitete Kennzahlen. ${esc(io.method)}</p>`
+    + `<ul class="facts"><li>Mittlerer Multiplikator (gewichtet mit der Produktion): 1936 ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}, ${Y} ${num1(wavg(io.now.multiplier, io.now.output_share))}.</li>`
+    + `<li>Mittlere Vorleistungsquote: 1936 ${num1(avg(io.y1936.input_share))} %, ${Y} ${num1(avg(io.now.input_share))} %.</li></ul>`;
+  const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
+  pair.appendChild(ioCard("Produktionsmultiplikator je Sektor", "Produktion je Einheit Endnachfrage, Leontief, nur inländische Vorleistungen", bars(io.y1936.multiplier, io.now.multiplier, ".2f"), io));
+  pair.appendChild(ioCard("Vorleistungsquote je Sektor, %", "Inländische Vorleistungen in % der Bruttoproduktion", bars(io.y1936.input_share, io.now.input_share, ".1f"), io));
+  pair.appendChild(ioCard("Lieferverflechtung 1936, Inputkoeffizienten in %", "Zeile liefert an Spalte, je 100 Einheiten Produktion der Spalte", heat(io.y1936.A), io));
+  pair.appendChild(ioCard(`Lieferverflechtung ${Y}, Inputkoeffizienten in %`, "Zeile liefert an Spalte, je 100 Einheiten Produktion der Spalte", heat(io.now.A), io));
+  pair.appendChild(ioCard("Anteil an der Bruttoproduktion, %", "12 gemeinsame Sektoren", bars(io.y1936.output_share, io.now.output_share, ".1f"), io));
+  content.appendChild(sec);
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td><a href="#verflechtung">Verflechtung 1936 und heute</a></td><td colspan="2" class="lage">Fremdling und Stäglin (2014); Eurostat</td>`
+    + `<td class="num">${num1(wavg(io.now.multiplier, io.now.output_share))}<span class="per">Multiplikator ${Y}</span></td>`
+    + `<td class="lage">1936: ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}</td>`;
+  document.getElementById("ovbody").appendChild(tr);
+}
 function build() {
   const nav = document.getElementById("nav"), content = document.getElementById("content");
   const d = new Date(DATA.generated_at);
@@ -551,6 +610,7 @@ function build() {
     });
     content.appendChild(sec);
   });
+  buildIO(content);
 }
 
 (function init() {
