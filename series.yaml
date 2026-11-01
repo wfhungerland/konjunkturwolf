@@ -366,6 +366,7 @@ series:
     params:
       value_variable: AUF103
       filters: {WZ08V2: WZ08-C, BERWE5: X13JDKSB}
+      query: {classifyingvariable1: WZ08V2, classifyingkey1: WZ08-C, classifyingvariable2: BERWE5, classifyingkey2: X13JDKSB}
     title: Auftragseingang im Verarbeitenden Gewerbe, real
     unit: Index 2021=100
     frequency: M
@@ -457,7 +458,7 @@ series:
     block: energie
     source: genesis
     key: "61241-0002"
-    params: {value_variable: PREIS1}
+    params: {value_variable: PRE001}
     title: Erzeugerpreisindex gewerblicher Produkte (Inlandsabsatz)
     unit: Index 2021=100
     frequency: M
