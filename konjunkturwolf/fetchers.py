@@ -86,6 +86,24 @@ def genesis_credentials() -> tuple[str, str] | None:
 _GENESIS_AUTH_FAILED: dict[int, str] = {}
 
 
+def genesis_text(raw: bytes) -> str:
+    """GENESIS liefert Tabellen teils als ZIP-Archiv; dann die erste CSV darin lesen."""
+    if raw[:2] == b"PK":
+        import zipfile
+
+        with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+            names = [n for n in zf.namelist() if n.lower().endswith((".csv", ".txt"))] or zf.namelist()
+            if not names:
+                raise ParseError("GENESIS-ZIP ohne Datei.")
+            raw = zf.read(names[0])
+    for enc in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            return raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return raw.decode("utf-8", errors="replace")
+
+
 def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     creds = genesis_credentials()
     if creds is None:
@@ -117,7 +135,7 @@ def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
             raise FetchError(msg) from exc
         raise
     df = parse_genesis_ffcsv(
-        resp.text,
+        genesis_text(resp.raw or resp.text.encode("utf-8")),
         value_variable=spec.params.get("value_variable"),
         filters=spec.params.get("filters"),
     )

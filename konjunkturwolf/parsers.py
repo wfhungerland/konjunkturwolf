@@ -226,7 +226,7 @@ def parse_genesis_ffcsv(
         None,
     )
     if start is None:
-        preview = " | ".join(l.strip() for l in lines[:6])[:400]
+        preview = "".join(c if c.isprintable() else "?" for c in " | ".join(l.strip() for l in lines[:6]))[:300]
         raise ParseError(f"GENESIS-Antwort ohne erkennbare ffcsv-Kopfzeile. Anfang: {preview}")
     df = pd.read_csv(io.StringIO("\n".join(lines[start:])), sep=";", dtype=str, keep_default_na=False)
     df.columns = [_genesis_norm(c) for c in df.columns]

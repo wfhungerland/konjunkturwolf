@@ -218,3 +218,17 @@ def test_genesis_skips_preamble(fixture_text):
 def test_genesis_reports_unknown_format():
     with pytest.raises(ParseError, match="Anfang: Titel"):
         parse_genesis_ffcsv("Titel\nnoch eine Zeile\n1;2;3;4\n")
+
+
+def test_genesis_zip_is_unpacked(fixture_text):
+    import io
+    import zipfile
+
+    from konjunkturwolf.fetchers import genesis_text
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("61111-0002_flat.csv", fixture_text("genesis_61111-0002.csv").encode("utf-8"))
+    text = genesis_text(buf.getvalue())
+    assert parse_genesis_ffcsv(text, value_variable="PREIS1")["value"].tolist() == [117.6, 118.1, 118.6]
+    assert genesis_text("ä;b".encode("cp1252")) == "ä;b"
