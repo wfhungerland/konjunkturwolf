@@ -15,6 +15,17 @@ FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
 DERIVE_OPS = {"yoy_pct", "diff", "sum"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
+SOURCE_LICENSES = {
+    "ecb": "Wiederverwendung mit Quellenangabe (EZB)",
+    "bundesbank": "Wiederverwendung mit Quellenangabe (Deutsche Bundesbank)",
+    "eurostat": "CC BY 4.0 (Eurostat)",
+    "genesis": "Datenlizenz Deutschland – Namensnennung – Version 2.0 (Destatis)",
+    "jst": "CC BY-NC-SA 4.0 (Jordà, Schularick, Taylor); abgeleitete Daten unter derselben Lizenz",
+    "gmd": "Nur nicht-kommerzielle Nutzung mit Quellenangabe (Global Macro Database)",
+    "nber": "Frei verfügbar mit Quellenangabe (NBER)",
+    "static": "Nutzungsbedingungen von CEPII/TRADHIST (Fouquin, Hugot); Quellenangabe erforderlich",
+}
+
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 PLACEHOLDER_PATTERN = re.compile(r"\{[a-z_]+\}")
 

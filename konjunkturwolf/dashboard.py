@@ -9,8 +9,30 @@ from pathlib import Path
 
 import pandas as pd
 
-from .catalog import Catalog
+from .catalog import SOURCE_LICENSES, Catalog
 from .pipeline import RunResult
+
+SITE_URL = "https://wfhungerland.github.io/konjunkturwolf/"
+AUTHOR = "Hungerland, Wolf-Fabian"
+REFERENCES = [
+    "Jordà, Òscar, Moritz Schularick und Alan M. Taylor (2017): Macrofinancial History and the New Business Cycle Facts. "
+    "NBER Macroeconomics Annual 2016, Bd. 31, S. 213–263, https://doi.org/10.1086/690241. Daten: JST Macrohistory Database, Release 6, https://www.macrohistory.net/database/.",
+    "Müller, Karsten, Chenzi Xu, Mohamed Lehbib und Ziliang Chen (2025): The Global Macro Database. A New International "
+    "Macroeconomic Dataset. NBER Working Paper 33714, https://doi.org/10.3386/w33714. Daten: https://www.globalmacrodata.com.",
+    "National Bureau of Economic Research: NBER Macrohistory Database, https://www.nber.org/research/data/nber-macrohistory-database.",
+    "Fouquin, Michel und Jules Hugot (2016): Two Centuries of Bilateral Trade and Gravity Data: 1827–2014. CEPII Working Paper "
+    "2016-14. Daten: TRADHIST, http://www.cepii.fr.",
+    "Fremdling, Rainer und Reiner Stäglin (2014): An Input-Output Table for Germany in 1936. A Documentation of Results, Sources "
+    "and Research Strategy. Jahrbuch für Wirtschaftsgeschichte / Economic History Yearbook 2014/2. https://doi.org/10.1515/jbwg-2014-0018.",
+    "Eurostat, Europäische Zentralbank, Deutsche Bundesbank, Statistisches Bundesamt (Destatis): Datenbanken, abgerufen über die "
+    "jeweiligen Schnittstellen; Direktlinks je Reihe im Excel-Workbook (Blatt Quellen).",
+]
+
+
+def citation(stand: str) -> str:
+    return (f"{AUTHOR} ({stand[:4]}): konjunkturwolf. Wirtschaftsdaten im langen Vergleich. "
+            f"Datenstand {stand[:10]}. {SITE_URL}")
+
 
 FREQ_LABELS = {"D": "täglich", "M": "monatlich", "Q": "vierteljährlich", "S": "halbjährlich", "A": "jährlich"}
 
@@ -128,21 +150,34 @@ def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None) -
     hist = next((s for s in left if s["member"] in focus), None)
     if hist and len(hist["y"]) >= 30:
         ys = hist["y"]
-        share = round(100 * sum(v < value for v in ys) / len(ys))
         what = "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte"
         span = f"{hist['x'][0][:4]} bis {hist['x'][-1][:4]}"
+        # Gleiche Frequenz vergleichen: Jahreswerte der Geschichte gegen das Mittel der letzten 12 Monate bzw. 4 Quartale
+        n = {"monatlich": 12, "vierteljährlich": 4}.get(de["frequency"], 1) if what == "Jahreswerte" else 1
+        if len(de["y"]) < n:
+            n = 1
+        cmp_value = sum(de["y"][-n:]) / n
+        sides["right"]["hist_value"] = round(cmp_value, 4)
+        lead = ("Das Mittel der letzten 12 Monate" if n == 12 else "Das Mittel der letzten vier Quartale" if n == 4
+                else "Der aktuelle Wert") + (f" ({_num(cmp_value)} {u})" if n > 1 else "")
+        share = round(100 * sum(v < cmp_value for v in ys) / len(ys))
+        unit_word = "Monat" if what == "Monatswerte" else "Jahr"
         if share >= 99:
-            facts.append(f"So hoch wie in keinem {'Monat' if what == 'Monatswerte' else 'Jahr'} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+            facts.append(f"{lead} ist so hoch wie in keinem {unit_word} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
         elif share <= 1:
-            facts.append(f"So niedrig wie in keinem {'Monat' if what == 'Monatswerte' else 'Jahr'} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+            facts.append(f"{lead} ist so niedrig wie in keinem {unit_word} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
         else:
-            facts.append(f"Höher als {share} % der {what} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+            facts.append(f"{lead} ist höher als {share} % der {what} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
         if "volatility" in (extra or []):
             cut = f"{int(date[:4]) - 5}{date[4:]}"
             recent = [y for x, y in zip(de["x"], de["y"]) if x > cut]
-            if len(recent) > 12:
-                facts.append(f"Schwankung (Standardabweichung): {span} {_num(_std(ys))} Pp, "
-                             f"letzte fünf Jahre {_num(_std(recent))} Pp.")
+            win = len(recent)
+            if win > 12 and len(ys) > win:
+                rolling = [_std(ys[k:k + win]) for k in range(0, len(ys) - win + 1)]
+                now_sd = _std(recent)
+                pct = round(100 * sum(r < now_sd for r in rolling) / len(rolling))
+                facts.append(f"Schwankung der letzten fünf Jahre (Standardabweichung {_num(now_sd)} Pp): höher als in {pct} % "
+                             f"aller Fünfjahresfenster {span} (Median {_num(_quantile(rolling, 0.5))} Pp).")
     return facts
 
 
@@ -161,9 +196,13 @@ def history_band(catalog: Catalog, sides: dict) -> dict | None:
 
 
 def extend_long(sides: dict) -> str:
-    """Verlängert die langen Jahresreihen mit Jahresmitteln der aktuellen Reihen (gleiches Land)."""
+    """Verlängert die langen Jahresreihen mit Jahresmitteln der aktuellen Reihen (gleiches Land).
+
+    Markiert ein unvollständiges letztes Jahr (partial_last) und misst für Deutschland die mittlere
+    Abweichung zwischen beiden Quellen in den Jahren, in denen sich beide überschneiden.
+    """
     right = {s["member"]: s for s in sides["right"]["series"] if s["member"] and s["y"]}
-    first_ext, last_info = None, ""
+    first_ext, last_info, overlap = None, "", ""
     for s in sides["left"]["series"]:
         cur = right.get(ISO3_TO_2.get(s["member"] or "", s["member"]))
         if cur is None or not s["y"]:
@@ -171,22 +210,39 @@ def extend_long(sides: dict) -> str:
         last_year = int(s["x"][-1][:4])
         by_year: dict[int, list[float]] = {}
         for x, y in zip(cur["x"], cur["y"]):
-            if int(x[:4]) > last_year:
-                by_year.setdefault(int(x[:4]), []).append(y)
-        if not by_year or min(by_year) > last_year + 1:
+            by_year.setdefault(int(x[:4]), []).append(y)
+        per_year = {"monatlich": 12, "vierteljährlich": 4}.get(cur["frequency"], 1)
+        # Überschneidung: nur volle Jahre vergleichen
+        if s["member"] in ("DEU", "DE"):
+            left_by = {int(x[:4]): y for x, y in zip(s["x"], s["y"])}
+            common = [yr for yr in by_year if yr in left_by and len(by_year[yr]) >= per_year]
+            if len(common) >= 3:
+                dev = sum(abs(sum(by_year[yr]) / len(by_year[yr]) - left_by[yr]) for yr in common) / len(common)
+                unit = "Pp" if str(s.get("unit", "")).startswith(("%", "Pp")) else "Punkte"
+                overlap = (f" Zum Vergleich: In den Jahren {min(common)} bis {max(common)}, die beide Quellen abdecken, "
+                           + (f"weichen die Jahresmittel der aktuellen Reihe für Deutschland praktisch nicht von der langen Reihe ab (unter 0,1 {unit})."
+                              if dev < 0.05 else
+                              f"weicht das Jahresmittel der aktuellen Reihe für Deutschland im Mittel um {_num(dev)} {unit} von der langen Reihe ab."))
+        new_years = {yr: v for yr, v in by_year.items() if yr > last_year}
+        if not new_years or min(new_years) > last_year + 1:
             continue  # nur lückenlos anschließen
-        for year in sorted(by_year):
+        for year in sorted(new_years):
             s["x"].append(f"{year}-01-01")
-            s["y"].append(round(sum(by_year[year]) / len(by_year[year]), 6))
-        s["ext_from"] = f"{min(by_year)}-01-01"
-        first_ext = min(first_ext or 9999, min(by_year))
-        y_last = max(by_year)
-        per_year = {"monatlich": 12, "vierteljährlich": 4}.get(cur["frequency"])
-        if per_year and len(by_year[y_last]) < per_year and (not last_info or s["member"] in ("DEU", "DE")):
-            last_info = f"; {y_last} nur bis {_period(cur['x'][-1], cur['frequency']).rsplit(' ', 1)[0]}"
+            s["y"].append(round(sum(new_years[year]) / len(new_years[year]), 6))
+        s["ext_from"] = f"{min(new_years)}-01-01"
+        if cur.get("license") and cur["license"] not in s.get("license", ""):
+            s["license"] = "; ".join(x for x in (s.get("license"), cur["license"]) if x)
+        first_ext = min(first_ext or 9999, min(new_years))
+        y_last = max(new_years)
+        if per_year > 1 and len(new_years[y_last]) < per_year:
+            s["partial_last"] = True
+            if not last_info or s["member"] in ("DEU", "DE"):
+                last_info = (f"; {y_last} nur bis {_period(cur['x'][-1], cur['frequency']).rsplit(' ', 1)[0]} "
+                             f"(hohler Punkt)")
     if first_ext is None:
         return ""
-    return f"Ab {first_ext}: Jahresmittel der aktuellen Werte aus der rechten Abbildung{last_info}."
+    return (f"Ab {first_ext}: Jahresmittel der aktuellen Werte aus der rechten Abbildung, andere Quelle oder Definition, "
+            f"Niveausprünge möglich{last_info}.{overlap}")
 
 
 def episode_items(cfg: dict, items: dict[str, dict]) -> list[dict]:
@@ -214,10 +270,25 @@ def episode_items(cfg: dict, items: dict[str, dict]) -> list[dict]:
             per_year = {"monatlich": 12, "vierteljährlich": 4}.get(src["frequency"])
             if per_year and last and len(by_year.get(int(last[:4]), [])) < per_year and int(last[:4]) - peak <= horizon:
                 item["partial"] = f"{last[:4]} bis {_period(last, src['frequency']).rsplit(' ', 1)[0]}"
+                item["partial_last"] = True
         else:
             item["label"] = ep["label"]
         out.append(item)
     return out
+
+
+def license_for(spec, by_id) -> str:
+    """Lizenz einer Reihe; abgeleitete Reihen tragen die Lizenzen ihrer Basisreihen."""
+    if spec.source != "derived":
+        return SOURCE_LICENSES.get(spec.source, "")
+    parts = []
+    for key in ("from", "minus", "plus"):
+        base = by_id.get(spec.derive.get(key) or "")
+        if base is not None:
+            lic = license_for(base, by_id)
+            if lic and lic not in parts:
+                parts.append(lic)
+    return "; ".join(parts)
 
 
 def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
@@ -250,14 +321,16 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                 "y_min": cfg.get("y_min", base.y_min), "y_max": cfg.get("y_max", base.y_max),
                 "kind": base.kind, "decimals": cfg.get("decimals", base.decimals),
                 "note": cfg.get("note", ""),
-                "series": [_item(s, grouped.get(s.id), statuses.get(s.id)) for s in specs],
+                "series": [dict(_item(s, grouped.get(s.id), statuses.get(s.id)), license=license_for(s, by_id),
+                                note=s.note or "") for s in specs],
             }
             if cfg.get("episodes"):
                 items = {s["id"]: s for s in sides[side]["series"]}
                 eps = episode_items(cfg, items)
                 partial = [f"{e['label'].split(' (')[0]}: {e['partial']}" for e in eps if e.get("partial")]
                 sides[side].update(kind="episodes", series=eps, full=True, decimals=0,
-                                   note="x-Achse: Jahre nach dem Hoch; Jahresmittel."
+                                   note="x-Achse: Jahre nach dem Hoch; Jahresmittel. 1929 beruht auf dem jährlichen NBER-Produktionsindex "
+                                     "(Deutsches Reich), heute auf Eurostat (Industrie ohne Bau); Jahresmittel glätten den Tiefpunkt."
                                         + (f" Laufendes Jahr unvollständig ({'; '.join(partial)})." if partial else ""))
         facts = panel_facts(catalog, sides, p.get("facts"))
         if sides["left"].get("kind") == "episodes":
@@ -321,6 +394,8 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
         "comparison": catalog.comparison,
         "panels": build_panels(catalog, result),
         "io": _load_io(),
+        "citation": citation(str(result.finished_at)),
+        "references": REFERENCES,
         "blocks": blocks,
     }
 
@@ -336,7 +411,7 @@ def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_p
             sd = panel[side]
             note = "Quelle: " + ", ".join(dict.fromkeys(s["source"] for s in sd["series"] if s["x"])) + ". konjunkturwolf, Stand " + str(payload["generated_at"])[:10]
             try:
-                sd["downloads"] = write_downloads(sd, 2 * pi + k + 1, site / "downloads", note)
+                sd["downloads"] = write_downloads(sd, 2 * pi + k + 1, site / "downloads", note, payload["citation"])
             except Exception as exc:  # Downloads dürfen die Seite nicht verhindern
                 sd["downloads"] = {}
                 print(f"Download für {sd['id']} fehlgeschlagen: {exc}")
