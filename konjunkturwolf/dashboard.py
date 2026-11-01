@@ -62,16 +62,18 @@ def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
     if peers:
         rank = 1 + sum(v > value for v in peers.values())
         lo, hi = min(peers, key=peers.get), max(peers, key=peers.get)
+        missing = [s["label"] for s in right if s is not de and s["label"] not in peers]
         facts.append(f"Rang {rank} von {len(peers) + 1} Ländern (1 = höchster Wert); "
-                     f"Spanne von {lo} {_num(peers[lo])} % bis {hi} {_num(peers[hi])} %.")
+                     f"Spanne von {lo} {_num(peers[lo])} % bis {hi} {_num(peers[hi])} %"
+                     + (f" ({', '.join(missing)} noch ohne Wert)." if missing else "."))
     hist = next((s for s in left if s["member"] in focus), None)
     if hist and len(hist["y"]) >= 30:
         ys = hist["y"]
         share = round(100 * sum(v < value for v in ys) / len(ys))
         ys_sorted = sorted(ys)
         mid = ys_sorted[len(ys_sorted) // 2]
-        facts.append(f"Seit {hist['x'][0][:4]} lag der Jahreswert in {share} % der Jahre darunter; "
-                     f"Median {_num(mid)} %.")
+        facts.append(f"Von {hist['x'][0][:4]} bis {hist['x'][-1][:4]} lag der Jahreswert in {share} % "
+                     f"der Jahre unter dem aktuellen Wert; Median {_num(mid)} %.")
     return facts
 
 

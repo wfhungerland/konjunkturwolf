@@ -146,8 +146,8 @@ charts:
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
-  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40, decimals: 1}
-  lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -25, y_max: 25}
+  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -20, y_max: 40, decimals: 1}
+  lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -20, y_max: 20}
   lang_debt: {title: "Staatsschulden, % des BIP"}
   lang_unemp: {title: "Arbeitslosenquote, %"}
   lang_ca: {title: "Leistungsbilanz, % des BIP"}
