@@ -258,3 +258,12 @@ def test_monthly_mean_from_daily():
     out = monthly_mean(df)
     assert out["date"].dt.strftime("%Y-%m-%d").tolist() == ["2024-01-01", "2024-02-01"]
     assert out["value"].tolist() == [2.0, 5.0]
+
+
+def test_parse_nber_monthly_and_annual():
+    from konjunkturwolf.fetchers import parse_nber
+
+    m = parse_nber("1876    1 5.50000\n1876    2 .\n1876    3 4.0\n")
+    assert m["value"].tolist() == [5.5, 4.0] and m["date"].dt.month.tolist() == [1, 3]
+    a = parse_nber("1925   85.0000\n1926   78.0000\n")
+    assert a["date"].dt.year.tolist() == [1925, 1926]

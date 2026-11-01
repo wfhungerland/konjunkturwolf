@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
+SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
 DERIVE_OPS = {"yoy_pct", "diff", "sum"}
@@ -26,6 +26,7 @@ SOURCE_LABELS = {
     "jst": "JST Macrohistory Database",
     "gmd": "Global Macro Database",
     "derived": "Eigene Berechnung",
+    "nber": "NBER Macrohistory Database",
 }
 
 
@@ -145,6 +146,8 @@ def default_link(spec: SeriesSpec) -> str:
         return "https://www.macrohistory.net/database/"
     if spec.source == "gmd":
         return "https://www.globalmacrodata.com"
+    if spec.source == "nber":
+        return "https://www.nber.org/research/data/nber-macrohistory-database"
     if spec.source == "genesis":
         stat = spec.key.split("-")[0]
         return f"https://www-genesis.destatis.de/datenbank/online/statistic/{stat}/table/{spec.key}"
@@ -312,8 +315,13 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
             for sid in cfg.get("series") or []:
                 if sid not in ids:
                     errors.append(f"Panel {p.get('id')}: Reihe '{sid}' unbekannt.")
-            if not cfg.get("chart") and not cfg.get("series"):
-                errors.append(f"Panel {p.get('id')}: Seite '{side}' braucht 'chart' oder 'series'.")
+            for ep in cfg.get("episodes") or []:
+                if ep.get("series") not in ids:
+                    errors.append(f"Panel {p.get('id')}: Episode mit unbekannter Reihe '{ep.get('series')}'.")
+                if len(ep.get("window") or []) != 2:
+                    errors.append(f"Panel {p.get('id')}: Episode braucht 'window: [von, bis]'.")
+            if not cfg.get("chart") and not cfg.get("series") and not cfg.get("episodes"):
+                errors.append(f"Panel {p.get('id')}: Seite '{side}' braucht 'chart', 'series' oder 'episodes'.")
     if errors:
         raise CatalogError(errors)
     return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison,

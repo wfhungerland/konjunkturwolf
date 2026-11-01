@@ -128,7 +128,7 @@ def test_repository_catalog_resolves_names_and_comparison():
 
 def test_repository_panels_are_valid():
     cat = load_catalog(ROOT / "series.yaml")
-    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen", "offenheit", "zinsstruktur", "spreads"]
+    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen", "krise", "preise", "offenheit", "zinsstruktur", "spreads"]
     for p in cat.panels:
         assert p["left"] and p["right"]
 
@@ -138,6 +138,8 @@ def test_panel_sides_show_same_countries():
     cat = load_catalog(ROOT / "series.yaml")
     iso3 = {"DEU": "DE", "FRA": "FR", "ITA": "IT", "ESP": "ES", "NLD": "NL", "POL": "PL"}
     for p in cat.panels:
+        if "episodes" in p["left"] or p["id"] == "preise":
+            continue  # Krisenvergleich bzw. nur deutsche Geschichte (NBER)
         members = []
         for side in ("left", "right"):
             specs = [s for s in cat.series if s.chart_id == p[side]["chart"]]
@@ -147,3 +149,13 @@ def test_panel_sides_show_same_countries():
             assert "DE" in members[0] and "DE" in members[1], p["id"]
         # JST hat kein Polen; sonst gleich
         assert members[0] - {"PL"} == members[1] - {"PL"}, p["id"]
+
+
+def test_episode_items_index_to_peak():
+    from konjunkturwolf.dashboard import episode_items
+
+    src = {"id": "ip", "label": "IP", "frequency": "monatlich", "member": "DE", "unit": "Index",
+           "x": ["2007-01-01", "2007-06-01", "2008-01-01", "2009-01-01", "2010-01-01"], "y": [90, 110, 120, 60, 90]}
+    eps = episode_items({"years": 2, "episodes": [{"series": "ip", "window": [2007, 2008], "label": "Krise"}]}, {"ip": src})
+    e = eps[0]
+    assert e["label"] == "Krise (Hoch 2008)" and e["x"] == [0, 1, 2] and e["y"] == [100.0, 50.0, 75.0]
