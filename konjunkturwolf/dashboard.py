@@ -32,10 +32,16 @@ def _item(spec, g, st) -> dict:
 
 MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
           "September", "Oktober", "November", "Dezember"]
+ISO3_TO_2 = {"DEU": "DE", "FRA": "FR", "ITA": "IT", "ESP": "ES", "NLD": "NL", "POL": "PL",
+             "GBR": "GB", "USA": "US"}
 
 
 def _num(v: float) -> str:
     return f"{v:.1f}".replace(".", ",").replace("-", "−")
+
+
+def _unit(u: str) -> str:
+    return "%" if u.startswith("%") else ("Pp" if u.startswith("Pp") else u)
 
 
 def _period(date: str, freq: str) -> str:
@@ -47,16 +53,32 @@ def _period(date: str, freq: str) -> str:
     return f"{MONTHS[m - 1]} {y}"
 
 
+def _quantile(ys: list[float], q: float) -> float:
+    v = sorted(ys)
+    k = (len(v) - 1) * q
+    lo = int(k)
+    hi = min(lo + 1, len(v) - 1)
+    return v[lo] + (v[hi] - v[lo]) * (k - lo)
+
+
 def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
-    """Kurze Einordnung aus den Daten: aktueller Wert DE, Rang, Lage zur Geschichte."""
+    """Kurze Einordnung aus den Daten: aktueller Wert, Rang, Lage zur Geschichte."""
     focus = set(catalog.comparison.get("focus") or [])
-    right = [s for s in sides["right"]["series"] if s["y"]]
+    right = [s for s in sides["right"]["series"] if s["y"] and s["member"]]
     left = [s for s in sides["left"]["series"] if s["y"]]
     de = next((s for s in right if s["member"] in focus), None)
     if de is None:
-        return []
+        # ohne Fokusland (z.B. Renditeabstände zu Deutschland): letzte Werte je Land
+        if not right:
+            return []
+        date = max(s["x"][-1] for s in right)
+        vals = sorted(((s["y"][-1], s["label"]) for s in right if s["x"][-1] == date), reverse=True)
+        u = _unit(right[0]["unit"])
+        return [f"Zuletzt ({_period(date, right[0]['frequency'])}): "
+                + ", ".join(f"{lab} {_num(v)} {u}" for v, lab in vals) + "."]
+    u = _unit(de["unit"])
     date, value = de["x"][-1], de["y"][-1]
-    facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} %."]
+    facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} {u}."]
     peers = {s["label"]: dict(zip(s["x"], s["y"]))[date]
              for s in right if s is not de and date in s["x"]}
     if peers:
@@ -64,17 +86,56 @@ def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
         lo, hi = min(peers, key=peers.get), max(peers, key=peers.get)
         missing = [s["label"] for s in right if s is not de and s["label"] not in peers]
         facts.append(f"Rang {rank} von {len(peers) + 1} Ländern (1 = höchster Wert); "
-                     f"Spanne von {lo} {_num(peers[lo])} % bis {hi} {_num(peers[hi])} %"
+                     f"Spanne von {lo} {_num(peers[lo])} {u} bis {hi} {_num(peers[hi])} {u}"
                      + (f" ({', '.join(missing)} noch ohne Wert)." if missing else "."))
     hist = next((s for s in left if s["member"] in focus), None)
     if hist and len(hist["y"]) >= 30:
         ys = hist["y"]
         share = round(100 * sum(v < value for v in ys) / len(ys))
-        ys_sorted = sorted(ys)
-        mid = ys_sorted[len(ys_sorted) // 2]
         facts.append(f"Von {hist['x'][0][:4]} bis {hist['x'][-1][:4]} lag der Jahreswert in {share} % "
-                     f"der Jahre unter dem aktuellen Wert; Median {_num(mid)} %.")
+                     f"der Jahre unter dem aktuellen Wert; Median {_num(_quantile(ys, 0.5))} {u}.")
     return facts
+
+
+def history_band(catalog: Catalog, sides: dict) -> dict | None:
+    """Mittlere 50 % und Median der deutschen Jahreswerte (lange Reihe) für die rechte Abbildung."""
+    focus = set(catalog.comparison.get("focus") or [])
+    hist = next((s for s in sides["left"]["series"] if s["member"] in focus and len(s["y"]) >= 30), None)
+    if hist is None:
+        return None
+    ys = hist["y"]
+    return {"p25": round(_quantile(ys, 0.25), 3), "p50": round(_quantile(ys, 0.5), 3),
+            "p75": round(_quantile(ys, 0.75), 3), "from": hist["x"][0][:4], "to": hist["x"][-1][:4],
+            "label": hist["label"]}
+
+
+def extend_long(sides: dict) -> str:
+    """Verlängert die langen Jahresreihen mit Jahresmitteln der aktuellen Reihen (gleiches Land)."""
+    right = {s["member"]: s for s in sides["right"]["series"] if s["member"] and s["y"]}
+    first_ext, last_info = None, ""
+    for s in sides["left"]["series"]:
+        cur = right.get(ISO3_TO_2.get(s["member"] or "", s["member"]))
+        if cur is None or not s["y"]:
+            continue
+        last_year = int(s["x"][-1][:4])
+        by_year: dict[int, list[float]] = {}
+        for x, y in zip(cur["x"], cur["y"]):
+            if int(x[:4]) > last_year:
+                by_year.setdefault(int(x[:4]), []).append(y)
+        if not by_year:
+            continue
+        for year in sorted(by_year):
+            s["x"].append(f"{year}-01-01")
+            s["y"].append(round(sum(by_year[year]) / len(by_year[year]), 6))
+        s["ext_from"] = f"{min(by_year)}-01-01"
+        first_ext = min(first_ext or 9999, min(by_year))
+        y_last = max(by_year)
+        per_year = {"monatlich": 12, "vierteljährlich": 4}.get(cur["frequency"])
+        if per_year and len(by_year[y_last]) < per_year:
+            last_info = f"; {y_last} nur bis {_period(cur['x'][-1], cur['frequency']).rsplit(' ', 1)[0]}"
+    if first_ext is None:
+        return ""
+    return f"Ab {first_ext}: Jahresmittel der aktuellen Werte aus der rechten Abbildung{last_info}."
 
 
 def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
@@ -103,10 +164,16 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                 "years": cfg.get("years") or (None if side == "left" else 5),
                 "y_min": cfg.get("y_min", base.y_min), "y_max": cfg.get("y_max", base.y_max),
                 "kind": base.kind, "decimals": cfg.get("decimals", base.decimals),
+                "note": cfg.get("note", ""),
                 "series": [_item(s, grouped.get(s.id), statuses.get(s.id)) for s in specs],
             }
+        facts = panel_facts(catalog, sides)
+        sides["right"]["history"] = history_band(catalog, sides)
+        ext = extend_long(sides)
+        if ext:
+            sides["left"]["note"] = " ".join(x for x in (sides["left"]["note"], ext) if x)
         out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""),
-                    "text": p.get("text", ""), "facts": panel_facts(catalog, sides), **sides})
+                    "text": p.get("text", ""), "facts": facts, **sides})
     return out
 
 

@@ -128,7 +128,7 @@ def test_repository_catalog_resolves_names_and_comparison():
 
 def test_repository_panels_are_valid():
     cat = load_catalog(ROOT / "series.yaml")
-    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen"]
+    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen", "zinsstruktur", "spreads"]
     for p in cat.panels:
         assert p["left"] and p["right"]
 
@@ -143,6 +143,7 @@ def test_panel_sides_show_same_countries():
             specs = [s for s in cat.series if s.chart_id == p[side]["chart"]]
             m = {iso3.get(s.member, s.member) for s in specs if s.member in cat.panel_members}
             members.append(m)
-        assert "DE" in members[0] and "DE" in members[1], p["id"]
+        if p["id"] != "spreads":  # Abstand zu Deutschland: DE selbst ist null
+            assert "DE" in members[0] and "DE" in members[1], p["id"]
         # JST hat kein Polen; sonst gleich
         assert members[0] - {"PL"} == members[1] - {"PL"}, p["id"]

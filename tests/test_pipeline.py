@@ -107,7 +107,7 @@ def test_panel_facts_rank_and_history():
         comparison = {"focus": ["DE", "DEU"]}
 
     def s(member, label, x, y, freq="monatlich"):
-        return {"member": member, "label": label, "x": x, "y": y, "frequency": freq}
+        return {"member": member, "label": label, "x": x, "y": y, "frequency": freq, "unit": "% gg. Vorjahr"}
 
     sides = {
         "right": {"series": [s("DE", "Deutschland", ["2026-09-01"], [2.0]),
@@ -120,3 +120,26 @@ def test_panel_facts_rank_and_history():
     assert facts[0] == "Zuletzt (September 2026): Deutschland 2,0 %."
     assert facts[1].startswith("Rang 2 von 3 Ländern")
     assert "in 50 % der Jahre unter dem aktuellen Wert" in facts[2]
+
+
+def test_extend_long_appends_annual_means():
+    from konjunkturwolf.dashboard import extend_long
+
+    left = {"member": "DEU", "x": ["2019-01-01", "2020-01-01"], "y": [1.0, 2.0]}
+    right = {"member": "DE", "frequency": "monatlich", "y": [3.0, 5.0, 4.0],
+             "x": ["2020-12-01", "2021-01-01", "2021-02-01"]}
+    note = extend_long({"left": {"series": [left]}, "right": {"series": [right]}})
+    assert left["x"][-1] == "2021-01-01" and left["y"][-1] == 4.5
+    assert note.startswith("Ab 2021") and "2021 nur bis Februar." in note
+
+
+def test_derive_diff():
+    import pandas as pd
+    from konjunkturwolf.fetchers import derive_series
+
+    d = pd.to_datetime(["2020-01-01", "2020-02-01"])
+    a = pd.DataFrame({"date": d, "value": [3.0, 4.0]})
+    b = pd.DataFrame({"date": d[:1], "value": [1.0]})
+    spec = type("S", (), {"derive": {"op": "diff"}})()
+    out = derive_series(spec, a, b)
+    assert out["value"].tolist() == [2.0]
