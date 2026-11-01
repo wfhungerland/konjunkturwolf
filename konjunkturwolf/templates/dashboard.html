@@ -545,6 +545,33 @@ function buildIO(content) {
       colorscale: [[0, "#ffffff"], [0.15, "#C1E5F5"], [0.5, "#0070C0"], [1, "#002060"]], hovertemplate: "%{y} an %{x}: %{z:.1f} %<extra></extra>",
       colorbar: { thickness: 10, ticksuffix: " %" } }],
       Object.assign({}, base, { xaxis: { tickangle: -45, automargin: true }, yaxis: { autorange: "reversed", automargin: true }, margin: { l: 8, r: 8, t: 8, b: 8 } }), cfg);
+  // Streudiagramm: x = 1936, y = heute, 45-Grad-Linie = unverändert, Beschriftung am Punkt
+  const scatter = (a, b, fmt, unit) => el => {
+    const all = a.concat(b), lo = Math.min(...all), hi = Math.max(...all), span = hi - lo, pad = span * 0.12;
+    const r = [lo - pad, hi + pad], mid = (r[0] + r[1]) / 2, gap = span * 0.055;
+    // Beschriftungsspalte rechts der Fläche: global nach y gestapelt, Hinweislinie zum Punkt
+    const notes = [];
+    const idx = b.map((v, i) => i).sort((i, k) => b[i] - b[k]);
+    let last = -Infinity;
+    const ys = [];
+    idx.forEach(i => { const ty = Math.max(b[i], last + gap); ys[i] = ty; last = ty; });
+    const over = Math.max(0, last - (hi + pad));
+    idx.forEach(i => { ys[i] -= over * (ys[i] - (lo - pad)) / ((last - (lo - pad)) || 1); });
+    idx.forEach(i => notes.push({ x: a[i], y: b[i], xref: "x", yref: "y", axref: "x", ayref: "y",
+      ax: r[1] + span * 0.04, ay: ys[i], text: S[i], showarrow: true, arrowhead: 0, arrowwidth: 0.5,
+      arrowcolor: "#BFBFBF", xanchor: "left", yanchor: "middle", font: { family: HS.font, size: TOUCH ? 10 : 11 } }));
+    const corner = (x, y, text, xa, ya) => ({ x, y, xref: "x", yref: "y", text, showarrow: false, xanchor: xa, yanchor: ya,
+      font: { family: HS.font, size: 10, color: "#7F7F7F" } });
+    Plotly.newPlot(el, [
+      { x: r, y: r, type: "scatter", mode: "lines", line: { color: "#BFBFBF", width: 1, dash: "dot" }, hoverinfo: "skip", showlegend: false },
+      { x: a, y: b, text: S, type: "scatter", mode: "markers", marker: { color: PALETTE[0], size: 8 }, showlegend: false,
+        hovertemplate: "%{text}<br>1936: %{x:" + fmt + "}" + unit + "<br>" + Y + ": %{y:" + fmt + "}" + unit + "<extra></extra>" }],
+      Object.assign({}, base, { margin: { l: 44, r: TOUCH ? 120 : 175, t: 12, b: 40 },
+        xaxis: { range: r, gridcolor: HS.gridV, zeroline: false, title: { text: "1936", font: F } },
+        yaxis: { range: r, gridcolor: HS.gridH, zeroline: false, side: "left", title: { text: Y, font: F } },
+        annotations: notes.concat([corner(r[1], r[1], "unverändert", "right", "bottom"),
+          corner(r[0], r[1], "höher als 1936", "left", "top"), corner(r[1], r[0], "niedriger als 1936", "right", "bottom")]) }), cfg);
+  };
   const wavg = (m, w) => m.reduce((s, v, i) => s + v * w[i], 0) / w.reduce((s, v) => s + v, 0);
   const avg = a => a.reduce((s, v) => s + v, 0) / a.length;
   const sec = document.createElement("section"); sec.id = "verflechtung";
@@ -556,8 +583,8 @@ function buildIO(content) {
     + `<ul class="facts"><li>Mittlerer Multiplikator (gewichtet mit der Produktion): 1936 ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}, ${Y} ${num1(wavg(io.now.multiplier, io.now.output_share))}.</li>`
     + `<li>Mittlere Vorleistungsquote: 1936 ${num1(avg(io.y1936.input_share))} %, ${Y} ${num1(avg(io.now.input_share))} %.</li></ul>`;
   const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
-  pair.appendChild(ioCard("Produktionsmultiplikator je Sektor", "Produktion je Einheit Endnachfrage, Leontief, nur inländische Vorleistungen", bars(io.y1936.multiplier, io.now.multiplier, ".2f"), io));
-  pair.appendChild(ioCard("Vorleistungsquote je Sektor, %", "Inländische Vorleistungen in % der Bruttoproduktion", bars(io.y1936.input_share, io.now.input_share, ".1f"), io));
+  pair.appendChild(ioCard("Produktionsmultiplikator je Sektor", `Produktion je Einheit Endnachfrage (Leontief); x-Achse 1936, y-Achse ${Y}`, scatter(io.y1936.multiplier, io.now.multiplier, ".2f", ""), io));
+  pair.appendChild(ioCard("Vorleistungsquote je Sektor, %", `Inländische Vorleistungen in % der Bruttoproduktion; x-Achse 1936, y-Achse ${Y}`, scatter(io.y1936.input_share, io.now.input_share, ".1f", " %"), io));
   pair.appendChild(ioCard("Lieferverflechtung 1936, Inputkoeffizienten in %", "Zeile liefert an Spalte, je 100 Einheiten Produktion der Spalte", heat(io.y1936.A), io));
   pair.appendChild(ioCard(`Lieferverflechtung ${Y}, Inputkoeffizienten in %`, "Zeile liefert an Spalte, je 100 Einheiten Produktion der Spalte", heat(io.now.A), io));
   pair.appendChild(ioCard("Anteil an der Bruttoproduktion, %", "12 gemeinsame Sektoren", bars(io.y1936.output_share, io.now.output_share, ".1f"), io));
