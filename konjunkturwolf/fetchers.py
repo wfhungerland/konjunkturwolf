@@ -49,13 +49,23 @@ def _since(df: pd.DataFrame, spec: SeriesSpec) -> pd.DataFrame:
     return df[df["date"] >= pd.Timestamp(spec.start)].reset_index(drop=True)
 
 
+def monthly_mean(df: pd.DataFrame) -> pd.DataFrame:
+    """Tageswerte zu Monatsmitteln (Datum = Monatserster)."""
+    out = df.assign(date=df["date"].dt.to_period("M").dt.to_timestamp()).groupby("date", as_index=False)["value"].mean()
+    return out
+
+
 def fetch_ecb(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     flow, _, key = spec.key.partition("/")
+    daily = spec.params.get("aggregate") == "monthly_mean"
     resp = client.get(
         f"{ECB_BASE}/{flow}/{key}",
-        params={"startPeriod": sdmx_start(spec), "format": "csvdata", "detail": "dataonly"},
+        params={"startPeriod": spec.start if daily else sdmx_start(spec), "format": "csvdata", "detail": "dataonly"},
     )
-    return FetchResult(_since(parse_sdmx(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
+    df = parse_sdmx(resp.text)
+    if daily:
+        df = monthly_mean(df)
+    return FetchResult(_since(df, spec), resp.url, resp.retrieved_at, resp.from_cache)
 
 
 def fetch_bundesbank(spec: SeriesSpec, client: HttpClient) -> FetchResult:

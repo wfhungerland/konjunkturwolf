@@ -248,3 +248,13 @@ def test_genesis_value_unit_selects_index():
         parse_genesis_ffcsv(text, value_variable="PRE001")
     df = parse_genesis_ffcsv(text, value_variable="PRE001", value_unit="2021=100")
     assert df["value"].tolist() == [89.7, 90.0]
+
+
+def test_monthly_mean_from_daily():
+    import pandas as pd
+    from konjunkturwolf.fetchers import monthly_mean
+
+    df = pd.DataFrame({"date": pd.to_datetime(["2024-01-02", "2024-01-31", "2024-02-01"]), "value": [1.0, 3.0, 5.0]})
+    out = monthly_mean(df)
+    assert out["date"].dt.strftime("%Y-%m-%d").tolist() == ["2024-01-01", "2024-02-01"]
+    assert out["value"].tolist() == [2.0, 5.0]
