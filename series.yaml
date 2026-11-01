@@ -71,18 +71,22 @@ geo_names:
 panels:
   - id: inflation
     title: Inflation
+    question: "Ist die Inflation heute hoch, gemessen an 150 Jahren und an den Nachbarn? Abb. 1 zeigt den langen Rand, Abb. 2 die letzten fünf Jahre."
     left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr", decimals: 1}
     right: {chart: eu_hicp, title: "Inflation aktuell (HVPI), % gg. Vorjahresmonat", decimals: 1}
   - id: wachstum
     title: Wachstum
+    question: "Wächst Deutschland heute langsamer als früher und als die Nachbarn? Dazu Abb. 3 und 4."
     left: {chart: lang_growth, title: "Reales BIP seit 1870, % gg. Vorjahr"}
     right: {chart: eu_gdp, title: "Reales BIP aktuell, % gg. Vorjahresquartal", decimals: 1}
   - id: arbeit
     title: Arbeitslosigkeit
+    question: "Ist die Arbeitslosigkeit im langen Vergleich niedrig? Dazu Abb. 5 und 6."
     left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %"}
     right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
   - id: zinsen
     title: Zinsen
+    question: "Sind die Zinsen nach der Nullzinsphase wieder normal? Dazu Abb. 7 und 8."
     left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870, % p. a."}
     right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell, % p. a.", decimals: 1}
 

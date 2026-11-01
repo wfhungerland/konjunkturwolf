@@ -30,6 +30,51 @@ def _item(spec, g, st) -> dict:
     return item
 
 
+MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
+          "September", "Oktober", "November", "Dezember"]
+
+
+def _num(v: float) -> str:
+    return f"{v:.1f}".replace(".", ",").replace("-", "−")
+
+
+def _period(date: str, freq: str) -> str:
+    y, m = int(date[:4]), int(date[5:7])
+    if freq == "vierteljährlich":
+        return f"Q{(m - 1) // 3 + 1} {y}"
+    if freq == "jährlich":
+        return str(y)
+    return f"{MONTHS[m - 1]} {y}"
+
+
+def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
+    """Kurze Einordnung aus den Daten: aktueller Wert DE, Rang, Lage zur Geschichte."""
+    focus = set(catalog.comparison.get("focus") or [])
+    right = [s for s in sides["right"]["series"] if s["y"]]
+    left = [s for s in sides["left"]["series"] if s["y"]]
+    de = next((s for s in right if s["member"] in focus), None)
+    if de is None:
+        return []
+    date, value = de["x"][-1], de["y"][-1]
+    facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} %."]
+    peers = {s["label"]: dict(zip(s["x"], s["y"]))[date]
+             for s in right if s is not de and date in s["x"]}
+    if peers:
+        rank = 1 + sum(v > value for v in peers.values())
+        lo, hi = min(peers, key=peers.get), max(peers, key=peers.get)
+        facts.append(f"Rang {rank} von {len(peers) + 1} Ländern (1 = höchster Wert); "
+                     f"Spanne von {lo} {_num(peers[lo])} % bis {hi} {_num(peers[hi])} %.")
+    hist = next((s for s in left if s["member"] in focus), None)
+    if hist and len(hist["y"]) >= 30:
+        ys = hist["y"]
+        share = round(100 * sum(v < value for v in ys) / len(ys))
+        ys_sorted = sorted(ys)
+        mid = ys_sorted[len(ys_sorted) // 2]
+        facts.append(f"Seit {hist['x'][0][:4]} lag der Jahreswert in {share} % der Jahre darunter; "
+                     f"Median {_num(mid)} %.")
+    return facts
+
+
 def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
     """Kernindikatoren: je Panel links der lange Rand, rechts der aktuelle Rand."""
     obs = result.observations
@@ -58,7 +103,8 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                 "kind": base.kind, "decimals": cfg.get("decimals", base.decimals),
                 "series": [_item(s, grouped.get(s.id), statuses.get(s.id)) for s in specs],
             }
-        out.append({"id": p["id"], "title": p["title"], "text": p.get("text", ""), **sides})
+        out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""),
+                    "text": p.get("text", ""), "facts": panel_facts(catalog, sides), **sides})
     return out
 
 
