@@ -1,44 +1,11 @@
 {
- "started_at": "2026-11-01T10:08:16Z",
- "finished_at": "2026-11-01T10:09:22Z",
+ "started_at": "2026-11-01T10:11:41Z",
+ "finished_at": "2026-11-01T10:12:54Z",
  "counts": {
   "ok": 182,
   "failed": 2
  },
- "outdated": [
-  "de_cpi_land_01",
-  "de_cpi_land_02",
-  "de_cpi_land_03",
-  "de_cpi_land_04",
-  "de_cpi_land_05",
-  "de_cpi_land_06",
-  "de_cpi_land_07",
-  "de_cpi_land_08",
-  "de_cpi_land_09",
-  "de_cpi_land_10",
-  "de_cpi_land_11",
-  "de_cpi_land_12",
-  "de_cpi_land_13",
-  "de_cpi_land_14",
-  "de_cpi_land_15",
-  "de_cpi_land_16",
-  "de_cpi_land_yoy_01",
-  "de_cpi_land_yoy_02",
-  "de_cpi_land_yoy_03",
-  "de_cpi_land_yoy_04",
-  "de_cpi_land_yoy_05",
-  "de_cpi_land_yoy_06",
-  "de_cpi_land_yoy_07",
-  "de_cpi_land_yoy_08",
-  "de_cpi_land_yoy_09",
-  "de_cpi_land_yoy_10",
-  "de_cpi_land_yoy_11",
-  "de_cpi_land_yoy_12",
-  "de_cpi_land_yoy_13",
-  "de_cpi_land_yoy_14",
-  "de_cpi_land_yoy_15",
-  "de_cpi_land_yoy_16"
- ],
+ "outdated": [],
  "series": [
   {
    "series_id": "de_gdp_qoq",
@@ -47,7 +14,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 0.2,
-   "retrieved_at": "2026-11-01T10:08:17Z",
+   "retrieved_at": "2026-11-01T10:11:42Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=B1GQ&unit=CLV_PCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -59,7 +26,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 1.2,
-   "retrieved_at": "2026-11-01T10:08:18Z",
+   "retrieved_at": "2026-11-01T10:11:43Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -71,7 +38,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 126.4,
-   "retrieved_at": "2026-11-01T10:08:20Z",
+   "retrieved_at": "2026-11-01T10:11:44Z",
    "api_url": "https://api.statistiken.bundesbank.de/rest/data/BBDP1/M.DE.N.VPI.C.A00000.I20.A?startPeriod=2000-01&detail=dataonly",
    "message": "",
    "outdated": false
@@ -83,7 +50,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 2.8,
-   "retrieved_at": "2026-11-01T10:08:20Z",
+   "retrieved_at": "2026-11-01T10:11:45Z",
    "api_url": "https://api.statistiken.bundesbank.de/rest/data/BBDP1/M.DE.N.VPI.C.A00000.VGJ.LV?startPeriod=2000-01&detail=dataonly",
    "message": "",
    "outdated": false
@@ -95,7 +62,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 159.7,
-   "retrieved_at": "2026-11-01T10:08:21Z",
+   "retrieved_at": "2026-11-01T10:11:45Z",
    "api_url": "https://api.statistiken.bundesbank.de/rest/data/BBDP1/M.DE.N.VPI.C.NRGY00.I20.A?startPeriod=2000-01&detail=dataonly",
    "message": "",
    "outdated": false
@@ -107,7 +74,7 @@
    "first": "2010-01",
    "last": "2026-10",
    "last_value": 122.1,
-   "retrieved_at": "2026-11-01T10:08:21Z",
+   "retrieved_at": "2026-11-01T10:11:46Z",
    "api_url": "https://api.statistiken.bundesbank.de/rest/data/BBDP1/M.DE.Y.VPI.C.SERV00.I20.A?startPeriod=2000-01&detail=dataonly",
    "message": "",
    "outdated": false
@@ -115,194 +82,194 @@
   {
    "series_id": "de_cpi_land_01",
    "status": "ok",
-   "n_obs": 11,
+   "n_obs": 141,
    "first": "2015-01",
-   "last": "2025-01",
-   "last_value": 120.9,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 125.5,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_02",
    "status": "ok",
-   "n_obs": 11,
+   "n_obs": 141,
    "first": "2015-01",
-   "last": "2025-01",
-   "last_value": 119.9,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 124.8,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_03",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.8,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 126.5,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_04",
    "status": "ok",
-   "n_obs": 21,
+   "n_obs": 261,
    "first": "2005-01",
-   "last": "2025-01",
-   "last_value": 123.6,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 128.4,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_05",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.6,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 126.2,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_06",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.1,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 125.8,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_07",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.5,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 126.1,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_08",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.8,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 126.0,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_09",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 122.4,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 127.1,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_10",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.3,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 126.5,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_11",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 121.4,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 126.4,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_12",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 123.7,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 128.7,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_13",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 122.7,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 127.6,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_14",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 123.6,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 128.4,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_15",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 123.5,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 128.4,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_16",
    "status": "ok",
-   "n_obs": 26,
+   "n_obs": 321,
    "first": "2000-01",
-   "last": "2025-01",
-   "last_value": 122.5,
-   "retrieved_at": "2026-11-01T10:08:25Z",
-   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0010&format=ffcsv",
-   "message": "veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "last": "2026-09",
+   "last_value": 127.3,
+   "retrieved_at": "2026-11-01T10:11:52Z",
+   "api_url": "https://genesis.destatis.de/genesisWS/rest/2020/data/tablefile?name=61111-0011&format=ffcsv",
+   "message": "",
+   "outdated": false
   },
   {
    "series_id": "de_perceived_inflation_de",
@@ -311,7 +278,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 52.6,
-   "retrieved_at": "2026-11-01T10:08:25Z",
+   "retrieved_at": "2026-11-01T10:11:53Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ei_bsco_m?format=JSON&lang=en&geo=DE&indic=BS-PT-LY&s_adj=SA&unit=BAL",
    "message": "",
    "outdated": false
@@ -323,7 +290,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 58.9,
-   "retrieved_at": "2026-11-01T10:08:26Z",
+   "retrieved_at": "2026-11-01T10:11:54Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ei_bsco_m?format=JSON&lang=en&geo=EU27_2020&indic=BS-PT-LY&s_adj=SA&unit=BAL",
    "message": "",
    "outdated": false
@@ -335,7 +302,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 41.0,
-   "retrieved_at": "2026-11-01T10:08:26Z",
+   "retrieved_at": "2026-11-01T10:11:54Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ei_bsco_m?format=JSON&lang=en&geo=DE&indic=BS-PT-NY&s_adj=SA&unit=BAL",
    "message": "",
    "outdated": false
@@ -347,7 +314,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 33.6,
-   "retrieved_at": "2026-11-01T10:08:27Z",
+   "retrieved_at": "2026-11-01T10:11:55Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ei_bsco_m?format=JSON&lang=en&geo=EU27_2020&indic=BS-PT-NY&s_adj=SA&unit=BAL",
    "message": "",
    "outdated": false
@@ -359,7 +326,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.3,
-   "retrieved_at": "2026-11-01T10:08:27Z",
+   "retrieved_at": "2026-11-01T10:11:55Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=DE&unit=RCH_A&coicop18=TOTAL",
    "message": "",
    "outdated": false
@@ -371,7 +338,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 2.5,
-   "retrieved_at": "2026-11-01T10:08:28Z",
+   "retrieved_at": "2026-11-01T10:11:56Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=DE&unit=RCH_A&coicop18=TOT_X_NRG_FOOD",
    "message": "",
    "outdated": false
@@ -383,7 +350,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": 0.07,
-   "retrieved_at": "2026-11-01T10:08:28Z",
+   "retrieved_at": "2026-11-01T10:11:56Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=P31_S14_S15&unit=CON_PPCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -395,7 +362,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": 0.03,
-   "retrieved_at": "2026-11-01T10:08:29Z",
+   "retrieved_at": "2026-11-01T10:11:57Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=P3_S13&unit=CON_PPCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -407,7 +374,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": -0.04,
-   "retrieved_at": "2026-11-01T10:08:29Z",
+   "retrieved_at": "2026-11-01T10:11:57Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=P51G&unit=CON_PPCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -419,7 +386,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": 0.07,
-   "retrieved_at": "2026-11-01T10:08:29Z",
+   "retrieved_at": "2026-11-01T10:11:58Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=P52_P53&unit=CON_PPCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -431,7 +398,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": 0.79,
-   "retrieved_at": "2026-11-01T10:08:30Z",
+   "retrieved_at": "2026-11-01T10:11:58Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=P6&unit=CON_PPCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -443,7 +410,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": -0.59,
-   "retrieved_at": "2026-11-01T10:08:31Z",
+   "retrieved_at": "2026-11-01T10:11:59Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=P7&unit=CON_PPCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -455,7 +422,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 0.2,
-   "retrieved_at": "2026-11-01T10:08:17Z",
+   "retrieved_at": "2026-11-01T10:11:42Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=B1GQ&unit=CLV_PCH_PRE&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -467,7 +434,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 4.1,
-   "retrieved_at": "2026-11-01T10:08:31Z",
+   "retrieved_at": "2026-11-01T10:11:59Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=DE&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -479,7 +446,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 45639.0,
-   "retrieved_at": "2026-11-01T10:08:32Z",
+   "retrieved_at": "2026-11-01T10:12:00Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_pe?format=JSON&lang=en&geo=DE&na_item=EMP_DC&unit=THS_PER&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -491,7 +458,7 @@
    "first": "2000-01",
    "last": "2026-08",
    "last_value": 90.7,
-   "retrieved_at": "2026-11-01T10:08:32Z",
+   "retrieved_at": "2026-11-01T10:12:00Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inpr_m?format=JSON&lang=en&geo=DE&indic_bt=PRD&nace_r2=B-D&s_adj=SCA&unit=I21",
    "message": "",
    "outdated": false
@@ -515,7 +482,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.3618,
-   "retrieved_at": "2026-11-01T10:08:36Z",
+   "retrieved_at": "2026-11-01T10:12:04Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=DE&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -527,7 +494,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.1156,
-   "retrieved_at": "2026-11-01T10:08:37Z",
+   "retrieved_at": "2026-11-01T10:12:05Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_202?format=JSON&lang=en&geo=DE&nrg_cons=GJ20-199&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -539,7 +506,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.2058,
-   "retrieved_at": "2026-11-01T10:08:37Z",
+   "retrieved_at": "2026-11-01T10:12:05Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=DE&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -551,7 +518,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.0682,
-   "retrieved_at": "2026-11-01T10:08:38Z",
+   "retrieved_at": "2026-11-01T10:12:06Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_203?format=JSON&lang=en&geo=DE&nrg_cons=GJ10000-99999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -563,7 +530,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 134.9,
-   "retrieved_at": "2026-11-01T10:08:38Z",
+   "retrieved_at": "2026-11-01T10:12:06Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inppd_m?format=JSON&lang=en&geo=DE&indic_bt=PRC_PRR_DOM&nace_r2=B-E36&s_adj=NSA&unit=I21",
    "message": "",
    "outdated": false
@@ -575,7 +542,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 162.2,
-   "retrieved_at": "2026-11-01T10:08:39Z",
+   "retrieved_at": "2026-11-01T10:12:07Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inppd_m?format=JSON&lang=en&geo=DE&indic_bt=PRC_PRR_DOM&nace_r2=MIG_NRG&s_adj=NSA&unit=I21",
    "message": "",
    "outdated": false
@@ -599,7 +566,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 13.4,
-   "retrieved_at": "2026-11-01T10:08:50Z",
+   "retrieved_at": "2026-11-01T10:12:21Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=DE&unit=RCH_A&coicop18=NRG",
    "message": "",
    "outdated": false
@@ -611,7 +578,7 @@
    "first": "2000",
    "last": "2024",
    "last_value": 252583.748,
-   "retrieved_at": "2026-11-01T10:08:51Z",
+   "retrieved_at": "2026-11-01T10:12:21Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_bal_c?format=JSON&lang=en&geo=DE&nrg_bal=GAE&siec=TOTAL&unit=KTOE",
    "message": "",
    "outdated": false
@@ -623,7 +590,7 @@
    "first": "2000",
    "last": "2024",
    "last_value": 177745.064,
-   "retrieved_at": "2026-11-01T10:08:51Z",
+   "retrieved_at": "2026-11-01T10:12:22Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_bal_c?format=JSON&lang=en&geo=DE&nrg_bal=FC_E&siec=TOTAL&unit=KTOE",
    "message": "",
    "outdated": false
@@ -635,7 +602,7 @@
    "first": "2000-01-01",
    "last": "2026-10-31",
    "last_value": 2.5,
-   "retrieved_at": "2026-11-01T10:08:53Z",
+   "retrieved_at": "2026-11-01T10:12:23Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/FM/D.U2.EUR.4F.KR.DFR.LEV?startPeriod=2000-01-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -647,7 +614,7 @@
    "first": "2000-01-01",
    "last": "2026-10-31",
    "last_value": 2.65,
-   "retrieved_at": "2026-11-01T10:08:54Z",
+   "retrieved_at": "2026-11-01T10:12:25Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/FM/D.U2.EUR.4F.KR.MRR_FR.LEV?startPeriod=2000-01-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -659,7 +626,7 @@
    "first": "2000-01-01",
    "last": "2026-10-31",
    "last_value": 2.9,
-   "retrieved_at": "2026-11-01T10:08:54Z",
+   "retrieved_at": "2026-11-01T10:12:26Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/FM/D.U2.EUR.4F.KR.MLFR.LEV?startPeriod=2000-01-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -671,7 +638,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.64,
-   "retrieved_at": "2026-11-01T10:08:55Z",
+   "retrieved_at": "2026-11-01T10:12:27Z",
    "api_url": "https://api.statistiken.bundesbank.de/rest/data/BBSIS/M.I.ZST.ZI.EUR.S1311.B.A604.R10XX.R.A.A._Z._Z.A?startPeriod=2000-01&detail=dataonly",
    "message": "",
    "outdated": false
@@ -683,7 +650,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.24,
-   "retrieved_at": "2026-11-01T10:08:55Z",
+   "retrieved_at": "2026-11-01T10:12:28Z",
    "api_url": "https://api.statistiken.bundesbank.de/rest/data/BBSIS/M.I.ZST.ZI.EUR.S1311.B.A604.R02XX.R.A.A._Z._Z.A?startPeriod=2000-01&detail=dataonly",
    "message": "",
    "outdated": false
@@ -695,7 +662,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.473,
-   "retrieved_at": "2026-11-01T10:08:56Z",
+   "retrieved_at": "2026-11-01T10:12:28Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/IRS/M.DE.L.L40.CI.0000.EUR.N.Z?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -707,7 +674,7 @@
    "first": "2003-01",
    "last": "2026-09",
    "last_value": 1388706.0,
-   "retrieved_at": "2026-11-01T10:08:56Z",
+   "retrieved_at": "2026-11-01T10:12:29Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.DE.N.A.A20.A.1.U2.2240.Z01.E?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -719,7 +686,7 @@
    "first": "2003-01",
    "last": "2026-09",
    "last_value": 2130580.0,
-   "retrieved_at": "2026-11-01T10:08:57Z",
+   "retrieved_at": "2026-11-01T10:12:29Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.DE.N.A.A20.A.1.U2.2250.Z01.E?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -731,7 +698,7 @@
    "first": "2004-01",
    "last": "2026-09",
    "last_value": 2.2472600238603535,
-   "retrieved_at": "2026-11-01T10:08:57Z",
+   "retrieved_at": "2026-11-01T10:12:30Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.DE.N.A.A20.A.I.U2.2240.Z01.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -743,7 +710,7 @@
    "first": "2004-01",
    "last": "2026-09",
    "last_value": 2.1312375240719827,
-   "retrieved_at": "2026-11-01T10:08:58Z",
+   "retrieved_at": "2026-11-01T10:12:30Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.DE.N.A.A20.A.I.U2.2250.Z01.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -755,7 +722,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 1.1201590909090908,
-   "retrieved_at": "2026-11-01T10:08:58Z",
+   "retrieved_at": "2026-11-01T10:12:31Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/EXR/M.USD.EUR.SP00.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -767,7 +734,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 0.8428213636363636,
-   "retrieved_at": "2026-11-01T10:08:59Z",
+   "retrieved_at": "2026-11-01T10:12:31Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/EXR/M.GBP.EUR.SP00.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -779,7 +746,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 0.9281909090909093,
-   "retrieved_at": "2026-11-01T10:08:59Z",
+   "retrieved_at": "2026-11-01T10:12:32Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/EXR/M.CHF.EUR.SP00.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -791,7 +758,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 176.91136363636363,
-   "retrieved_at": "2026-11-01T10:09:00Z",
+   "retrieved_at": "2026-11-01T10:12:32Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/EXR/M.JPY.EUR.SP00.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -803,7 +770,7 @@
    "first": "2000-01",
    "last": "2026-10",
    "last_value": 7.488286363636363,
-   "retrieved_at": "2026-11-01T10:09:00Z",
+   "retrieved_at": "2026-11-01T10:12:33Z",
    "api_url": "https://data-api.ecb.europa.eu/service/data/EXR/M.CNY.EUR.SP00.A?startPeriod=2000-01&format=csvdata&detail=dataonly",
    "message": "",
    "outdated": false
@@ -815,7 +782,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 1.2,
-   "retrieved_at": "2026-11-01T10:08:18Z",
+   "retrieved_at": "2026-11-01T10:11:43Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=DE&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -827,7 +794,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": -0.1,
-   "retrieved_at": "2026-11-01T10:09:01Z",
+   "retrieved_at": "2026-11-01T10:12:33Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=FR&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -839,7 +806,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 0.8,
-   "retrieved_at": "2026-11-01T10:09:01Z",
+   "retrieved_at": "2026-11-01T10:12:34Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=IT&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -851,7 +818,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 2.7,
-   "retrieved_at": "2026-11-01T10:09:02Z",
+   "retrieved_at": "2026-11-01T10:12:34Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=ES&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -863,7 +830,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 2.1,
-   "retrieved_at": "2026-11-01T10:09:02Z",
+   "retrieved_at": "2026-11-01T10:12:35Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=NL&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -875,7 +842,7 @@
    "first": "2000-Q1",
    "last": "2026-Q2",
    "last_value": 4.0,
-   "retrieved_at": "2026-11-01T10:09:03Z",
+   "retrieved_at": "2026-11-01T10:12:35Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=PL&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -887,7 +854,7 @@
    "first": "2000-Q1",
    "last": "2026-Q3",
    "last_value": 1.5,
-   "retrieved_at": "2026-11-01T10:09:03Z",
+   "retrieved_at": "2026-11-01T10:12:36Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/namq_10_gdp?format=JSON&lang=en&geo=EU27_2020&na_item=B1GQ&unit=CLV_PCH_SM&s_adj=SCA",
    "message": "",
    "outdated": false
@@ -899,7 +866,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.3,
-   "retrieved_at": "2026-11-01T10:08:27Z",
+   "retrieved_at": "2026-11-01T10:11:55Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=DE&unit=RCH_A&coicop18=TOTAL",
    "message": "",
    "outdated": false
@@ -911,7 +878,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.4,
-   "retrieved_at": "2026-11-01T10:09:03Z",
+   "retrieved_at": "2026-11-01T10:12:36Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=FR&coicop18=TOTAL&unit=RCH_A",
    "message": "",
    "outdated": false
@@ -923,7 +890,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 4.2,
-   "retrieved_at": "2026-11-01T10:09:04Z",
+   "retrieved_at": "2026-11-01T10:12:36Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=IT&coicop18=TOTAL&unit=RCH_A",
    "message": "",
    "outdated": false
@@ -935,7 +902,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 5.0,
-   "retrieved_at": "2026-11-01T10:09:04Z",
+   "retrieved_at": "2026-11-01T10:12:37Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=ES&coicop18=TOTAL&unit=RCH_A",
    "message": "",
    "outdated": false
@@ -947,7 +914,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.0,
-   "retrieved_at": "2026-11-01T10:09:05Z",
+   "retrieved_at": "2026-11-01T10:12:37Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=NL&coicop18=TOTAL&unit=RCH_A",
    "message": "",
    "outdated": false
@@ -959,7 +926,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 4.0,
-   "retrieved_at": "2026-11-01T10:09:05Z",
+   "retrieved_at": "2026-11-01T10:12:38Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=PL&coicop18=TOTAL&unit=RCH_A",
    "message": "",
    "outdated": false
@@ -971,7 +938,7 @@
    "first": "2000-12",
    "last": "2026-09",
    "last_value": 3.8,
-   "retrieved_at": "2026-11-01T10:09:06Z",
+   "retrieved_at": "2026-11-01T10:12:38Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?format=JSON&lang=en&geo=EU27_2020&coicop18=TOTAL&unit=RCH_A",
    "message": "",
    "outdated": false
@@ -983,7 +950,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 4.1,
-   "retrieved_at": "2026-11-01T10:08:31Z",
+   "retrieved_at": "2026-11-01T10:11:59Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=DE&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -995,7 +962,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 8.5,
-   "retrieved_at": "2026-11-01T10:09:06Z",
+   "retrieved_at": "2026-11-01T10:12:39Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=FR&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -1007,7 +974,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 6.3,
-   "retrieved_at": "2026-11-01T10:09:07Z",
+   "retrieved_at": "2026-11-01T10:12:40Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=IT&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -1019,7 +986,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 10.3,
-   "retrieved_at": "2026-11-01T10:09:07Z",
+   "retrieved_at": "2026-11-01T10:12:40Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=ES&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -1031,7 +998,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 4.0,
-   "retrieved_at": "2026-11-01T10:09:08Z",
+   "retrieved_at": "2026-11-01T10:12:41Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=NL&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -1043,7 +1010,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 3.4,
-   "retrieved_at": "2026-11-01T10:09:08Z",
+   "retrieved_at": "2026-11-01T10:12:41Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=PL&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -1055,7 +1022,7 @@
    "first": "2000-01",
    "last": "2026-09",
    "last_value": 6.2,
-   "retrieved_at": "2026-11-01T10:09:09Z",
+   "retrieved_at": "2026-11-01T10:12:42Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m?format=JSON&lang=en&geo=EU27_2020&s_adj=SA&age=TOTAL&sex=T&unit=PC_ACT",
    "message": "",
    "outdated": false
@@ -1067,7 +1034,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.3618,
-   "retrieved_at": "2026-11-01T10:08:36Z",
+   "retrieved_at": "2026-11-01T10:12:04Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=DE&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1079,7 +1046,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.2485,
-   "retrieved_at": "2026-11-01T10:09:09Z",
+   "retrieved_at": "2026-11-01T10:12:42Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=FR&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1091,7 +1058,7 @@
    "first": "2008-H1",
    "last": "2026-H1",
    "last_value": 0.3142,
-   "retrieved_at": "2026-11-01T10:09:10Z",
+   "retrieved_at": "2026-11-01T10:12:42Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=IT&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1103,7 +1070,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.2509,
-   "retrieved_at": "2026-11-01T10:09:10Z",
+   "retrieved_at": "2026-11-01T10:12:43Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=ES&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1115,7 +1082,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.244,
-   "retrieved_at": "2026-11-01T10:09:11Z",
+   "retrieved_at": "2026-11-01T10:12:44Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=NL&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1127,7 +1094,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.2999,
-   "retrieved_at": "2026-11-01T10:09:11Z",
+   "retrieved_at": "2026-11-01T10:12:44Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=PL&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1139,7 +1106,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.2832,
-   "retrieved_at": "2026-11-01T10:09:12Z",
+   "retrieved_at": "2026-11-01T10:12:45Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204?format=JSON&lang=en&geo=EU27_2020&nrg_cons=KWH2500-4999&unit=KWH&tax=I_TAX&currency=EUR",
    "message": "",
    "outdated": false
@@ -1151,7 +1118,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.2058,
-   "retrieved_at": "2026-11-01T10:08:37Z",
+   "retrieved_at": "2026-11-01T10:12:05Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=DE&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1163,7 +1130,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.1567,
-   "retrieved_at": "2026-11-01T10:09:12Z",
+   "retrieved_at": "2026-11-01T10:12:45Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=FR&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1175,7 +1142,7 @@
    "first": "2008-H1",
    "last": "2026-H1",
    "last_value": 0.2253,
-   "retrieved_at": "2026-11-01T10:09:13Z",
+   "retrieved_at": "2026-11-01T10:12:46Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=IT&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1187,7 +1154,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.1336,
-   "retrieved_at": "2026-11-01T10:09:13Z",
+   "retrieved_at": "2026-11-01T10:12:46Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=ES&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1199,7 +1166,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.2027,
-   "retrieved_at": "2026-11-01T10:09:14Z",
+   "retrieved_at": "2026-11-01T10:12:47Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=NL&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1211,7 +1178,7 @@
    "first": "2007-H2",
    "last": "2026-H1",
    "last_value": 0.207,
-   "retrieved_at": "2026-11-01T10:09:14Z",
+   "retrieved_at": "2026-11-01T10:12:47Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=PL&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1223,7 +1190,7 @@
    "first": "2007-H1",
    "last": "2026-H1",
    "last_value": 0.18,
-   "retrieved_at": "2026-11-01T10:09:14Z",
+   "retrieved_at": "2026-11-01T10:12:48Z",
    "api_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205?format=JSON&lang=en&geo=EU27_2020&nrg_cons=MWH500-1999&unit=KWH&tax=X_VAT&currency=EUR",
    "message": "",
    "outdated": false
@@ -1235,7 +1202,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.2643213272094727,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1247,7 +1214,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 0.9260038137435913,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1259,7 +1226,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 1.634761929512024,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1271,7 +1238,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.6913695335388184,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1283,7 +1250,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.9831020832061768,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1295,7 +1262,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 3.8205461502075195,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1307,7 +1274,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 3.3679885864257812,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1319,7 +1286,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.7058122158050537,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1331,7 +1298,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 0.3448109989679704,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1343,7 +1310,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 0.9393776788494179,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1355,7 +1322,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 0.5396023954362228,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1367,7 +1334,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.8250213262184687,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1379,7 +1346,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 1.7947264698407128,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1391,7 +1358,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 3.6319276377497323,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1403,7 +1370,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 1.3827087260719795,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1415,7 +1382,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.1063487848651086,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1427,7 +1394,7 @@
    "first": "1871",
    "last": "2025",
    "last_value": 63.49655532836914,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1439,7 +1406,7 @@
    "first": "1880",
    "last": "2025",
    "last_value": 116.15865325927734,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1451,7 +1418,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 137.10455322265625,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1463,7 +1430,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 100.65628814697266,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1475,7 +1442,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 44.38827133178711,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1487,7 +1454,7 @@
    "first": "1986",
    "last": "2025",
    "last_value": 59.68178176879883,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1499,7 +1466,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 102.31570434570312,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1511,7 +1478,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 123.8863525390625,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1523,7 +1490,7 @@
    "first": "1887",
    "last": "2025",
    "last_value": 3.766666889190674,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1535,7 +1502,7 @@
    "first": "1894",
    "last": "2025",
    "last_value": 7.608333110809326,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1547,7 +1514,7 @@
    "first": "1919",
    "last": "2025",
    "last_value": 6.050000190734863,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1559,7 +1526,7 @@
    "first": "1933",
    "last": "2025",
    "last_value": 10.507499694824219,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1571,7 +1538,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 3.876328945159912,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1583,7 +1550,7 @@
    "first": "1990",
    "last": "2025",
    "last_value": 3.0787429809570312,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1595,7 +1562,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 4.849999904632568,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1607,7 +1574,7 @@
    "first": "1890",
    "last": "2025",
    "last_value": 4.279167175292969,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1619,7 +1586,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 4.508096218109131,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1631,7 +1598,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": -0.31314945220947266,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1643,7 +1610,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 1.1093432903289795,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1655,7 +1622,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 2.92777419090271,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1667,7 +1634,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": 7.8531575202941895,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1679,7 +1646,7 @@
    "first": "1980",
    "last": "2025",
    "last_value": -0.8589118123054504,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1691,7 +1658,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": -2.4488465785980225,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1703,7 +1670,7 @@
    "first": "1870",
    "last": "2025",
    "last_value": -3.6278767585754395,
-   "retrieved_at": "2026-11-01T10:09:20Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.globalmacrodata.com",
    "message": "",
    "outdated": false
@@ -1715,7 +1682,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.511024,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1727,7 +1694,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.1452667,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1739,7 +1706,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 1.167916667,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1751,7 +1718,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 0.375,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1763,7 +1730,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.3766667,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1775,7 +1742,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 0.7393,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1787,7 +1754,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 0.8941666,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1799,7 +1766,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.460833333333333,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1811,7 +1778,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.5716440491593455,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1823,7 +1790,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.2048333333,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1835,7 +1802,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.364166666666667,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1847,7 +1814,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": -0.42515,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1859,7 +1826,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 0.0,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1871,7 +1838,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 0.37,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1883,7 +1850,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 88.87820855456177,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1895,7 +1862,7 @@
    "first": "1900",
    "last": "2020",
    "last_value": 127.74263307365625,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1907,7 +1874,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 84.2219974436032,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1919,7 +1886,7 @@
    "first": "1900",
    "last": "2020",
    "last_value": 109.13520332493127,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1931,7 +1898,7 @@
    "first": "1900",
    "last": "2020",
    "last_value": 118.548672345159,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1943,7 +1910,7 @@
    "first": "1880",
    "last": "2020",
    "last_value": 91.37698441824618,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1955,7 +1922,7 @@
    "first": "1880",
    "last": "2020",
    "last_value": 69.53720499480704,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1967,7 +1934,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 128.1612962915607,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1979,7 +1946,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 183.00397322619966,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -1991,7 +1958,7 @@
    "first": "1970",
    "last": "2020",
    "last_value": 82.627247017059,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -2003,7 +1970,7 @@
    "first": "1971",
    "last": "2020",
    "last_value": 159.87237564222463,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -2015,7 +1982,7 @@
    "first": "1870",
    "last": "2020",
    "last_value": 272.54297273042624,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -2027,7 +1994,7 @@
    "first": "1899",
    "last": "2020",
    "last_value": 181.85459072175348,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -2039,7 +2006,7 @@
    "first": "1890",
    "last": "2020",
    "last_value": 158.45575939418342,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:53Z",
    "api_url": "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx",
    "message": "",
    "outdated": false
@@ -2051,7 +2018,7 @@
    "first": "2001-01",
    "last": "2026-10",
    "last_value": 12.227687983134206,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
    "message": "berechnet aus de_cpi_energy",
    "outdated": false
@@ -2059,194 +2026,194 @@
   {
    "series_id": "de_cpi_land_yoy_01",
    "status": "ok",
-   "n_obs": 10,
+   "n_obs": 129,
    "first": "2016-01",
-   "last": "2025-01",
-   "last_value": 1.7676767676767735,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.292181069958855,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_01; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_01",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_02",
    "status": "ok",
-   "n_obs": 10,
+   "n_obs": 129,
    "first": "2016-01",
-   "last": "2025-01",
-   "last_value": 2.3037542662116106,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.482587064676612,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_02; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_02",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_03",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.1812080536912637,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.2653061224489743,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_03; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_03",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_04",
    "status": "ok",
-   "n_obs": 20,
+   "n_obs": 249,
    "first": "2006-01",
-   "last": "2025-01",
-   "last_value": 2.7431421446383997,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.3816425120772875,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_04; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_04",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_05",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.0134228187919323,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.2733224222585955,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_05; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_05",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_06",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.3668639053254337,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.3689400164338412,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_06; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_06",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_07",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 1.9295302013422777,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.3606557377049207,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_07; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_07",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_08",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.35294117647058,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 2.941176470588225,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_08; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_08",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_09",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.0850708924103456,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.1655844155844104,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_09; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_09",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_10",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.276559865092742,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.7735849056603765,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_10; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_10",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_11",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.1885521885522063,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.436988543371533,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_11; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_11",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_12",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.4006622516556275,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.6231884057970953,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_12; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_12",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_13",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 1.8257261410788317,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.4035656401944836,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_13; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_13",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_14",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.2332506203473823,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.3816425120772875,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_14; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_14",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_15",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 2.7454242928452555,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.3816425120772875,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_15; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_15",
+   "outdated": false
   },
   {
    "series_id": "de_cpi_land_yoy_16",
    "status": "ok",
-   "n_obs": 25,
+   "n_obs": 309,
    "first": "2001-01",
-   "last": "2025-01",
-   "last_value": 1.744186046511631,
-   "retrieved_at": "2026-11-01T10:09:21Z",
+   "last": "2026-09",
+   "last_value": 3.4118602761982197,
+   "retrieved_at": "2026-11-01T10:12:54Z",
    "api_url": "",
-   "message": "berechnet aus de_cpi_land_16; veraltet: letzte Periode 2025-01",
-   "outdated": true
+   "message": "berechnet aus de_cpi_land_16",
+   "outdated": false
   }
  ]
 }
