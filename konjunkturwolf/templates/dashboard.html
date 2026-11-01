@@ -83,13 +83,13 @@ const DATA = /*__DATA__*/null;
 // Hausstandard: Farben, Linien, Achsen (siehe README, Abschnitt Grafikstil)
 const PALETTE = ["#002060", "#0070C0", "#00B0F0", "#51154A", "#7030A0", "#D86DCD", "#47D359"];
 const HS = {
-  font: '"Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", serif',
-  band: "rgba(193, 229, 245, 0.30)",   // #C1E5F5 bei 30 % Deckkraft
+  font: '"Arial Narrow", "Arial Nova Cond", "Liberation Sans Narrow", "Helvetica Neue Condensed", Arial, sans-serif',
+  band: "rgba(193, 229, 245, 0.20)",   // #C1E5F5 bei 80 % Transparenz
   gridH: "#BFBFBF", gridV: "#F2F2F2", zero: "#FF0000",
   thin: 0.5,                            // 0,25 Pt am Bildschirm
   line: 3,                              // Datenlinie
-  peerBand: "rgba(160, 160, 160, 0.22)", // Spanne der Vergleichsländer
-  peerLine: "#8C8C8C",                  // Einzelne Vergleichsländer, dunkler als die Fläche
+  peerBand: "rgba(170, 170, 170, 0.22)", // Spanne der Vergleichsländer
+  peerLine: "#B4B4B4",                  // Einzelne Vergleichsländer, hellgrau
 };
 const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
 let rangeYears = 10;
@@ -129,6 +129,7 @@ function shortUnit(units) {
   if (!units.length) return "";
   if (units.every(u => u.startsWith("%"))) return "%";
   if (units.every(u => u.startsWith("Saldo"))) return "Pp";
+  if (units.some(u => u.startsWith("Pp"))) return "Pp";
   if (units.length === 1 && units[0].length <= 9 && !units[0].startsWith("Index")) return units[0];
   return "";
 }
@@ -161,7 +162,7 @@ function xAxis(range, width) {
   const maxLabels = Math.max(3, Math.floor(width / 48));
   const every = [1, 2, 5, 10, 20, 25, 50, 100].find(k => years / k <= maxLabels) || 100;
   const vals = [], text = [], shapes = [];
-  const bands = years <= 30;
+  const bands = true;
   for (let y = startY; y <= endY; y++) {
     const a = new Date(Date.UTC(y, 0, 1)), b = new Date(Date.UTC(y + 1, 0, 1));
     const lo = a < y0 ? y0 : a, hi = b > y1 ? y1 : b;
@@ -169,7 +170,7 @@ function xAxis(range, width) {
       vals.push(new Date((lo.getTime() + hi.getTime()) / 2).toISOString().slice(0, 10));
       text.push(String(y));
     }
-    if (a > y0 && (bands || y % every === 0)) {
+    if (a > y0 && (years <= 30 || y % every === 0)) {
       shapes.push({ type: "line", xref: "x", yref: "paper", x0: a.toISOString().slice(0, 10), x1: a.toISOString().slice(0, 10),
                     y0: 0, y1: 1, line: { color: HS.gridV, width: HS.thin }, layer: "below" });
     }
@@ -239,9 +240,22 @@ function comparisonTraces(withData) {
   return traces;
 }
 
+function stackedTraces(withData) {
+  let i = 0;
+  return withData.map(s => s.style === "bar" ? {
+    x: s.x, y: s.y, name: s.label, type: "bar",
+    marker: { color: PALETTE[1 + (i++ % (PALETTE.length - 1))], line: { width: 0 } },
+    hovertemplate: `%{y:,.2f} Pp<extra>${esc(s.label)}</extra>`,
+  } : {
+    x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
+    line: { color: PALETTE[0], width: HS.line },
+    hovertemplate: `%{y:,.2f} %<extra>${esc(s.label)}</extra>`,
+  });
+}
+
 function renderChart(el, chart) {
   const withData = chart.series.filter(s => s.x.length);
-  const traces = comparisonTraces(withData) || withData.map((s, i) => ({
+  const traces = (chart.kind === "stacked" ? stackedTraces(withData) : null) || comparisonTraces(withData) || withData.map((s, i) => ({
     x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
     hovertemplate: `%{x|%d.%m.%Y}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
@@ -249,6 +263,7 @@ function renderChart(el, chart) {
   const layout = {
     margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
     hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
+    barmode: "relative", bargap: 0.2, hoverlabel: { font: { family: HS.font } },
     legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: 12 } },
     font: { family: HS.font, size: 13, color: "#000000" },
     paper_bgcolor: "#FFFFFF", plot_bgcolor: "#FFFFFF", separators: ",.",
@@ -277,6 +292,7 @@ function renderChart(el, chart) {
   rendered.push({ el, chart });
 }
 
+let chartNo = 0;
 function build() {
   const nav = document.getElementById("nav"), content = document.getElementById("content");
   const c = DATA.counts || {};
@@ -300,7 +316,8 @@ function build() {
         .map(s => s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.source)}</a>` : esc(s.source));
       const missing = chart.series.filter(s => !s.x.length);
       const lasts = chart.series.filter(s => s.x.length).map(lastLine);
-      card.innerHTML = `<h3>${esc(chart.title)}</h3>
+      chartNo += 1;
+      card.innerHTML = `<h3>Grafik ${chartNo}: ${esc(chart.title)}</h3>
         <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
       const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
       const src = document.createElement("div"); src.className = "src";

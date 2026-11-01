@@ -58,7 +58,7 @@ def test_minimal_catalog():
         ({"link": "ftp://x"}, "http"),
         ({"start": "2000"}, "ISO-Datum"),
         ({"title": "BIP {geo}"}, "Platzhalter"),
-        ({"style": "bar"}, "unbekannter Stil"),
+        ({"style": "area"}, "unbekannter Stil"),
     ],
 )
 def test_invalid_entries(changes, message):

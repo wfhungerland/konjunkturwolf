@@ -95,6 +95,7 @@ Die gefühlte Inflation stammt aus der monatlichen EU-Verbraucherumfrage. Der We
 | `de_gdp_qoq` | BIP real, % gg. Vorquartal | % gg. Vorquartal | quartalsw. | Eurostat |
 | `de_gdp_yoy` | BIP real, % gg. Vorjahresquartal | % gg. Vorjahresquartal | quartalsw. | Eurostat |
 | `de_unemp_ilo` | Erwerbslosenquote (ILO-Konzept) | % der Erwerbspersonen | monatl. | Eurostat |
+| `de_gdp_contrib_<item>` | Wachstumsbeiträge zum realen BIP: Konsum, Staat, Investitionen, Vorräte, Außenbeitrag | Pp gg. Vorjahresquartal | quartalsw. | Eurostat |
 | `de_employment` | Erwerbstätige (Inlandskonzept) | Tsd. Personen | quartalsw. | Eurostat |
 | `de_ip` | Produktion in der Industrie (ohne Bau) | Index 2021=100 | monatl. | Eurostat |
 | `de_orders` | Auftragseingang Verarbeitendes Gewerbe, real | Index 2021=100 | monatl. | Destatis GENESIS |
@@ -158,9 +159,9 @@ Welche Reihen beim letzten Lauf Daten lieferten, steht im Blatt Info der xlsx un
 
 ## Grafikstil
 
-Die Diagramme folgen dem Hausstandard: feste Linienfarben (#002060, #0070C0, #00B0F0, #51154A, #7030A0, #D86DCD, #47D359), Werteachse rechts ohne Linie, Einheit an der obersten Zahl, Jahreszahl mittig unter dem Jahr, alternierende Jahresbänder, rote Nulllinie, Legende oben links, Schrift Palatino.
+Die Diagramme folgen dem Hausstandard: feste Linienfarben (#002060, #0070C0, #00B0F0, #51154A, #7030A0, #D86DCD, #47D359), Werteachse rechts ohne Linie, Einheit an der obersten Zahl, Jahreszahl mittig unter dem Jahr, alternierende Jahresbänder, rote Nulllinie, Legende oben links. In den Diagrammen steht Arial Narrow, auf der Seite Palatino. Jahresbänder bei 80 % Transparenz, alle Grafiken sind durchnummeriert.
 
-**Ländervergleiche:** Deutschland läuft als kräftige Linie vor einer grauen Fläche. Die Fläche zeigt die Spanne (Minimum bis Maximum) der Vergleichsländer. Jedes Vergleichsland ist zusätzlich als graue Linie einzeln anfahrbar. Fokus- und Vergleichsländer stehen in `series.yaml` unter `comparison`.
+**Ländervergleiche:** Deutschland läuft als kräftige Linie vor einer grauen Fläche. Die Fläche zeigt die Spanne (Minimum bis Maximum) der Vergleichsländer. Jedes Vergleichsland ist zusätzlich als hellgraue Linie einzeln anfahrbar. Fokus- und Vergleichsländer stehen in `series.yaml` unter `comparison`.
 
 ## Reihe ergänzen
 

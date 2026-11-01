@@ -68,6 +68,12 @@ geo_names:
   USA: USA
 
 names:
+  item:
+    P31_S14_S15: Private Konsumausgaben
+    P3_S13: Staatskonsum
+    P51G: Bruttoanlageinvestitionen
+    P52_P53: Vorratsveränderungen
+    B11: Außenbeitrag
   land:
     "01": Schleswig-Holstein
     "02": Hamburg
@@ -88,6 +94,7 @@ names:
 
 charts:
   de_gdp: {title: "BIP real, Veränderung in %"}
+  de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP, Prozentpunkte", kind: stacked}
   de_cpi: {title: "Verbraucherpreisindex (VPI), 2020=100"}
   de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat"}
   de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat"}
@@ -289,6 +296,33 @@ series:
     adjustment: nicht bereinigt
     chart: de_cpi_rate
     label: HVPI ohne Energie, Nahrungsmittel, Alkohol, Tabak
+
+  - id: de_gdp_contrib
+    expand: {item: [P31_S14_S15, P3_S13, P51G, P52_P53, B11]}
+    block: konjunktur
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: DE, na_item: "{item}", unit: CON_PPCH_SM, s_adj: SCA}
+    title: "Wachstumsbeitrag {item_name}"
+    unit: Pp gg. Vorjahresquartal
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: de_gdp_contrib
+    label: "{item_name}"
+    style: bar
+    note: Beitrag zur Veränderung des realen BIP gegenüber dem Vorjahresquartal in Prozentpunkten (Eurostat).
+
+  - id: de_gdp_contrib_total
+    block: konjunktur
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: DE, na_item: B1GQ, unit: CLV_PCH_SM, s_adj: SCA}
+    title: BIP real, % gg. Vorjahresquartal (Summe der Beiträge)
+    unit: "% gg. Vorjahresquartal"
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: de_gdp_contrib
+    label: BIP real
 
   - id: de_unemp_ilo
     block: konjunktur

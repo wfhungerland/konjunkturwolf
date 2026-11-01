@@ -12,7 +12,7 @@ import yaml
 
 SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
-STYLES = {"line", "step"}
+STYLES = {"line", "step", "bar"}
 DERIVE_OPS = {"yoy_pct"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -51,6 +51,7 @@ class Chart:
     title: str
     y_min: float | None = None  # feste Achsengrenzen, z.B. gegen Hyperinflationsspitzen
     y_max: float | None = None
+    kind: str = "line"  # line | stacked (gestapelte Säulen mit Summenlinie)
 
 
 @dataclass(frozen=True)
@@ -224,6 +225,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
             title=str(c.get("title") or cid),
             y_min=float(c["y_min"]) if c.get("y_min") is not None else None,
             y_max=float(c["y_max"]) if c.get("y_max") is not None else None,
+            kind=str(c.get("kind") or "line"),
         )
 
     entries = raw.get("series")
