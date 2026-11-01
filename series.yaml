@@ -359,25 +359,6 @@ series:
     chart: de_production
     label: Produktion Industrie (Eurostat)
 
-  - id: de_orders
-    block: konjunktur
-    source: genesis
-    key: "42151-0004"
-    params:
-      value_variable: AUF103
-      filters: {WZ08V2: WZ08-C, BERWE5: X13JDKSB}
-      query: {classifyingvariable1: WZ08V2, classifyingkey1: WZ08-C, classifyingvariable2: BERWE5, classifyingkey2: X13JDKSB}
-    title: Auftragseingang im Verarbeitenden Gewerbe, real
-    unit: Index 2021=100
-    frequency: M
-    adjustment: saison- und kalenderbereinigt (X13 JDemetra+)
-    chart: de_production
-    label: Auftragseingang Verarb. Gewerbe (Destatis)
-    note: GENESIS-Zugang erforderlich. Merkmals-Codes ungeprüft; bei Fehler listet das Lauf-Log die verfügbaren Codes.
-
-  # ------------------------------------------------------------------
-  # 2. Energie und Preise
-  # ------------------------------------------------------------------
   - id: de_elec_hh
     block: energie
     source: eurostat

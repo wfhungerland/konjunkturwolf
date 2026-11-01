@@ -43,7 +43,7 @@ def test_full_run(project, monkeypatch):
     pipeline.save(result, project)
     st = result.status_map()
     assert st["fx_gbp"].status == "failed"
-    assert st["de_orders"].status == "skipped"
+    assert st["de_ppi_destatis"].status == "skipped"
     assert st["de_cpi_energy_yoy"].status == "ok"
     assert st["de_cpi_land_yoy_09"].status == "skipped"
     assert st["fx_usd"].n_obs == 36
