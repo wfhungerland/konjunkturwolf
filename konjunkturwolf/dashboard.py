@@ -41,6 +41,8 @@ def _num(v: float) -> str:
 
 
 def _unit(u: str) -> str:
+    if u.startswith("Index"):
+        return "Punkte"
     return "%" if u.startswith("%") else ("Pp" if u.startswith("Pp") else u)
 
 
@@ -107,6 +109,7 @@ def history_band(catalog: Catalog, sides: dict) -> dict | None:
     ys = hist["y"]
     return {"p25": round(_quantile(ys, 0.25), 3), "p50": round(_quantile(ys, 0.5), 3),
             "p75": round(_quantile(ys, 0.75), 3), "from": hist["x"][0][:4], "to": hist["x"][-1][:4],
+            "values": "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte",
             "label": hist["label"]}
 
 
@@ -123,8 +126,8 @@ def extend_long(sides: dict) -> str:
         for x, y in zip(cur["x"], cur["y"]):
             if int(x[:4]) > last_year:
                 by_year.setdefault(int(x[:4]), []).append(y)
-        if not by_year:
-            continue
+        if not by_year or min(by_year) > last_year + 1:
+            continue  # nur lückenlos anschließen
         for year in sorted(by_year):
             s["x"].append(f"{year}-01-01")
             s["y"].append(round(sum(by_year[year]) / len(by_year[year]), 6))
@@ -132,7 +135,7 @@ def extend_long(sides: dict) -> str:
         first_ext = min(first_ext or 9999, min(by_year))
         y_last = max(by_year)
         per_year = {"monatlich": 12, "vierteljährlich": 4}.get(cur["frequency"])
-        if per_year and len(by_year[y_last]) < per_year:
+        if per_year and len(by_year[y_last]) < per_year and (not last_info or s["member"] in ("DEU", "DE")):
             last_info = f"; {y_last} nur bis {_period(cur['x'][-1], cur['frequency']).rsplit(' ', 1)[0]}"
     if first_ext is None:
         return ""

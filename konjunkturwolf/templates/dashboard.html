@@ -380,7 +380,7 @@ function makeCard(chart, observer) {
   card.appendChild(src);
   const extra = [];
   if (chart.note) extra.push(chart.note);
-  if (chart.history) extra.push(`Blaue Fläche: mittlere 50 % der deutschen Jahreswerte ${chart.history.from}\u2013${chart.history.to} `
+  if (chart.history) extra.push(`Blaue Fläche: mittlere 50 % der deutschen ${chart.history.values || "Jahreswerte"} ${chart.history.from}\u2013${chart.history.to} `
     + `(${num1(chart.history.p25)} bis ${num1(chart.history.p75)}), gestrichelt der Median (${num1(chart.history.p50)}).`);
   extra.forEach(t => { const n = document.createElement("div"); n.className = "src"; n.textContent = t; card.appendChild(n); });
   if (chart.y_min != null || chart.y_max != null) {

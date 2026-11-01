@@ -1145,7 +1145,7 @@ series:
     adjustment: nicht bereinigt
     label: Deutschland 1925 bis 1937
     start: "1925-01-01"
-    stale_after_months: 1200
+    stale_after_months: 2400
     note: NBER Macrohistory Database, Reihe a01008ac (Index of Production, Germany).
 
   - id: nber_wpi
@@ -1158,7 +1158,7 @@ series:
     adjustment: nicht bereinigt
     label: Hamburg
     start: "1879-01-01"
-    stale_after_months: 1200
+    stale_after_months: 2400
     note: NBER Macrohistory Database, Reihe m04054 (Hamburg Wholesale Price Index, 1879 bis 1914 mit Lücke 1903 bis 1906).
 
   - id: nber_wpi_yoy
@@ -1173,5 +1173,5 @@ series:
     chart: nber_wpi_yoy
     label: Deutschland (Hamburg)
     start: "1879-01-01"
-    stale_after_months: 1200
+    stale_after_months: 2400
     note: Aus dem NBER-Index berechnet.
