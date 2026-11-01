@@ -64,6 +64,8 @@ def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_p
     (site / "index.html").write_text(html, encoding="utf-8")
     (site / "data.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     (site / ".nojekyll").write_text("", encoding="utf-8")
+    plotly_js = resources.files("konjunkturwolf").joinpath("static/plotly.min.js")
+    (site / "plotly.min.js").write_bytes(plotly_js.read_bytes())
     if xlsx_path and Path(xlsx_path).exists():
         shutil.copy2(xlsx_path, site / "konjunkturwolf.xlsx")
     return site / "index.html"

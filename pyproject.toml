@@ -22,7 +22,7 @@ dev = ["pytest>=8", "openpyxl>=3.1"]
 packages = ["konjunkturwolf"]
 
 [tool.setuptools.package-data]
-konjunkturwolf = ["templates/*.html"]
+konjunkturwolf = ["templates/*.html", "static/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

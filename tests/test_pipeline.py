@@ -71,6 +71,8 @@ def test_full_run(project, monkeypatch):
     payload = json.loads((project.site / "data.json").read_text(encoding="utf-8"))
     assert [b["id"] for b in payload["blocks"]] == [b.id for b in catalog.blocks]
     assert (project.site / "konjunkturwolf.xlsx").exists()
+    assert (project.site / "plotly.min.js").stat().st_size > 1_000_000
+    assert "cdn.plot.ly" not in html
 
 
 def test_failed_fetch_keeps_previous_data(project, monkeypatch):
