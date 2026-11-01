@@ -41,6 +41,11 @@ blocks:
     title: EU-Vergleich
     sheet: EU-Vergleich
 
+# Vergleichsdiagramme: Fokusland hervorgehoben, Vergleichsländer als graue Spanne (Minimum bis Maximum)
+comparison:
+  focus: [DE, DEU]
+  peers: [FR, IT, ES, NL, PL, FRA, ITA, ESP, NLD, GBR, USA]
+
 geo_names:
   DE: Deutschland
   FR: Frankreich

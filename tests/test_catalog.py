@@ -115,3 +115,12 @@ def test_expand_with_custom_names():
     assert spec.id == "land_cpi_09"
     assert spec.title == "VPI Bayern"
     assert spec.params["filters"] == {"DLAND": "09"}
+
+
+def test_repository_catalog_resolves_names_and_comparison():
+    cat = load_catalog(ROOT / "series.yaml")
+    spec = cat.by_id()["eu_hicp_fr"]
+    assert spec.label == "Frankreich"
+    assert spec.member == "FR"
+    assert "DE" in cat.comparison["focus"]
+    assert "FR" in cat.comparison["peers"]

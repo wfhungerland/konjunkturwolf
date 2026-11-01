@@ -88,6 +88,8 @@ const HS = {
   gridH: "#BFBFBF", gridV: "#F2F2F2", zero: "#FF0000",
   thin: 0.5,                            // 0,25 Pt am Bildschirm
   line: 3,                              // Datenlinie
+  peerBand: "rgba(160, 160, 160, 0.22)", // Spanne der Vergleichsländer
+  peerLine: "#8C8C8C",                  // Einzelne Vergleichsländer, dunkler als die Fläche
 };
 const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
 let rangeYears = 10;
@@ -195,16 +197,56 @@ function lastLine(s) {
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+// Vergleichsdiagramm: Fokusland vorn, Vergleichsländer als graue Spanne plus graue Einzellinien
+function comparisonTraces(withData) {
+  const cmp = DATA.comparison || {};
+  const focus = withData.filter(s => (cmp.focus || []).includes(s.member));
+  const peers = withData.filter(s => (cmp.peers || []).includes(s.member));
+  if (!focus.length || peers.length < 2) return null;
+  const others = withData.filter(s => !focus.includes(s) && !peers.includes(s));
+  const byX = new Map();
+  peers.forEach(s => s.x.forEach((x, i) => {
+    const v = s.y[i], cur = byX.get(x);
+    byX.set(x, cur ? [Math.min(cur[0], v), Math.max(cur[1], v)] : [v, v]);
+  }));
+  const xs = [...byX.keys()].sort();
+  const names = peers.map(s => s.label).join(", ");
+  const traces = [
+    { x: xs, y: xs.map(x => byX.get(x)[0]), type: "scatter", mode: "lines", line: { width: 0 },
+      hoverinfo: "skip", showlegend: false, legendgroup: "peers" },
+    { x: xs, y: xs.map(x => byX.get(x)[1]), type: "scatter", mode: "lines", line: { width: 0 },
+      fill: "tonexty", fillcolor: HS.peerBand, hoverinfo: "skip", name: "Spanne Vergleichsländer",
+      legendgroup: "peers" },
+  ];
+  peers.forEach((s, i) => traces.push({
+    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label, legendgroup: "peers",
+    showlegend: false, line: { color: HS.peerLine, width: 1.2 },
+    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  others.forEach((s, i) => traces.push({
+    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
+    line: { color: PALETTE[(i + 1) % PALETTE.length], width: HS.line * 0.6 },
+    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  focus.forEach(s => traces.push({
+    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
+    line: { color: PALETTE[0], width: HS.line },
+    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  traces.peerNames = names;
+  return traces;
+}
+
 function renderChart(el, chart) {
   const withData = chart.series.filter(s => s.x.length);
-  const traces = withData.map((s, i) => ({
+  const traces = comparisonTraces(withData) || withData.map((s, i) => ({
     x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
     hovertemplate: `%{x|%d.%m.%Y}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
   }));
   const layout = {
     margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
-    hovermode: "x unified", showlegend: traces.length > 1,
+    hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
     legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: 12 } },
     font: { family: HS.font, size: 13, color: "#000000" },
     paper_bgcolor: "#FFFFFF", plot_bgcolor: "#FFFFFF", separators: ",.",
@@ -262,6 +304,13 @@ function build() {
       const src = document.createElement("div"); src.className = "src";
       src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
       card.appendChild(src);
+      const cmp = DATA.comparison || {};
+      const peerLabels = chart.series.filter(x => (cmp.peers || []).includes(x.member) && x.x.length).map(x => x.label);
+      if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {
+        const n = document.createElement("div"); n.className = "src";
+        n.textContent = "Graue Fläche: Spanne (Minimum bis Maximum) von " + peerLabels.join(", ") + ".";
+        card.appendChild(n);
+      }
       const old = chart.series.filter(s => s.x.length && s.outdated);
       if (old.length) {
         const o = document.createElement("div"); o.className = "missing";

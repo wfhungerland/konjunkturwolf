@@ -66,6 +66,7 @@ class SeriesSpec:
     start: str = "2000-01-01"
     note: str = ""
     derive: dict[str, Any] = field(default_factory=dict)
+    member: str = ""  # erster expand-Wert, z.B. Ländercode
 
     @property
     def source_label(self) -> str:
@@ -97,6 +98,7 @@ class Catalog:
     charts: dict[str, Chart]
     series: list[SeriesSpec]
     geo_names: dict[str, str] = field(default_factory=dict)
+    comparison: dict[str, list[str]] = field(default_factory=dict)
 
     def by_id(self) -> dict[str, SeriesSpec]:
         return {s.id: s for s in self.series}
@@ -176,6 +178,7 @@ def expand_entry(entry: dict[str, Any], names: dict[str, dict[str, str]]) -> lis
         new = _format_value(base, mapping)
         suffix = "_".join(str(v).lower() for v in combo)
         new["id"] = f"{base['id']}_{suffix}"
+        new["member"] = str(combo[0])
         out.append(new)
     return out
 
@@ -249,6 +252,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                     start=str(e.get("start") or defaults.get("start") or "2000-01-01"),
                     note=str(e.get("note") or ""),
                     derive=dict(e.get("derive") or {}),
+                    member=str(e.get("member") or ""),
                 )
             )
 
@@ -264,7 +268,12 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
 
     if errors:
         raise CatalogError(errors)
-    return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names)
+    comp = raw.get("comparison") or {}
+    comparison = {
+        "focus": [str(x) for x in comp.get("focus") or []],
+        "peers": [str(x) for x in comp.get("peers") or []],
+    }
+    return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison)
 
 
 def _validate_entry(e: dict[str, Any], block_ids: set[str], charts: dict[str, Chart]) -> list[str]:
