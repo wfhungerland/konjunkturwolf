@@ -15,7 +15,7 @@
     --accent: #7fb0ff; --warn: #ffb085; --grid: #2a323c;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  body { margin: 0; font: 15px/1.45 "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", serif;
          background: var(--bg); color: var(--text); }
   header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); }
   .bar { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px;
@@ -34,7 +34,7 @@
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 8px; }
   .card h3 { font-size: 16px; margin: 0 0 2px; }
   .card .sub { color: var(--muted); font-size: 13px; }
-  .card .chart { height: 320px; margin-top: 6px; }
+  .card .chart { aspect-ratio: 5 / 2; min-height: 220px; margin-top: 6px; background: #fff; border-radius: 4px; }
   .card .src { color: var(--muted); font-size: 12px; margin: 4px 0; }
   .card .src a { color: var(--accent); }
   .missing { color: var(--warn); font-size: 13px; }
@@ -49,7 +49,7 @@
     nav { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; }
     nav a { white-space: nowrap; }
     .ranges { margin-left: 0; }
-    .card .chart { height: 260px; }
+    .card .chart { aspect-ratio: 4 / 3; }
     .bar h1 { font-size: 16px; }
   }
 </style>
@@ -80,7 +80,17 @@
 </footer>
 <script>
 const DATA = /*__DATA__*/null;
-const PALETTE = ["#1f5fbf", "#d1495b", "#2a9d8f", "#e9a23b", "#6a4c93", "#4d908e", "#8a5a44", "#577590"];
+// Hausstandard: Farben, Linien, Achsen (siehe README, Abschnitt Grafikstil)
+const PALETTE = ["#002060", "#0070C0", "#00B0F0", "#51154A", "#7030A0", "#D86DCD", "#47D359"];
+const HS = {
+  font: '"Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", serif',
+  band: "rgba(193, 229, 245, 0.30)",   // #C1E5F5 bei 30 % Deckkraft
+  gridH: "#BFBFBF", gridV: "#F2F2F2", zero: "#FF0000",
+  thin: 0.5,                            // 0,25 Pt am Bildschirm
+  line: 3,                              // Datenlinie
+  peerBand: "rgba(160, 160, 160, 0.22)", // Spanne der Vergleichsländer
+  peerLine: "#8C8C8C",                  // Einzelne Vergleichsländer, dunkler als die Fläche
+};
 const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
 let rangeYears = 10;
 const rendered = [];
@@ -89,32 +99,99 @@ function theme() { return document.documentElement.dataset.theme; }
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem("kw-theme", t); } catch (e) {}
-  rendered.forEach(r => Plotly.relayout(r.el, layoutColors()));
 }
-function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-function layoutColors() {
-  return {
-    paper_bgcolor: css("--card"), plot_bgcolor: css("--card"), "font.color": css("--text"),
-    "xaxis.gridcolor": css("--grid"), "yaxis.gridcolor": css("--grid"),
-    "xaxis.linecolor": css("--line"), "yaxis.zerolinecolor": css("--line"),
-  };
-}
-function xRange(series) {
-  let max = null;
-  series.forEach(s => { if (s.x.length) { const d = s.x[s.x.length - 1]; if (!max || d > max) max = d; } });
-  if (!max || !rangeYears) return null;
-  const end = new Date(max); const start = new Date(end); start.setFullYear(end.getFullYear() - rangeYears);
-  end.setMonth(end.getMonth() + 1);
+function xRange(series, full) {
+  let min = null, max = null;
+  series.forEach(s => {
+    if (!s.x.length) return;
+    if (!min || s.x[0] < min) min = s.x[0];
+    if (!max || s.x[s.x.length - 1] > max) max = s.x[s.x.length - 1];
+  });
+  if (!max) return null;
+  const end = new Date(max); end.setMonth(end.getMonth() + 1);
+  let start = new Date(min);
+  if (rangeYears && !full) {
+    const cut = new Date(max); cut.setFullYear(cut.getFullYear() - rangeYears);
+    if (cut > start) start = cut;
+  }
   return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)];
 }
-function yRange(series, range) {
+function niceStep(span, n) {
+  const raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const f = raw / mag;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag;
+}
+function decimals(step) {
+  const t = step.toString();
+  return t.includes("e-") ? Number(t.split("e-")[1]) : (t.split(".")[1] || "").length;
+}
+function shortUnit(units) {
+  if (!units.length) return "";
+  if (units.every(u => u.startsWith("%"))) return "%";
+  if (units.every(u => u.startsWith("Saldo"))) return "Pp";
+  if (units.length === 1 && units[0].length <= 9 && !units[0].startsWith("Index")) return units[0];
+  return "";
+}
+// Werteachse: runde Stufen, je ein Drittel Stufe Luft oben und unten, Einheit an der obersten Zahl
+function yAxis(series, range, unit, limits) {
   let lo = Infinity, hi = -Infinity;
   series.forEach(s => s.x.forEach((x, i) => {
-    if (!range || (x >= range[0] && x <= range[1])) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
+    if (x >= range[0] && x <= range[1]) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
   }));
   if (!isFinite(lo)) return null;
-  const pad = (hi - lo) * 0.06 || Math.abs(hi) * 0.05 || 1;
-  return [lo - pad, hi + pad];
+  if (limits && limits[0] != null) lo = Math.max(lo, limits[0]);
+  if (limits && limits[1] != null) hi = Math.min(hi, limits[1]);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const step = niceStep(hi - lo, 4), d = decimals(step);
+  const first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
+  const vals = [], text = [];
+  for (let v = first; v <= last + step / 1000; v += step) {
+    const r = Number(v.toFixed(d));
+    vals.push(r);
+    text.push(r.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d }));
+  }
+  if (unit) text[text.length - 1] += " " + unit;
+  return { range: [first - step / 3, last + step / 3], vals, text, zero: first < 0 && last > 0 };
+}
+// Zeitachse: Jahreszahl mittig unter dem Jahr, Gitterlinie an der Jahresgrenze, Jahresbänder
+function xAxis(range, width) {
+  const y0 = new Date(range[0]), y1 = new Date(range[1]);
+  const startY = y0.getUTCFullYear(), endY = y1.getUTCFullYear();
+  const years = endY - startY + 1;
+  const maxLabels = Math.max(3, Math.floor(width / 48));
+  const every = [1, 2, 5, 10, 20, 25, 50, 100].find(k => years / k <= maxLabels) || 100;
+  const vals = [], text = [], shapes = [];
+  const bands = years <= 30;
+  for (let y = startY; y <= endY; y++) {
+    const a = new Date(Date.UTC(y, 0, 1)), b = new Date(Date.UTC(y + 1, 0, 1));
+    const lo = a < y0 ? y0 : a, hi = b > y1 ? y1 : b;
+    if (y % every === 0) {
+      vals.push(new Date((lo.getTime() + hi.getTime()) / 2).toISOString().slice(0, 10));
+      text.push(String(y));
+    }
+    if (a > y0 && (bands || y % every === 0)) {
+      shapes.push({ type: "line", xref: "x", yref: "paper", x0: a.toISOString().slice(0, 10), x1: a.toISOString().slice(0, 10),
+                    y0: 0, y1: 1, line: { color: HS.gridV, width: HS.thin }, layer: "below" });
+    }
+    if (bands && (y - startY) % 2 === 0) {
+      shapes.push({ type: "rect", xref: "x", yref: "paper", x0: lo.toISOString().slice(0, 10), x1: hi.toISOString().slice(0, 10),
+                    y0: 0, y1: 1, fillcolor: HS.band, line: { width: 0 }, layer: "below" });
+    }
+  }
+  return { vals, text, shapes };
+}
+function houseAxes(el, chart) {
+  const data = chart.series.filter(s => s.x.length);
+  const range = xRange(data, chart.full);
+  const units = [...new Set(data.map(s => s.unit))];
+  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max]);
+  const xa = xAxis(range, el.clientWidth || 560);
+  const shapes = xa.shapes.slice();
+  return {
+    "xaxis.range": range, "xaxis.tickvals": xa.vals, "xaxis.ticktext": xa.text,
+    "yaxis.range": ya ? ya.range : undefined, "yaxis.tickvals": ya ? ya.vals : undefined,
+    "yaxis.ticktext": ya ? ya.text : undefined, "yaxis.zeroline": !!(ya && ya.zero), shapes,
+  };
 }
 function lastLine(s) {
   if (!s.x.length) return "";
@@ -122,26 +199,81 @@ function lastLine(s) {
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+// Vergleichsdiagramm: Fokusland vorn, Vergleichsländer als graue Spanne plus graue Einzellinien
+function comparisonTraces(withData) {
+  const cmp = DATA.comparison || {};
+  const focus = withData.filter(s => (cmp.focus || []).includes(s.member));
+  const peers = withData.filter(s => (cmp.peers || []).includes(s.member));
+  if (!focus.length || peers.length < 2) return null;
+  const others = withData.filter(s => !focus.includes(s) && !peers.includes(s));
+  const byX = new Map();
+  peers.forEach(s => s.x.forEach((x, i) => {
+    const v = s.y[i], cur = byX.get(x);
+    byX.set(x, cur ? [Math.min(cur[0], v), Math.max(cur[1], v)] : [v, v]);
+  }));
+  const xs = [...byX.keys()].sort();
+  const names = peers.map(s => s.label).join(", ");
+  const traces = [
+    { x: xs, y: xs.map(x => byX.get(x)[0]), type: "scatter", mode: "lines", line: { width: 0 },
+      hoverinfo: "skip", showlegend: false, legendgroup: "peers" },
+    { x: xs, y: xs.map(x => byX.get(x)[1]), type: "scatter", mode: "lines", line: { width: 0 },
+      fill: "tonexty", fillcolor: HS.peerBand, hoverinfo: "skip", name: "Spanne Vergleichsländer",
+      legendgroup: "peers" },
+  ];
+  peers.forEach((s, i) => traces.push({
+    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label, legendgroup: "peers",
+    showlegend: false, line: { color: HS.peerLine, width: 1.2 },
+    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  others.forEach((s, i) => traces.push({
+    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
+    line: { color: PALETTE[(i + 1) % PALETTE.length], width: HS.line * 0.6 },
+    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  focus.forEach(s => traces.push({
+    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
+    line: { color: PALETTE[0], width: HS.line },
+    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+  }));
+  traces.peerNames = names;
+  return traces;
+}
+
 function renderChart(el, chart) {
   const withData = chart.series.filter(s => s.x.length);
-  const units = [...new Set(withData.map(s => s.unit))];
-  const traces = withData.map((s, i) => ({
+  const traces = comparisonTraces(withData) || withData.map((s, i) => ({
     x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
-    line: { color: PALETTE[i % PALETTE.length], width: 2, shape: s.style === "step" ? "hv" : "linear" },
-    hovertemplate: `%{x|%Y-%m-%d}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+    line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
+    hovertemplate: `%{x|%d.%m.%Y}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
   }));
-  const range = xRange(withData);
-  const layout = Object.assign({
-    margin: { l: 52, r: 12, t: 8, b: 36 }, hovermode: "x unified", showlegend: traces.length > 1,
-    legend: { orientation: "h", y: -0.18 }, font: { size: 12 },
-    xaxis: { type: "date", range: range || undefined, autorange: !range },
-    yaxis: { title: { text: units.length === 1 ? units[0] : "", font: { size: 11 } },
-             range: yRange(withData, range) || undefined, autorange: !range, separatethousands: true },
-    separators: ",.",
-  });
+  const layout = {
+    margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
+    hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
+    legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: 12 } },
+    font: { family: HS.font, size: 13, color: "#000000" },
+    paper_bgcolor: "#FFFFFF", plot_bgcolor: "#FFFFFF", separators: ",.",
+    xaxis: { type: "date", showgrid: false, showline: false, zeroline: false, ticks: "", tickmode: "array",
+             fixedrange: false },
+    yaxis: { side: "right", showline: false, zeroline: false, zerolinecolor: HS.zero, zerolinewidth: HS.thin,
+             ticks: "", tickmode: "array",
+             showgrid: true, gridcolor: HS.gridH, gridwidth: HS.thin, automargin: true },
+  };
   Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false,
     modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"], locale: "de" })
-    .then(() => Plotly.relayout(el, layoutColors()));
+    .then(() => Plotly.relayout(el, houseAxes(el, chart)));
+  el.on && el.on("plotly_relayout", ev => {
+    if (ev && ev["xaxis.range[0]"] && !el._kwBusy) {
+      el._kwBusy = true;
+      const r = [ev["xaxis.range[0]"].slice(0, 10), ev["xaxis.range[1]"].slice(0, 10)];
+      const data = chart.series.filter(s => s.x.length);
+      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]), [chart.y_min, chart.y_max]);
+      const xa = xAxis(r, el.clientWidth || 560);
+      Plotly.relayout(el, { "xaxis.tickvals": xa.vals, "xaxis.ticktext": xa.text, shapes: xa.shapes,
+                            "yaxis.range": ya && ya.range, "yaxis.tickvals": ya && ya.vals, "yaxis.ticktext": ya && ya.text,
+                            "yaxis.zeroline": !!(ya && ya.zero) })
+        .then(() => { el._kwBusy = false; });
+    }
+  });
   rendered.push({ el, chart });
 }
 
@@ -164,7 +296,7 @@ function build() {
     block.charts.forEach(chart => {
       const card = document.createElement("div"); card.className = "card";
       const units = [...new Set(chart.series.map(s => s.unit))].join(" / ");
-      const sources = [...new Map(chart.series.map(s => [s.link || s.source, s])).values()]
+      const sources = [...new Map(chart.series.map(s => [s.source, s])).values()]
         .map(s => s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.source)}</a>` : esc(s.source));
       const missing = chart.series.filter(s => !s.x.length);
       const lasts = chart.series.filter(s => s.x.length).map(lastLine);
@@ -174,6 +306,25 @@ function build() {
       const src = document.createElement("div"); src.className = "src";
       src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
       card.appendChild(src);
+      if (chart.y_min != null || chart.y_max != null) {
+        const out = [];
+        chart.series.forEach(x => x.x.forEach((d, i) => {
+          if ((chart.y_max != null && x.y[i] > chart.y_max) || (chart.y_min != null && x.y[i] < chart.y_min)) out.push(`${x.label} ${d.slice(0, 4)}`);
+        }));
+        if (out.length) {
+          const n = document.createElement("div"); n.className = "src";
+          const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : v.toLocaleString("de-DE"));
+          n.textContent = `Achse begrenzt auf ${lim[0]} bis ${lim[1]}. Außerhalb: ${out.slice(0, 12).join(", ")}${out.length > 12 ? ` und ${out.length - 12} weitere` : ""}.`;
+          card.appendChild(n);
+        }
+      }
+      const cmp = DATA.comparison || {};
+      const peerLabels = chart.series.filter(x => (cmp.peers || []).includes(x.member) && x.x.length).map(x => x.label);
+      if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {
+        const n = document.createElement("div"); n.className = "src";
+        n.textContent = "Graue Fläche: Spanne (Minimum bis Maximum) von " + peerLabels.join(", ") + ".";
+        card.appendChild(n);
+      }
       const old = chart.series.filter(s => s.x.length && s.outdated);
       if (old.length) {
         const o = document.createElement("div"); o.className = "missing";
@@ -195,11 +346,7 @@ function build() {
   document.querySelectorAll("#ranges .btn").forEach(btn => btn.addEventListener("click", () => {
     document.querySelectorAll("#ranges .btn").forEach(b => b.classList.remove("on"));
     btn.classList.add("on"); rangeYears = Number(btn.dataset.years);
-    rendered.forEach(r => {
-      const data = r.chart.series.filter(s => s.x.length), range = xRange(data);
-      Plotly.relayout(r.el, range ? { "xaxis.range": range, "yaxis.range": yRange(data, range) }
-                                  : { "xaxis.autorange": true, "yaxis.autorange": true });
-    });
+    rendered.forEach(r => Plotly.relayout(r.el, houseAxes(r.el, r.chart)));
   }));
 }
 

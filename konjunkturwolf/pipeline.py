@@ -121,10 +121,10 @@ def _tidy(spec: SeriesSpec, data: pd.DataFrame, retrieved_at: str) -> pd.DataFra
 MAX_LAG_MONTHS = {"D": 1, "M": 4, "Q": 7, "S": 13, "A": 36}
 
 
-def is_outdated(last: pd.Timestamp, frequency: str, today: pd.Timestamp | None = None) -> bool:
+def is_outdated(last: pd.Timestamp, frequency: str, today: pd.Timestamp | None = None, limit: int = 0) -> bool:
     today = today or pd.Timestamp.now(tz="UTC").tz_localize(None)
     months = (today.year - last.year) * 12 + (today.month - last.month)
-    return months > MAX_LAG_MONTHS[frequency]
+    return months > (limit or MAX_LAG_MONTHS[frequency])
 
 
 def _fill_status(st: SeriesStatus, spec: SeriesSpec, df: pd.DataFrame) -> None:
@@ -134,7 +134,7 @@ def _fill_status(st: SeriesStatus, spec: SeriesSpec, df: pd.DataFrame) -> None:
         st.first = period_label(df["date"].min().date(), spec.frequency)
         st.last = period_label(last.date(), spec.frequency)
         st.last_value = float(df.sort_values("date")["value"].iloc[-1])
-        st.outdated = is_outdated(last, spec.frequency)
+        st.outdated = is_outdated(last, spec.frequency, limit=spec.stale_after_months)
 
 
 def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | None = None) -> RunResult:
@@ -148,6 +148,9 @@ def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | No
         wanted = set(only)
         specs = [s for s in specs if s.id in wanted]
 
+    from . import fetchers as _f
+
+    _f.GMD_COUNTRIES.update(str(s.params.get("country")) for s in specs if s.source == "gmd")
     ordered = [s for s in specs if s.source != "derived"] + [s for s in specs if s.source == "derived"]
     for spec in ordered:
         st = SeriesStatus(series_id=spec.id, status="failed", api_url=api_url_hint(spec))

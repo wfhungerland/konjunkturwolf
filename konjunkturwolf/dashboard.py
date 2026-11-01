@@ -25,7 +25,8 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
         for spec in catalog.series_in_block(block.id):
             chart = catalog.chart(spec.chart_id, spec)
             entry = charts.setdefault(
-                chart.id, {"id": chart.id, "title": chart.title, "series": []}
+                chart.id, {"id": chart.id, "title": chart.title, "full": block.history,
+                 "y_min": chart.y_min, "y_max": chart.y_max, "series": []}
             )
             g = grouped.get(spec.id)
             st = statuses.get(spec.id)
@@ -39,6 +40,7 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
                 "source": spec.source_label,
                 "link": spec.web_link,
                 "style": spec.style,
+                "member": spec.member,
                 "status": st.status if st else "failed",
                 "outdated": bool(st.outdated) if st else False,
                 "message": (st.message if st else "")[:300],
@@ -51,7 +53,12 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
                 item["y"] = [round(float(v), 6) for v in g["value"]]
             entry["series"].append(item)
         blocks.append({"id": block.id, "title": block.title, "charts": list(charts.values())})
-    return {"generated_at": result.finished_at, "counts": result.counts(), "blocks": blocks}
+    return {
+        "generated_at": result.finished_at,
+        "counts": result.counts(),
+        "comparison": catalog.comparison,
+        "blocks": blocks,
+    }
 
 
 def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_path: str | Path | None) -> Path:

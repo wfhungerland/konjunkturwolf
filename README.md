@@ -139,7 +139,28 @@ Die gefühlte Inflation stammt aus der monatlichen EU-Verbraucherumfrage. Der We
 | `eu_elec_hh_<land>` | Strompreis Haushalte, inkl. Steuern | EUR/kWh | halbj. | Eurostat |
 | `eu_elec_nonhh_<land>` | Strompreis Nicht-Haushalte, ohne MwSt. | EUR/kWh | halbj. | Eurostat |
 
+**Langfristig (seit 1870)** (je Land eine Reihe: DE, FR, IT, ES, NL, PL, GB, US; JST ohne PL)
+
+| ID | Reihe | Einheit | Freq. | Quelle |
+|---|---|---|---|---|
+| `lang_infl_<land>` | Inflation | % gg. Vorjahr | jährl. | Global Macro Database |
+| `lang_growth_<land>` | Reales BIP, Wachstum (berechnet) | % gg. Vorjahr | jährl. | Global Macro Database |
+| `lang_debt_<land>` | Staatsschulden | % des BIP | jährl. | Global Macro Database |
+| `lang_unemp_<land>` | Arbeitslosenquote | % der Erwerbspersonen | jährl. | Global Macro Database |
+| `lang_ca_<land>` | Leistungsbilanz | % des BIP | jährl. | Global Macro Database |
+| `lang_ltrate_<land>`, `lang_stir_<land>` | Langfristiger und kurzfristiger Zins | % p. a. | jährl. | JST Macrohistory |
+| `lang_credit_<land>` | Kredite an den privaten Sektor (berechnet) | % des BIP | jährl. | JST Macrohistory |
+| `lang_house_<land>` | Reale Hauspreise (berechnet) | Index 1990=100 | jährl. | JST Macrohistory |
+
+Die Global Macro Database (Müller, Xu, Lehbib, Chen 2025) kommt in der jeweils neuesten Fassung über das offizielle Python-Paket `global_macro_data`. Prognosejahre schneidet die Pipeline ab. Die JST Macrohistory Database (Jordà, Schularick, Taylor 2017) kommt als Release 6 von macrohistory.net und endet 2020. Beide sind nur für nicht-kommerzielle Zwecke mit Quellenangabe freigegeben (JST: CC BY-NC-SA 4.0).
+
 Welche Reihen beim letzten Lauf Daten lieferten, steht im Blatt Info der xlsx und in `data/processed/run_status.json`.
+
+## Grafikstil
+
+Die Diagramme folgen dem Hausstandard: feste Linienfarben (#002060, #0070C0, #00B0F0, #51154A, #7030A0, #D86DCD, #47D359), Werteachse rechts ohne Linie, Einheit an der obersten Zahl, Jahreszahl mittig unter dem Jahr, alternierende Jahresbänder, rote Nulllinie, Legende oben links, Schrift Palatino.
+
+**Ländervergleiche:** Deutschland läuft als kräftige Linie vor einer grauen Fläche. Die Fläche zeigt die Spanne (Minimum bis Maximum) der Vergleichsländer. Jedes Vergleichsland ist zusätzlich als graue Linie einzeln anfahrbar. Fokus- und Vergleichsländer stehen in `series.yaml` unter `comparison`.
 
 ## Reihe ergänzen
 
@@ -166,6 +187,7 @@ Der Schlüssel `key` hängt von der Quelle ab:
 | `bundesbank` | `FLOW/SERIENSCHLÜSSEL`, z. B. `BBSIS/M.I.ZST...` | keine |
 | `eurostat` | Datensatz-Code, z. B. `une_rt_m` | Dimensionsfilter, z. B. `{geo: DE, s_adj: SA}`; jede mehrwertige Dimension muss festgelegt sein |
 | `genesis` | Tabellencode, z. B. `61111-0002` | `value_variable` (Wertmerkmal), optional `filters: {MERKMAL: AUSPRÄGUNG}` und `query` |
+| `jst`, `gmd` | Variablenname, z.B. `ltrate` oder `infl` | `country` (ISO3), optional `transform: pct_change`, `divide_by`, `scale`, `max_year` |
 | `derived` | entfällt | `derive: {from: <id>, op: yoy_pct}` |
 
 Weitere Felder: `chart` fasst Reihen in einem Diagramm zusammen (Titel unter `charts`), `label` setzt die Legende, `style: step` zeichnet Treppenkurven, `start` setzt den Beginn, `note` erscheint im Blatt Quellen, und `link` überschreibt den automatisch erzeugten Direktlink. Mit `expand: {geo: [DE, FR]}` entsteht je Land eine Reihe; `{geo}` und `{geo_name}` werden ersetzt.

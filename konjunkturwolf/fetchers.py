@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
+import io
 import os
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas as pd
 
 from .catalog import SeriesSpec
-from .http import HttpClient
-from .parsers import parse_genesis_ffcsv, parse_jsonstat, parse_sdmx
+from .http import FetchError, HttpClient
+from .parsers import ParseError, parse_genesis_ffcsv, parse_jsonstat, parse_sdmx
 
 ECB_BASE = "https://data-api.ecb.europa.eu/service/data"
 BUNDESBANK_BASE = "https://api.statistiken.bundesbank.de/rest/data"
 EUROSTAT_BASE = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data"
-GENESIS_BASE = "https://www-genesis.destatis.de/genesisWS/rest/2020"
+GENESIS_BASE = "https://genesis.destatis.de/genesisWS/rest/2020"
 
 SDMX_CSV = "application/vnd.sdmx.data+csv;version=1.0.0"
 
@@ -82,10 +83,16 @@ def genesis_credentials() -> tuple[str, str] | None:
     return user, os.environ.get("GENESIS_PASSWORD", "").strip()
 
 
+_GENESIS_AUTH_FAILED: dict[int, str] = {}
+
+
 def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     creds = genesis_credentials()
     if creds is None:
         raise SkipSeries("GENESIS-Zugangsdaten fehlen (GENESIS_USER/GENESIS_PASSWORD nicht gesetzt).")
+    if id(client) in _GENESIS_AUTH_FAILED:
+        # nach abgelehntem Login keine weiteren Versuche (Schutz vor Kontosperre)
+        raise SkipSeries(_GENESIS_AUTH_FAILED[id(client)])
     user, password = creds
     data = {
         "name": spec.key,
@@ -96,11 +103,19 @@ def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
         "startyear": str(spec.start_year),
     }
     data.update({k: str(v) for k, v in (spec.params.get("query") or {}).items()})
-    resp = client.post(
-        f"{GENESIS_BASE}/data/tablefile",
-        data=data,
-        headers={"username": user, "password": password, "Content-Type": "application/x-www-form-urlencoded"},
-    )
+    try:
+        resp = client.post(
+            f"{GENESIS_BASE}/data/tablefile",
+            data=data,
+            headers={"username": user, "password": password, "Content-Type": "application/x-www-form-urlencoded"},
+        )
+    except FetchError as exc:
+        text = str(exc).lower()
+        if "password" in text or "passwort" in text or "anmeld" in text or "token" in text:
+            msg = "GENESIS lehnt die Zugangsdaten ab (Secrets GENESIS_USER/GENESIS_PASSWORD prüfen)."
+            _GENESIS_AUTH_FAILED[id(client)] = msg
+            raise FetchError(msg) from exc
+        raise
     df = parse_genesis_ffcsv(
         resp.text,
         value_variable=spec.params.get("value_variable"),
@@ -110,11 +125,87 @@ def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     return FetchResult(_since(df, spec), api_url, resp.retrieved_at, resp.from_cache)
 
 
+# ---------------------------------------------------------------------------
+# Historische Paneldatensätze (Jahresdaten): JST Macrohistory, Global Macro Database
+# ---------------------------------------------------------------------------
+JST_URL = "https://www.macrohistory.net/app/download/9834512569/JSTdatasetR6.xlsx"
+_PANELS: dict[tuple[int, str], tuple[pd.DataFrame, datetime, bool, str]] = {}
+
+
+def panel_series(panel: pd.DataFrame, spec: SeriesSpec, country_col: str) -> pd.DataFrame:
+    """Wählt Land und Variable aus einem Länder-Jahres-Panel und wendet einfache Umformungen an.
+
+    params: country (ISO3), optional divide_by (zweite Variable), scale (Faktor),
+    transform: pct_change (Veränderung gegenüber Vorjahr in %), max_year.
+    """
+    p = spec.params
+    country = str(p.get("country", ""))
+    var = spec.key
+    rows = panel[panel[country_col] == country]
+    if rows.empty:
+        raise ParseError(f"Land {country} nicht im Datensatz.")
+    if var not in rows.columns:
+        raise ParseError(f"Variable {var} nicht im Datensatz.")
+    df = rows[["year", var]].rename(columns={var: "value"}).copy()
+    if p.get("divide_by"):
+        df["value"] = df["value"] / rows[p["divide_by"]].values
+    df["value"] = pd.to_numeric(df["value"], errors="coerce") * float(p.get("scale", 1))
+    df = df.dropna().sort_values("year")
+    df["year"] = df["year"].astype(int)
+    if p.get("transform") == "pct_change":
+        prev = df.set_index("year")["value"]
+        df["value"] = [(v / prev.get(y - 1) - 1) * 100 if prev.get(y - 1) else float("nan")
+                       for y, v in zip(df["year"], df["value"])]
+        df = df.dropna()
+    max_year = int(p.get("max_year", pd.Timestamp.now().year - 1))
+    df = df[df["year"] <= max_year]
+    df["date"] = pd.to_datetime(df["year"].astype(str) + "-01-01")
+    return df[["date", "value"]].reset_index(drop=True)
+
+
+def fetch_jst(spec: SeriesSpec, client: HttpClient) -> FetchResult:
+    from .http import get_bytes
+
+    key = (id(client), "jst")
+    if key not in _PANELS:
+        raw, when, cached = get_bytes(client, JST_URL)
+        _PANELS[key] = (pd.read_excel(io.BytesIO(raw)), when, cached, JST_URL)
+    panel, when, cached, url = _PANELS[key]
+    return FetchResult(_since(panel_series(panel, spec, "iso"), spec), url, when, cached)
+
+
+def fetch_gmd(spec: SeriesSpec, client: HttpClient) -> FetchResult:
+    key = (id(client), "gmd")
+    if key not in _PANELS:
+        if client.offline:
+            raise FetchError("Offline-Modus: Global Macro Database nicht im Cache.")
+        try:
+            import contextlib
+
+            from global_macro_data import gmd
+        except ImportError as exc:
+            raise FetchError("Paket global_macro_data fehlt (pip install global_macro_data).") from exc
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                panel = gmd(country=sorted({s for s in GMD_COUNTRIES}))
+        except Exception as exc:  # Paketfehler sauber melden
+            raise FetchError(f"Global Macro Database: {exc.__class__.__name__}: {exc}") from exc
+        _PANELS[key] = (panel, datetime.now(timezone.utc).replace(microsecond=0), False,
+                        "https://www.globalmacrodata.com")
+    panel, when, cached, url = _PANELS[key]
+    return FetchResult(_since(panel_series(panel, spec, "ISO3"), spec), url, when, cached)
+
+
+GMD_COUNTRIES: set[str] = set()
+
+
 FETCHERS = {
     "ecb": fetch_ecb,
     "bundesbank": fetch_bundesbank,
     "eurostat": fetch_eurostat,
     "genesis": fetch_genesis,
+    "jst": fetch_jst,
+    "gmd": fetch_gmd,
 }
 
 
@@ -133,6 +224,10 @@ def api_url_hint(spec: SeriesSpec) -> str:
         return f"{EUROSTAT_BASE}/{spec.key}?{urlencode(params)}"
     if spec.source == "genesis":
         return f"{GENESIS_BASE}/data/tablefile?name={spec.key}&format=ffcsv"
+    if spec.source == "jst":
+        return JST_URL
+    if spec.source == "gmd":
+        return "https://www.globalmacrodata.com"
     return ""
 
 

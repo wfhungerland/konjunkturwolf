@@ -157,6 +157,29 @@ class HttpClient:
         return self.request("POST", url, data=data, headers=headers, accept=accept)
 
 
+def get_bytes(client: "HttpClient", url: str) -> tuple[bytes, datetime, bool]:
+    """Lädt eine Binärdatei (z.B. xlsx) mit Retries und Datei-Cache."""
+    key = hashlib.sha256(("BYTES " + url).encode()).hexdigest()[:24]
+    body, meta = client.cache_dir / f"{key}.bin", client.cache_dir / f"{key}.json"
+    if (client.use_cache or client.offline) and body.exists() and meta.exists():
+        when = datetime.fromisoformat(json.loads(meta.read_text(encoding="utf-8"))["retrieved_at"])
+        if client.offline or _now() - when < client.ttl:
+            return body.read_bytes(), when, True
+    if client.offline:
+        raise FetchError("Offline-Modus und kein Cache vorhanden.")
+    try:
+        r = client.session.get(url, timeout=client.timeout * 3)
+    except requests.RequestException as exc:
+        raise FetchError(f"Netzwerkfehler: {exc.__class__.__name__}: {exc}") from exc
+    if r.status_code >= 400:
+        raise FetchError(f"HTTP {r.status_code} für {url}")
+    when = _now()
+    client.cache_dir.mkdir(parents=True, exist_ok=True)
+    body.write_bytes(r.content)
+    meta.write_text(json.dumps({"url": url, "retrieved_at": when.isoformat()}), encoding="utf-8")
+    return r.content, when, False
+
+
 def _public_url(url: str) -> str:
     """Entfernt eventuelle Zugangsdaten aus Query-Strings."""
     from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit

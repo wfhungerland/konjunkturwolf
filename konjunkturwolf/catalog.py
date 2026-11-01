@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "derived"}
+SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step"}
 DERIVE_OPS = {"yoy_pct"}
@@ -23,6 +23,8 @@ SOURCE_LABELS = {
     "bundesbank": "Deutsche Bundesbank",
     "eurostat": "Eurostat",
     "genesis": "Destatis GENESIS-Online",
+    "jst": "JST Macrohistory Database",
+    "gmd": "Global Macro Database",
     "derived": "Eigene Berechnung",
 }
 
@@ -40,12 +42,15 @@ class Block:
     id: str
     title: str
     sheet: str
+    history: bool = False  # Langfristblock: Dashboard zeigt immer den ganzen Zeitraum
 
 
 @dataclass(frozen=True)
 class Chart:
     id: str
     title: str
+    y_min: float | None = None  # feste Achsengrenzen, z.B. gegen Hyperinflationsspitzen
+    y_max: float | None = None
 
 
 @dataclass(frozen=True)
@@ -66,6 +71,8 @@ class SeriesSpec:
     start: str = "2000-01-01"
     note: str = ""
     derive: dict[str, Any] = field(default_factory=dict)
+    member: str = ""  # erster expand-Wert, z.B. Ländercode
+    stale_after_months: int = 0  # 0 = Standard je Frequenz
 
     @property
     def source_label(self) -> str:
@@ -97,6 +104,7 @@ class Catalog:
     charts: dict[str, Chart]
     series: list[SeriesSpec]
     geo_names: dict[str, str] = field(default_factory=dict)
+    comparison: dict[str, list[str]] = field(default_factory=dict)
 
     def by_id(self) -> dict[str, SeriesSpec]:
         return {s.id: s for s in self.series}
@@ -129,6 +137,10 @@ def default_link(spec: SeriesSpec) -> str:
         )
     if spec.source == "eurostat":
         return f"https://ec.europa.eu/eurostat/databrowser/view/{spec.key}/default/table?lang=de"
+    if spec.source == "jst":
+        return "https://www.macrohistory.net/database/"
+    if spec.source == "gmd":
+        return "https://www.globalmacrodata.com"
     if spec.source == "genesis":
         stat = spec.key.split("-")[0]
         return f"https://www-genesis.destatis.de/datenbank/online/statistic/{stat}/table/{spec.key}"
@@ -176,6 +188,7 @@ def expand_entry(entry: dict[str, Any], names: dict[str, dict[str, str]]) -> lis
         new = _format_value(base, mapping)
         suffix = "_".join(str(v).lower() for v in combo)
         new["id"] = f"{base['id']}_{suffix}"
+        new["member"] = str(combo[0])
         out.append(new)
     return out
 
@@ -198,15 +211,20 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
         sheet = str(b.get("sheet") or b["title"])
         if len(sheet) > 31 or re.search(r"[\[\]:*?/\\]", sheet):
             errors.append(f"Themenblock {b['id']}: Blattname '{sheet}' ist in Excel unzulässig.")
-        blocks.append(Block(id=str(b["id"]), title=str(b["title"]), sheet=sheet))
+        blocks.append(Block(id=str(b["id"]), title=str(b["title"]), sheet=sheet, history=bool(b.get("history"))))
     if not blocks:
         errors.append("Keine Themenblöcke definiert.")
     block_ids = {b.id for b in blocks}
 
     charts = {}
     for cid, c in (raw.get("charts") or {}).items():
-        title = (c or {}).get("title") if isinstance(c, dict) else None
-        charts[str(cid)] = Chart(id=str(cid), title=str(title or cid))
+        c = c if isinstance(c, dict) else {}
+        charts[str(cid)] = Chart(
+            id=str(cid),
+            title=str(c.get("title") or cid),
+            y_min=float(c["y_min"]) if c.get("y_min") is not None else None,
+            y_max=float(c["y_max"]) if c.get("y_max") is not None else None,
+        )
 
     entries = raw.get("series")
     if not isinstance(entries, list) or not entries:
@@ -249,6 +267,8 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                     start=str(e.get("start") or defaults.get("start") or "2000-01-01"),
                     note=str(e.get("note") or ""),
                     derive=dict(e.get("derive") or {}),
+                    member=str(e.get("member") or ""),
+                    stale_after_months=int(e.get("stale_after_months") or 0),
                 )
             )
 
@@ -264,7 +284,12 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
 
     if errors:
         raise CatalogError(errors)
-    return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names)
+    comp = raw.get("comparison") or {}
+    comparison = {
+        "focus": [str(x) for x in comp.get("focus") or []],
+        "peers": [str(x) for x in comp.get("peers") or []],
+    }
+    return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison)
 
 
 def _validate_entry(e: dict[str, Any], block_ids: set[str], charts: dict[str, Chart]) -> list[str]:
