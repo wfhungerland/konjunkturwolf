@@ -24,6 +24,8 @@
   .stand { color: var(--muted); font-size: 13px; margin-right: 12px; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
+  section > .question { font-size: 17px; font-style: italic; margin: -4px 0 6px; }
+  section > .facts { font-size: 14px; margin: 0 0 12px; padding-left: 18px; }
   section > .lead { color: var(--muted); font-size: 14px; margin: -6px 0 12px; }
   nav { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
   nav a, .btn { color: var(--text); text-decoration: none; padding: 5px 10px; border: 1px solid var(--line);
@@ -304,7 +306,7 @@ function makeCard(chart, observer) {
   const focusSer = chart.series.filter(s => ((DATA.comparison || {}).focus || []).includes(s.member) && s.x.length);
   const lasts = (focusSer.length ? focusSer : chart.series.filter(s => s.x.length)).map(lastLine);
   chartNo += 1;
-  card.innerHTML = `<h3>Grafik ${chartNo}: ${esc(chart.title)}</h3>
+  card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(chart.title)}</h3>
     <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
   const src = document.createElement("div"); src.className = "src";
@@ -358,7 +360,10 @@ function build() {
   (DATA.panels || []).forEach(panel => {
     const a = document.createElement("a"); a.href = `#${panel.id}`; a.textContent = panel.title; nav.appendChild(a);
     const sec = document.createElement("section"); sec.id = panel.id;
-    sec.innerHTML = `<h2>${esc(panel.title)}</h2>` + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "");
+    sec.innerHTML = `<h2>${esc(panel.title)}</h2>`
+      + (panel.question ? `<p class="question">${esc(panel.question)}</p>` : "")
+      + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "")
+      + ((panel.facts || []).length ? `<ul class="facts">${panel.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "");
     const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
     [panel.left, panel.right].forEach(chart => pair.appendChild(makeCard(chart, observer)));
     content.appendChild(sec);

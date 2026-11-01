@@ -98,3 +98,25 @@ def test_is_outdated():
     assert not pipeline.is_outdated(pd.Timestamp("2026-08-01"), "M", today)
     assert not pipeline.is_outdated(pd.Timestamp("2024-01-01"), "A", today)
     assert pipeline.is_outdated(pd.Timestamp("2026-08-15"), "D", today)
+
+
+def test_panel_facts_rank_and_history():
+    from konjunkturwolf.dashboard import panel_facts
+
+    class Cat:
+        comparison = {"focus": ["DE", "DEU"]}
+
+    def s(member, label, x, y, freq="monatlich"):
+        return {"member": member, "label": label, "x": x, "y": y, "frequency": freq}
+
+    sides = {
+        "right": {"series": [s("DE", "Deutschland", ["2026-09-01"], [2.0]),
+                             s("FR", "Frankreich", ["2026-09-01"], [3.0]),
+                             s("IT", "Italien", ["2026-09-01"], [1.0])]},
+        "left": {"series": [s("DEU", "Deutschland", [f"{y}-01-01" for y in range(1900, 1940)],
+                              [float(i % 4) for i in range(40)], "jährlich")]},
+    }
+    facts = panel_facts(Cat(), sides)
+    assert facts[0] == "Zuletzt (September 2026): Deutschland 2,0 %."
+    assert facts[1].startswith("Rang 2 von 3 Ländern")
+    assert "in 50 % der Jahre darunter" in facts[2]
