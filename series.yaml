@@ -89,6 +89,16 @@ panels:
     question: "Sind die Zinsen nach der Nullzinsphase wieder normal? Dazu Abb. 7 und 8."
     left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870, % p. a."}
     right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell, % p. a.", decimals: 1}
+  - id: zinsstruktur
+    title: Zinsabstand
+    question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand ging oft einer Rezession voraus. Dazu Abb. 9 und 10."
+    left: {chart: lang_term, title: "Zinsabstand lang minus kurz seit 1870, Pp"}
+    right: {chart: now_term, title: "Zinsabstand aktuell, Pp", decimals: 1}
+  - id: spreads
+    title: Spreads
+    question: "Wie viel mehr Zins zahlen die Nachbarn als Deutschland? Steigende Abstände zeigen Stress im Euroraum. Dazu Abb. 11 und 12."
+    left: {chart: lang_spread, title: "Renditeabstand zu Deutschland seit 1870, Pp"}
+    right: {chart: eu_spread, title: "Renditeabstand zu Deutschland aktuell, Pp", decimals: 1}
 
 # Nur diese Länder erscheinen in den Panels (links und rechts dieselbe Gruppe)
 panel_members: [DE, FR, IT, ES, NL, PL, DEU, FRA, ITA, ESP, NLD, POL]
@@ -145,6 +155,10 @@ charts:
   eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
+  lang_term: {title: "Zinsabstand lang minus kurz, Pp", y_min: -10, y_max: 10, decimals: 1}
+  now_term: {title: "Zinsabstand 10 Jahre minus Geldmarkt, Pp", decimals: 1}
+  lang_spread: {title: "Renditeabstand zu Deutschland, Pp", y_min: -5, y_max: 15, decimals: 1}
+  eu_spread: {title: "Renditeabstand zu Deutschland (10 Jahre), Pp", decimals: 1}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
   lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -20, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -20, y_max: 20}
@@ -779,6 +793,67 @@ series:
     chart: eu_ltrate
     label: Polen
 
+  - id: ea_euribor3m
+    block: finanzen
+    source: ecb
+    key: FM/M.U2.EUR.RT.MM.EURIBOR3MD_.HSTA
+    title: 3-Monats-Euribor (Monatsdurchschnitt)
+    unit: "% p. a."
+    frequency: M
+    adjustment: nicht bereinigt
+    label: 3-Monats-Euribor
+
+  - id: eu_term
+    expand: {geo: [DE, FR, IT, ES, NL]}
+    block: eu
+    source: derived
+    derive: {from: "eu_ltrate_{geo_id}", minus: ea_euribor3m, op: diff}
+    title: "Zinsabstand {geo_name}: Rendite 10 Jahre minus 3-Monats-Euribor"
+    unit: "Pp"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: now_term
+    label: "{geo_name}"
+    note: Eigene Berechnung aus EZB-Konvergenzzins und 3-Monats-Euribor.
+
+  - id: de_term_2y
+    block: finanzen
+    source: derived
+    derive: {from: de_bund10_bbk, minus: de_bund2_bbk, op: diff}
+    title: "Zinsabstand Bund 10 Jahre minus 2 Jahre"
+    unit: "Pp"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: now_term
+    label: "DE 10 J minus 2 J"
+    note: Eigene Berechnung aus der Zinsstruktur der Bundesbank.
+
+  - id: eu_spread
+    expand: {geo: [FR, IT, ES, NL]}
+    block: eu
+    source: derived
+    derive: {from: "eu_ltrate_{geo_id}", minus: eu_ltrate_de, op: diff}
+    title: "Renditeabstand {geo_name} zu Deutschland (10 Jahre)"
+    unit: "Pp"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: eu_spread
+    label: "{geo_name}"
+    note: Eigene Berechnung aus den EZB-Konvergenzzinsen.
+
+  - id: eu_spread_pl
+    member: PL
+    block: eu
+    source: derived
+    derive: {from: eu_ltrate_pl, minus: eu_ltrate_de, op: diff}
+    title: Renditeabstand Polen zu Deutschland (10 Jahre)
+    unit: "Pp"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: eu_spread
+    label: Polen
+    note: Eigene Berechnung aus den EZB-Konvergenzzinsen; Polen in Zloty, Abstand enthält Währungsrisiko.
+
   # ------------------------------------------------------------------
   # 5. Langfristig: Global Macro Database (Makro) und JST (Finanzen)
   # ------------------------------------------------------------------
@@ -920,3 +995,33 @@ series:
     start: "1870-01-01"
     stale_after_months: 1200
     note: JST Macrohistory Database, Release 6 (Jordà, Schularick, Taylor 2017), endet 2020. Lizenz CC BY-NC-SA 4.0.
+
+  - id: lang_term
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD]}
+    block: lang
+    source: derived
+    derive: {from: "lang_ltrate_{geo_id}", minus: "lang_stir_{geo_id}", op: diff}
+    title: "Zinsabstand {geo_name}: langer minus kurzer Zins"
+    unit: "Pp"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_term
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: Eigene Berechnung aus JST (ltrate minus stir), endet 2020.
+
+  - id: lang_spread
+    expand: {geo: [FRA, ITA, ESP, NLD]}
+    block: lang
+    source: derived
+    derive: {from: "lang_ltrate_{geo_id}", minus: lang_ltrate_deu, op: diff}
+    title: "Renditeabstand {geo_name} zu Deutschland (langer Zins)"
+    unit: "Pp"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_spread
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: Eigene Berechnung aus JST (ltrate), endet 2020.

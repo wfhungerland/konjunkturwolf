@@ -158,11 +158,11 @@ Welche Reihen beim letzten Lauf Daten lieferten, steht im Blatt Info der xlsx un
 
 ## Webseite
 
-Die Webseite zeigt vier Kernindikatoren: Inflation, Wachstum, Arbeitslosigkeit und Zinsen. Jeder bekommt eine Zeile mit zwei Grafiken, links den langen Rand seit 1870, rechts die letzten fünf Jahre. Welche Diagramme oder Reihen dort stehen, steht in `series.yaml` unter `panels`. Alle übrigen Reihen liegen im Excel-Workbook.
+Die Webseite zeigt sechs Kernindikatoren: Inflation, Wachstum, Arbeitslosigkeit, Zinsen, Zinsabstand und Spreads. Jeder bekommt eine Zeile mit zwei Abbildungen, links den langen Rand seit 1870, rechts die letzten fünf Jahre. Beide Seiten zeigen dieselbe Größe und dieselben Länder. Die lange Reihe wird mit Jahresmitteln der aktuellen Werte bis heute verlängert; rechts zeigt eine blaue Fläche die mittleren 50 % der deutschen Jahreswerte seit 1870. Der Knopf „Gleiche Skala“ legt beide Abbildungen auf eine Werteachse. Welche Diagramme oder Reihen dort stehen, steht in `series.yaml` unter `panels`. Alle übrigen Reihen liegen im Excel-Workbook.
 
 ## Grafikstil
 
-Die Diagramme folgen dem Hausstandard: feste Linienfarben (#002060, #0070C0, #00B0F0, #51154A, #7030A0, #D86DCD, #47D359), Werteachse rechts ohne Linie, Einheit an der obersten Zahl, Jahreszahl mittig unter dem Jahr, alternierende Jahresbänder, rote Nulllinie, Legende oben links. In den Diagrammen steht Arial Narrow, auf der Seite Palatino. Jahresbänder bei 80 % Transparenz, alle Grafiken sind durchnummeriert.
+Die Diagramme folgen dem Hausstandard: feste Linienfarben (#002060, #0070C0, #00B0F0, #51154A, #7030A0, #D86DCD, #47D359), Werteachse rechts ohne Linie, Einheit an der obersten Zahl, Jahreszahl mittig unter dem Jahr, alternierende Jahresbänder, rote Nulllinie, Legende oben links. In den Diagrammen steht Arial Narrow, auf der Seite Palatino. Jahresbänder bei 80 % Transparenz, alle Abbildungen sind durchnummeriert (Abb. 1, 2, …).
 
 **Ländervergleiche:** Deutschland läuft als kräftige Linie vor einer grauen Fläche. Die Fläche zeigt die Spanne (Minimum bis Maximum) der Vergleichsländer. Jedes Vergleichsland ist zusätzlich als hellgraue Linie einzeln anfahrbar. Fokus- und Vergleichsländer stehen in `series.yaml` unter `comparison`.
 

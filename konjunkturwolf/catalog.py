@@ -13,7 +13,7 @@ import yaml
 SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
-DERIVE_OPS = {"yoy_pct"}
+DERIVE_OPS = {"yoy_pct", "diff"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 PLACEHOLDER_PATTERN = re.compile(r"\{[a-z_]+\}")
@@ -189,6 +189,7 @@ def expand_entry(entry: dict[str, Any], names: dict[str, dict[str, str]]) -> lis
         mapping = {k: str(v) for k, v in zip(keys, combo)}
         for k in keys:
             mapping[f"{k}_name"] = names.get(k, {}).get(mapping[k], mapping[k])
+            mapping[f"{k}_id"] = mapping[k].lower()  # für Verweise auf andere Reihen-IDs
         new = _format_value(base, mapping)
         suffix = "_".join(str(v).lower() for v in combo)
         new["id"] = f"{base['id']}_{suffix}"
@@ -287,6 +288,12 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                 errors.append(f"{s.id}: abgeleitet von unbekannter Reihe '{src}'.")
             elif by_id[src].source == "derived":
                 errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
+            if s.derive.get("op") == "diff":
+                other = s.derive.get("minus")
+                if other not in ids:
+                    errors.append(f"{s.id}: 'derive.minus' fehlt oder ist unbekannt ('{other}').")
+                elif by_id[other].source == "derived":
+                    errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
 
     if errors:
         raise CatalogError(errors)

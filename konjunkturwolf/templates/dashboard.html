@@ -39,7 +39,12 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr)); gap: 16px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 8px; }
   .card h3 { font-size: 16px; margin: 0 0 2px; }
+  .card .sub, .card .src, .card .missing { font-family: "Arial Narrow", "Arial", sans-serif; font-stretch: condensed; }
   .card .sub { color: var(--muted); font-size: 13px; }
+  .head2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .head2 h2 { margin: 8px 0 12px; }
+  .scale { font-size: 13px; padding: 2px 10px; }
+  .scale.on { border-color: var(--accent); color: var(--accent); }
   .card .chart { aspect-ratio: 5 / 2; min-height: 220px; margin-top: 6px; background: #fff; border-radius: 4px; }
   .card .src { color: var(--muted); font-size: 12px; margin: 4px 0; }
   .card .src a { color: var(--accent); }
@@ -93,7 +98,8 @@ const HS = {
   thin: 0.5,                            // 0,25 Pt am Bildschirm
   line: 3,                              // Datenlinie
   peerBand: "rgba(170, 170, 170, 0.22)", // Spanne der Vergleichsländer
-  peerLine: "#B4B4B4",                  // Einzelne Vergleichsländer, hellgrau
+  peerLine: "#B4B4B4",
+  histBand: "rgba(0, 112, 192, 0.15)",  // mittlere 50 % der deutschen Jahreswerte (lange Reihe)                  // Einzelne Vergleichsländer, hellgrau
 };
 const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
 let rangeYears = 10;
@@ -140,14 +146,21 @@ function shortUnit(units) {
   return "";
 }
 // Werteachse: runde Stufen, je ein Drittel Stufe Luft oben und unten, Einheit an der obersten Zahl
-function yAxis(series, range, unit, limits, fixedDecimals) {
+function yBounds(series, range, limits, extra) {
   let lo = Infinity, hi = -Infinity;
   series.forEach(s => s.x.forEach((x, i) => {
     if (x >= range[0] && x <= range[1]) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
   }));
+  (extra || []).forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); });
   if (!isFinite(lo)) return null;
   if (limits && limits[0] != null) lo = Math.max(lo, limits[0]);
   if (limits && limits[1] != null) hi = Math.min(hi, limits[1]);
+  return [lo, hi];
+}
+function yAxis(series, range, unit, limits, fixedDecimals, forced, extra) {
+  const b = forced || yBounds(series, range, limits, extra);
+  if (!b) return null;
+  let [lo, hi] = b;
   if (lo === hi) { lo -= 1; hi += 1; }
   const step = niceStep(hi - lo, 4), d = fixedDecimals != null ? fixedDecimals : decimals(step);
   const first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
@@ -191,9 +204,20 @@ function houseAxes(el, chart) {
   const data = chart.series.filter(s => s.x.length);
   const range = xRange(data, chart.full, chart.years);
   const units = [...new Set(data.map(s => s.unit))];
-  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max], chart.decimals);
+  const h = chart.history;
+  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max], chart.decimals,
+                   el._shared || null, h ? [h.p25, h.p75] : null);
   const xa = xAxis(range, el.clientWidth || 560);
   const shapes = xa.shapes.slice();
+  if (h) {
+    shapes.push({ type: "rect", xref: "paper", yref: "y", x0: 0, x1: 1, y0: h.p25, y1: h.p75,
+                  fillcolor: HS.histBand, line: { width: 0 }, layer: "below" });
+    shapes.push({ type: "line", xref: "paper", yref: "y", x0: 0, x1: 1, y0: h.p50, y1: h.p50,
+                  line: { color: PALETTE[1], width: 1.5, dash: "dash" }, layer: "below" });
+  }
+  const ext = data.map(s => s.ext_from).filter(Boolean).sort()[0];
+  if (ext) shapes.push({ type: "line", xref: "x", yref: "paper", x0: ext, x1: ext, y0: 0, y1: 1,
+                         line: { color: "#7F7F7F", width: 1, dash: "dot" } });
   return {
     "xaxis.range": range, "xaxis.tickvals": xa.vals, "xaxis.ticktext": xa.text,
     "yaxis.range": ya ? ya.range : undefined, "yaxis.tickvals": ya ? ya.vals : undefined,
@@ -248,7 +272,7 @@ function comparisonTraces(withData) {
   }));
   others.forEach((s, i) => traces.push({
     x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
-    line: { color: PALETTE[(i + 1) % PALETTE.length], width: HS.line * 0.6 },
+    line: { color: PALETTE[(i + 2) % PALETTE.length], width: HS.line * 0.6 },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   focus.forEach(s => traces.push({
@@ -280,6 +304,8 @@ function renderChart(el, chart) {
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
+  if (chart.history) traces.push({ x: [null], y: [null], type: "scatter", mode: "lines", hoverinfo: "skip",
+    name: `Median DE ${chart.history.from}\u2013${chart.history.to}`, line: { color: PALETTE[1], width: 1.5, dash: "dash" } });
   const layout = {
     margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
     hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
@@ -327,8 +353,18 @@ function makeCard(chart, observer) {
     <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
   const src = document.createElement("div"); src.className = "src";
-  src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
+  let lastTxt = lasts.map(esc).join(" · ");
+  const lastSer = (focusSer.length ? focusSer : chart.series.filter(s => s.x.length));
+  const lastDates = [...new Set(lastSer.map(s => s.x[s.x.length - 1]))];
+  if (lastSer.length > 1 && lastDates.length === 1)
+    lastTxt = `(${periodLabel(lastDates[0], lastSer[0].frequency)}): ` + lastSer.map(s => esc(`${s.label} ${num1(s.y[s.y.length - 1])} ${hoverUnit(s.unit)}`)).join(" · ");
+  src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt${lastSer.length > 1 && lastDates.length === 1 ? " " : ": "}${lastTxt}` : "");
   card.appendChild(src);
+  const extra = [];
+  if (chart.note) extra.push(chart.note);
+  if (chart.history) extra.push(`Blaue Fläche: mittlere 50 % der deutschen Jahreswerte ${chart.history.from}\u2013${chart.history.to} `
+    + `(${num1(chart.history.p25)} bis ${num1(chart.history.p75)}), gestrichelt der Median (${num1(chart.history.p50)}).`);
+  extra.forEach(t => { const n = document.createElement("div"); n.className = "src"; n.textContent = t; card.appendChild(n); });
   if (chart.y_min != null || chart.y_max != null) {
     const out = [];
     chart.series.forEach(x => {
@@ -380,7 +416,7 @@ function build() {
   const d = new Date(DATA.generated_at);
   document.getElementById("stand").textContent = "Stand: " + d.toLocaleDateString("de-DE");
   document.getElementById("meta").textContent =
-    "Je Indikator links der lange Rand seit 1870, rechts die letzten fünf Jahre. Deutschland dunkelblau, graue Fläche: Spanne der Vergleichsländer.";
+    "Je Indikator links der lange Rand seit 1870, rechts die letzten fünf Jahre. Deutschland dunkelblau, graue Fläche: Spanne der Vergleichsländer, blaue Fläche rechts: übliche Werte Deutschlands seit 1870. „Gleiche Skala“ legt beide Abbildungen auf eine Werteachse.";
   const observer = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { observer.unobserve(e.target); renderChart(e.target, e.target._chart); } });
   }, { rootMargin: "300px" }) : null;
@@ -388,12 +424,33 @@ function build() {
   (DATA.panels || []).forEach(panel => {
     const a = document.createElement("a"); a.href = `#${panel.id}`; a.textContent = panel.title; nav.appendChild(a);
     const sec = document.createElement("section"); sec.id = panel.id;
-    sec.innerHTML = `<h2>${esc(panel.title)}</h2>`
+    sec.innerHTML = `<div class="head2"><h2>${esc(panel.title)}</h2><button class="btn scale" type="button">Gleiche Skala</button></div>`
       + (panel.question ? `<p class="question">${esc(panel.question)}</p>` : "")
       + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "")
       + ((panel.facts || []).length ? `<ul class="facts">${panel.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "");
     const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
     [panel.left, panel.right].forEach(chart => pair.appendChild(makeCard(chart, observer)));
+    const btn = sec.querySelector(".scale");
+    btn.addEventListener("click", () => {
+      const els = [...pair.querySelectorAll(".chart")];
+      const on = !btn.classList.contains("on");
+      btn.classList.toggle("on", on);
+      btn.textContent = on ? "Eigene Skala" : "Gleiche Skala";
+      let shared = null;
+      if (on) {
+        const b = els.map(el => {
+          const c = el._chart, data = c.series.filter(x => x.x.length);
+          if (!data.length) return null;
+          const h = c.history;
+          return yBounds(data, xRange(data, c.full, c.years), [c.y_min, c.y_max], h ? [h.p25, h.p75] : null);
+        }).filter(Boolean);
+        if (b.length) shared = [Math.min(...b.map(x => x[0])), Math.max(...b.map(x => x[1]))];
+      }
+      els.forEach(el => {
+        el._shared = shared;
+        if (el._fullLayout) Plotly.relayout(el, houseAxes(el, el._chart));
+      });
+    });
     content.appendChild(sec);
   });
 }

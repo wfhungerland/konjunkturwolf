@@ -156,14 +156,21 @@ def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | No
         st = SeriesStatus(series_id=spec.id, status="failed", api_url=api_url_hint(spec))
         try:
             if spec.source == "derived":
+                def _base(bid: str) -> pd.DataFrame:
+                    b = fetched.get(bid)
+                    if b is None:
+                        prev_base = previous[previous["series_id"] == bid]
+                        if prev_base.empty:
+                            raise SkipSeries(f"Basisreihe {bid} nicht verfügbar.")
+                        b = prev_base[["date", "value"]]
+                    return b
+
                 base_id = spec.derive["from"]
-                base = fetched.get(base_id)
-                if base is None:
-                    prev_base = previous[previous["series_id"] == base_id]
-                    if prev_base.empty:
-                        raise SkipSeries(f"Basisreihe {base_id} nicht verfügbar.")
-                    base = prev_base[["date", "value"]]
-                data = derive_series(spec, base)
+                base = _base(base_id)
+                other = _base(spec.derive["minus"]) if spec.derive.get("minus") else None
+                data = derive_series(spec, base, other)
+                if spec.derive.get("minus"):
+                    base_id = f"{base_id} minus {spec.derive['minus']}"
                 retrieved = _iso(datetime.now(timezone.utc))
                 st.status = "ok"
                 st.message = f"berechnet aus {base_id}"

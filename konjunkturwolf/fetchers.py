@@ -250,12 +250,18 @@ def api_url_hint(spec: SeriesSpec) -> str:
     return ""
 
 
-def derive_series(spec: SeriesSpec, base: pd.DataFrame) -> pd.DataFrame:
+def derive_series(spec: SeriesSpec, base: pd.DataFrame, other: pd.DataFrame | None = None) -> pd.DataFrame:
     """Berechnet abgeleitete Reihen aus einer Basisreihe (Spalten date/value)."""
     op = spec.derive.get("op")
     if op == "yoy_pct":
         prev = base.assign(date=base["date"] + pd.DateOffset(years=1)).rename(columns={"value": "prev"})
         merged = base.merge(prev, on="date", how="inner")
         merged["value"] = (merged["value"] / merged["prev"] - 1.0) * 100.0
+        return merged[["date", "value"]].dropna().reset_index(drop=True)
+    if op == "diff":
+        if other is None:
+            raise ValueError("Ableitung diff braucht eine zweite Reihe (minus).")
+        merged = base.merge(other.rename(columns={"value": "other"}), on="date", how="inner")
+        merged["value"] = merged["value"] - merged["other"]
         return merged[["date", "value"]].dropna().reset_index(drop=True)
     raise ValueError(f"Unbekannte Ableitung: {op}")
