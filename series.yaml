@@ -94,7 +94,7 @@ names:
 
 charts:
   de_gdp: {title: "BIP real, Veränderung in %"}
-  de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP, Prozentpunkte", kind: stacked}
+  de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal, Prozentpunkte", kind: stacked}
   de_cpi: {title: "Verbraucherpreisindex (VPI), 2020=100"}
   de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat"}
   de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat"}
@@ -302,23 +302,23 @@ series:
     block: konjunktur
     source: eurostat
     key: namq_10_gdp
-    params: {geo: DE, na_item: "{item}", unit: CON_PPCH_SM, s_adj: SCA}
+    params: {geo: DE, na_item: "{item}", unit: CON_PPCH_PRE, s_adj: SCA}
     title: "Wachstumsbeitrag {item_name}"
-    unit: Pp gg. Vorjahresquartal
+    unit: Pp gg. Vorquartal
     frequency: Q
     adjustment: preis-, saison- und kalenderbereinigt
     chart: de_gdp_contrib
     label: "{item_name}"
     style: bar
-    note: Beitrag zur Veränderung des realen BIP gegenüber dem Vorjahresquartal in Prozentpunkten (Eurostat).
+    note: Beitrag zur Veränderung des realen BIP gegenüber dem Vorquartal in Prozentpunkten (Eurostat). Die Summe der Beiträge weicht wegen der Verkettung leicht von der BIP-Rate ab.
 
   - id: de_gdp_contrib_total
     block: konjunktur
     source: eurostat
     key: namq_10_gdp
-    params: {geo: DE, na_item: B1GQ, unit: CLV_PCH_SM, s_adj: SCA}
-    title: BIP real, % gg. Vorjahresquartal (Summe der Beiträge)
-    unit: "% gg. Vorjahresquartal"
+    params: {geo: DE, na_item: B1GQ, unit: CLV_PCH_PRE, s_adj: SCA}
+    title: BIP real, % gg. Vorquartal
+    unit: "% gg. Vorquartal"
     frequency: Q
     adjustment: preis-, saison- und kalenderbereinigt
     chart: de_gdp_contrib

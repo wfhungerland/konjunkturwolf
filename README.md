@@ -95,7 +95,7 @@ Die gefühlte Inflation stammt aus der monatlichen EU-Verbraucherumfrage. Der We
 | `de_gdp_qoq` | BIP real, % gg. Vorquartal | % gg. Vorquartal | quartalsw. | Eurostat |
 | `de_gdp_yoy` | BIP real, % gg. Vorjahresquartal | % gg. Vorjahresquartal | quartalsw. | Eurostat |
 | `de_unemp_ilo` | Erwerbslosenquote (ILO-Konzept) | % der Erwerbspersonen | monatl. | Eurostat |
-| `de_gdp_contrib_<item>` | Wachstumsbeiträge zum realen BIP: Konsum, Staat, Investitionen, Vorräte, Außenbeitrag | Pp gg. Vorjahresquartal | quartalsw. | Eurostat |
+| `de_gdp_contrib_<item>` | Wachstumsbeiträge zum realen BIP: Konsum, Staat, Investitionen, Vorräte, Außenbeitrag | Pp gg. Vorquartal | quartalsw. | Eurostat |
 | `de_employment` | Erwerbstätige (Inlandskonzept) | Tsd. Personen | quartalsw. | Eurostat |
 | `de_ip` | Produktion in der Industrie (ohne Bau) | Index 2021=100 | monatl. | Eurostat |
 | `de_orders` | Auftragseingang Verarbeitendes Gewerbe, real | Index 2021=100 | monatl. | Destatis GENESIS |
