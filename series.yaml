@@ -439,7 +439,7 @@ series:
     block: energie
     source: genesis
     key: "61241-0002"
-    params: {value_variable: PRE001}
+    params: {value_variable: PRE001, value_unit: "2021=100"}
     title: Erzeugerpreisindex gewerblicher Produkte (Inlandsabsatz)
     unit: Index 2021=100
     frequency: M

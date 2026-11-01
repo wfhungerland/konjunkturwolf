@@ -206,11 +206,14 @@ def parse_genesis_ffcsv(
     text: str,
     value_variable: str | None = None,
     filters: dict[str, str] | None = None,
+    value_unit: str | None = None,
 ) -> pd.DataFrame:
     """GENESIS-Tabelle im Format ffcsv.
 
     value_variable: Code des Wertmerkmals (z. B. PREIS1).
     filters: {Merkmal-Code: Ausprägungs-Code}, z. B. {"WZ08V2": "WZ08-C"}.
+    value_unit: Einheit der Werte, z. B. "2021=100", wenn eine Tabelle Index und
+        Veränderungsraten unter demselben Wertmerkmal führt.
     """
     text = text.lstrip("﻿")
     stripped = text.lstrip()
@@ -256,6 +259,12 @@ def parse_genesis_ffcsv(
             avail = ", ".join(sorted(df["value_variable_code"].unique()))
             raise ParseError(f"Wertmerkmal '{value_variable}' fehlt; vorhanden: {avail}")
         df = df[df["value_variable_code"] == value_variable]
+
+    if value_unit and "value_unit" in df.columns:
+        if not (df["value_unit"] == value_unit).any():
+            avail = ", ".join(sorted(df["value_unit"].unique()))
+            raise ParseError(f"Einheit '{value_unit}' fehlt; vorhanden: {avail}")
+        df = df[df["value_unit"] == value_unit]
 
     sub_col = None
     for i in var_idx:

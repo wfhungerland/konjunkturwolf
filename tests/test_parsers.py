@@ -233,3 +233,18 @@ def test_genesis_zip_is_unpacked(fixture_text):
     text = genesis_text(buf.getvalue())
     assert parse_genesis_ffcsv(text, value_variable="PREIS1")["value"].tolist() == [117.6, 118.1, 118.6]
     assert genesis_text("ä;b".encode("cp1252")) == "ä;b"
+
+
+def test_genesis_value_unit_selects_index():
+    head = "statistics_code;time;1_variable_code;1_variable_attribute_code;value;value_unit;value_variable_code\n"
+    rows = [
+        "61241;2012;MONAT;MONAT01;0.4;%;PRE001",
+        "61241;2012;MONAT;MONAT01;2.9;%;PRE001",
+        "61241;2012;MONAT;MONAT01;89.7;2021=100;PRE001",
+        "61241;2012;MONAT;MONAT02;90.0;2021=100;PRE001",
+    ]
+    text = head + "\n".join(rows) + "\n"
+    with pytest.raises(ParseError, match="Mehrere Werte"):
+        parse_genesis_ffcsv(text, value_variable="PRE001")
+    df = parse_genesis_ffcsv(text, value_variable="PRE001", value_unit="2021=100")
+    assert df["value"].tolist() == [89.7, 90.0]

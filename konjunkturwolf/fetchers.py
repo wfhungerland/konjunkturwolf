@@ -138,6 +138,7 @@ def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
         genesis_text(resp.raw or resp.text.encode("utf-8")),
         value_variable=spec.params.get("value_variable"),
         filters=spec.params.get("filters"),
+        value_unit=spec.params.get("value_unit"),
     )
     api_url = f"{GENESIS_BASE}/data/tablefile?name={spec.key}&format=ffcsv"
     return FetchResult(_since(df, spec), api_url, resp.retrieved_at, resp.from_cache)
