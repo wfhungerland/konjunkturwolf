@@ -82,7 +82,7 @@ panels:
   - id: arbeit
     title: Arbeitslosigkeit
     question: "Ist die Arbeitslosigkeit im langen Vergleich niedrig? Dazu {abb}."
-    left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %"}
+    left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %", note: "Frühe Jahre beruhen auf anderen Erhebungen (z. B. Gewerkschaftsstatistiken) und sind nur grob mit der heutigen ILO-Quote vergleichbar; seit 2010 stimmt die Reihe mit der ILO-Quote überein."}
     right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
   - id: zinsen
     title: Zinsen
@@ -91,7 +91,7 @@ panels:
     right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell, % p. a.", decimals: 1}
   - id: krise
     title: Industrie in der Krise
-    question: "Wie tief ist der Rückgang der Industrie seit 2017 im Vergleich zur Weltwirtschaftskrise und zur Finanzkrise? Dazu {abb}."
+    question: "Wie tief und wie lang ist der jüngste Rückgang der Industrie, verglichen mit der Weltwirtschaftskrise und der Finanzkrise? Dazu {abb}."
     left:
       title: "Industrieproduktion nach dem Hoch, Hoch = 100"
       years: 8
@@ -103,7 +103,8 @@ panels:
   - id: preise
     title: Erzeugerpreise
     question: "Schwanken die Preise heute stärker als im Kaiserreich? Großhandelspreise damals, Erzeugerpreise heute. Dazu {abb}."
-    left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914, % gg. Vorjahresmonat"}
+    facts: [volatility]
+    left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914, % gg. Vorjahresmonat", note: "Der Hamburger Index enthält vor allem Rohstoffe und Lebensmittel, die Erzeugerpreise heute gewerbliche Produkte. Beide reagieren stark auf Rohstoffpreise, sind aber nicht deckungsgleich."}
     right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell, % gg. Vorjahresmonat", decimals: 1}
   - id: offenheit
     title: Offenheit
@@ -112,14 +113,14 @@ panels:
     right: {chart: eu_open, title: "Exporte plus Importe aktuell, % des BIP", decimals: 0}
   - id: zinsstruktur
     title: Zinsabstand
-    question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand ging oft einer Rezession voraus. Dazu {abb}."
+    question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand gilt vor allem in den USA als Rezessionssignal. Dazu {abb}."
     left: {chart: lang_term, title: "Zinsabstand lang minus kurz seit 1870, Pp"}
     right: {chart: now_term, title: "Zinsabstand aktuell, Pp", decimals: 1}
   - id: spreads
     title: Spreads
     question: "Wie viel mehr Zins zahlen die Nachbarn als Deutschland? Steigende Abstände zeigen Stress im Euroraum. Dazu {abb}."
     left: {chart: lang_spread, title: "Renditeabstand zu Deutschland seit 1870, Pp"}
-    right: {chart: eu_spread, title: "Renditeabstand zu Deutschland aktuell, Pp", decimals: 1}
+    right: {chart: eu_spread, title: "Renditeabstand zu Deutschland aktuell, Pp", decimals: 1, note: "Polen: Anleihen in Zloty, der Abstand enthält auch Währungs- und Inflationserwartungen."}
 
 # Nur diese Länder erscheinen in den Panels (links und rechts dieselbe Gruppe)
 panel_members: [DE, FR, IT, ES, NL, PL, DEU, FRA, ITA, ESP, NLD, POL]
