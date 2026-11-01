@@ -52,7 +52,9 @@
     .ov th:nth-child(3), .ov td:nth-child(3) { display: none; }
     .ov { font-size: 13px; } .ov td { padding-right: 6px; }
     .ov td:nth-child(1) { white-space: normal; }
-    .ov td:nth-child(2) svg { width: 80px; } .ov td:nth-child(5) svg { width: 70px; }
+    .ov td:nth-child(2) svg { width: 72px; } .ov td:nth-child(5) svg { width: 64px; }
+    .ov { table-layout: fixed; } .ov th:nth-child(1), .ov td:nth-child(1) { width: 30%; }
+    .ov .per { white-space: normal; }
     .ov .per { display: block; margin: 0; } .ov .lage { display: none; }
   }
   .card .dl { font-family: "Arial Narrow", Arial, sans-serif; font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
@@ -60,6 +62,12 @@
   .card .dl.io a { margin-right: 0; }
   .cite { font-size: 13px; background: #fff; border-left: 3px solid #0070C0; padding: 8px 12px; margin: 0 0 14px; }
   .cite a { color: var(--accent); }
+  .refs { max-width: 1280px; margin: 24px auto 0; padding: 0 16px; font-size: 14px; }
+  .refs h2 { font-size: 20px; } .refs ol { padding-left: 20px; } .refs li { margin-bottom: 4px; }
+  .card .lic { font-family: "Arial Narrow", Arial, sans-serif; font-size: 11.5px; color: var(--muted); }
+  .card details.notes { margin: 2px 0; }
+  .card details.notes summary { font-family: "Arial Narrow", Arial, sans-serif; font-size: 12px; color: var(--accent); cursor: pointer; }
+  .card details.notes .src { margin: 3px 0 3px 12px; }
   .card .sub { color: var(--muted); font-size: 13px; }
   .head2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .head2 h2 { margin: 8px 0 12px; }
@@ -102,12 +110,22 @@
   <table class="ov" id="top"><thead><tr><th>Thema</th><th>Langer Rand</th><th>Letzte 5 Jahre</th><th class="num">Zuletzt</th><th>Lage zur Geschichte</th></tr></thead><tbody id="ovbody"></tbody></table>
   <div id="content"></div>
 </main>
-<footer>
-  Daten: Destatis, Deutsche Bundesbank, EZB, Eurostat, Global Macro Database (Müller u. a. 2025), JST Macrohistory Database (Jordà, Schularick, Taylor), NBER Macrohistory Database, TRADHIST (Fouquin, Hugot 2017), Input-Output-Tabelle 1936 (Fremdling, Stäglin 2014). Werte unverändert aus den Quellen.
-  Perioden sind auf ihren ersten Tag datiert. Alle weiteren Reihen, Details und Direktlinks im
-  <a href="konjunkturwolf.xlsx" download>Excel-Workbook</a> (Blatt Quellen) und auf
-  <a href="https://github.com/wfhungerland/konjunkturwolf">GitHub</a>.
-</footer>
+<section class="refs" id="quellen">
+  <h2>Quellen und Zitation</h2>
+  <p><b>Zitiervorschlag:</b> <span id="citation"></span></p>
+  <p><b>Bearbeitung:</b> Die Werte stammen aus den genannten Quellen. Eigene Bearbeitungen sind gekennzeichnet:
+  abgeleitete Reihen (Raten, Differenzen, Summen), die Verlängerung langer Reihen mit Jahresmitteln aktueller Werte,
+  Jahresmittel und Indexierungen im Krisenvergleich sowie die Verdichtung der Input-Output-Tabellen auf 12 Sektoren.
+  Perioden sind auf ihren ersten Tag datiert.</p>
+  <p><b>Lizenzen:</b> Für jede Abbildung stehen die Lizenzen der verwendeten Daten unter der Abbildung und im Blatt Info der Excel-Datei.
+  Daten aus der JST Macrohistory Database stehen unter CC BY-NC-SA 4.0, abgeleitete Daten daraus ebenfalls;
+  die Global Macro Database erlaubt nur nicht-kommerzielle Nutzung.</p>
+  <p><b>Literatur und Daten:</b></p>
+  <ol id="references"></ol>
+  <p>Alle Reihen mit Direktlinks: <a href="konjunkturwolf.xlsx" download>Excel-Workbook</a> (Blatt Quellen);
+  Code und Methodik: <a href="https://github.com/wfhungerland/konjunkturwolf">GitHub</a>.</p>
+</section>
+<footer>konjunkturwolf · Wolf-Fabian Hungerland</footer>
 <script>
 const DATA = /*__DATA__*/null;
 // Hausstandard: Farben, Linien, Achsen (siehe README, Abschnitt Grafikstil)
@@ -343,11 +361,18 @@ function renderChart(el, chart) {
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
+  const focusIds = (DATA.comparison || {}).focus || [];
+  withData.filter(s => s.partial_last).forEach((s, i) => {
+    const isFocus = focusIds.includes(s.member) || chart.kind === "episodes";
+    if (!isFocus) return;
+    traces.push({ x: [s.x[s.x.length - 1]], y: [s.y[s.y.length - 1]], type: "scatter", mode: "markers", showlegend: false,
+      marker: { symbol: "circle-open", size: 10, color: PALETTE[0], line: { width: 2 } }, hoverinfo: "skip" });
+  });
   if (chart.history) traces.push({ x: [null], y: [null], type: "scatter", mode: "lines", hoverinfo: "skip",
     name: `Median DE ${chart.history.from}\u2013${chart.history.to}`, line: { color: PALETTE[1], width: 1.5, dash: "dash" } });
   const layout = {
     margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
-    hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
+    hovermode: TOUCH ? "closest" : "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
     barmode: "relative", bargap: 0.2, hoverlabel: { font: { family: HS.font } },
     legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: TOUCH ? 11 : 12 } },
     font: { family: HS.font, size: 13, color: "#000000" },
@@ -399,6 +424,8 @@ function makeCard(chart, observer) {
     lastTxt = `(${periodLabel(lastDates[0], lastSer[0].frequency)}): ` + lastSer.map(s => esc(`${s.label} ${num1(s.y[s.y.length - 1])} ${hoverUnit(s.unit)}`)).join(" · ");
   src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt${lastSer.length > 1 && lastDates.length === 1 ? " " : ": "}${lastTxt}` : "");
   card.appendChild(src);
+  const lics = [...new Set(chart.series.filter(x => x.x.length && x.license).map(x => x.license))];
+  if (lics.length) { const l = document.createElement("div"); l.className = "lic"; l.textContent = "Lizenz: " + lics.join("; "); card.appendChild(l); }
   const dl = chart.downloads || {};
   if (dl.xlsx || dl.csv || dl.dta) {
     const d = document.createElement("div"); d.className = "dl";
@@ -410,7 +437,10 @@ function makeCard(chart, observer) {
   if (chart.note) extra.push(chart.note);
   if (chart.history) extra.push(`Blaue Fläche: mittlere 50 % der deutschen ${chart.history.values || "Jahreswerte"} ${chart.history.from}\u2013${chart.history.to} `
     + `(${num1(chart.history.p25)} bis ${num1(chart.history.p75)}), gestrichelt der Median (${num1(chart.history.p50)}).`);
-  extra.forEach(t => { const n = document.createElement("div"); n.className = "src"; n.textContent = t; card.appendChild(n); });
+  // Hinweise aufklappbar, damit die Karte lesbar bleibt
+  const notes = document.createElement("details"); notes.className = "notes";
+  notes.innerHTML = "<summary>Hinweise zu Daten und Darstellung</summary>";
+  extra.forEach(t => { const n = document.createElement("div"); n.className = "src"; n.textContent = t; notes.appendChild(n); });
   if (chart.y_min != null || chart.y_max != null) {
     const out = [];
     chart.series.forEach(x => {
@@ -431,7 +461,7 @@ function makeCard(chart, observer) {
       const u = shortUnit([...new Set(chart.series.map(x => x.unit))]);
       const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : minus(v.toLocaleString("de-DE")));
       n.textContent = `Achse abgeschnitten bei ${lim[0]} und ${lim[1]}${u ? " " + u : ""}. Außerhalb: ${out.join("; ")}.`;
-      card.appendChild(n);
+      notes.appendChild(n);
     }
   }
   const cmp = DATA.comparison || {};
@@ -439,8 +469,9 @@ function makeCard(chart, observer) {
   if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {
     const n = document.createElement("div"); n.className = "src";
     n.textContent = "Graue Fläche: Spanne (Minimum bis Maximum) von " + peerLabels.join(", ") + ".";
-    card.appendChild(n);
+    notes.appendChild(n);
   }
+  if (notes.children.length > 1) card.appendChild(notes);
   const old = chart.series.filter(s => s.x.length && s.outdated);
   if (old.length) {
     const o = document.createElement("div"); o.className = "missing";
@@ -452,6 +483,8 @@ function makeCard(chart, observer) {
     m.textContent = "Ohne Daten: " + missing.map(s => `${s.label} (${s.status})`).join(", ");
     card.appendChild(m);
   }
+  el.setAttribute("role", "img");
+  el.setAttribute("aria-label", `Abb. ${chartNo}: ${chart.title}. ` + (lasts.length ? "Zuletzt " + lasts.join("; ") + "." : ""));
   if (!chart.series.some(s => s.x.length)) { el.style.height = "auto"; el.textContent = "Keine Daten verfügbar."; }
   else if (observer) observer.observe(el); else renderChart(el, chart);
   return card;
@@ -495,11 +528,11 @@ function buildOverview() {
     const lastR = sr && sr.x.length ? sr.x[sr.x.length - 1] : null;
     const from5 = lastR ? `${Number(lastR.slice(0, 4)) - 5}${lastR.slice(4)}` : null;
     const v = sr && sr.y.length ? sr.y[sr.y.length - 1] : null;
-    const h = R.history;
+    const h = R.history, hv = R.hist_value != null ? R.hist_value : v;
     let share = "";
     if (h && v != null) {
       const ys = (sl || {}).y || [];
-      const below = ys.filter(y => y < v).length;
+      const below = ys.filter(y => y < hv).length;
       if (ys.length) share = `über ${Math.round(100 * below / ys.length)} % der ${h.values}`;
     }
     const tr = document.createElement("tr");
@@ -508,7 +541,7 @@ function buildOverview() {
       + `<td>${spark(sr, 90, 22, null, from5)}</td>`
       + `<td class="num">${v == null ? "" : num1(v) + " " + esc(hoverUnit(sr.unit).replace("Index 2021=100", ""))}`
       + `${lastR ? `<span class="per">${esc((((DATA.comparison || {}).focus || []).includes(sr.member) ? "" : sr.label + ", ") + periodLabel(lastR, sr.frequency))}</span>` : ""}</td>`
-      + `<td>${lage(h, v, 130)}<span class="lage">${esc(share)}</span></td>`;
+      + `<td>${lage(h, hv, 130)}<span class="lage">${esc(share)}</span></td>`;
     body.appendChild(tr);
   });
 }
@@ -518,6 +551,7 @@ function ioCard(title, sub, draw, io) {
   const card = document.createElement("div"); card.className = "card";
   card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(title)}</h3><div class="sub">${esc(sub)}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el.style.aspectRatio = "auto"; el.style.height = "420px";
+  el.setAttribute("role", "img"); el.setAttribute("aria-label", `Abb. ${chartNo}: ${title}. ${sub}`);
   card.appendChild(el);
   const c = io.citation;
   const src = document.createElement("div"); src.className = "src";
@@ -615,6 +649,8 @@ function build() {
   }, { rootMargin: "300px" }) : null;
 
   buildOverview();
+  if (DATA.citation) document.getElementById("citation").textContent = DATA.citation;
+  (DATA.references || []).forEach(r => { const li = document.createElement("li"); li.textContent = r; document.getElementById("references").appendChild(li); });
   (DATA.panels || []).forEach((panel, pi) => {
     const sec = document.createElement("section"); sec.id = panel.id;
     sec.innerHTML = `<div class="head2"><h2>${esc(panel.title)}</h2>${panel.left.kind === "episodes" ? "" : '<button class="btn scale" type="button">Gleiche Skala</button>'}</div>`

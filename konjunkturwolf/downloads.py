@@ -42,7 +42,7 @@ def stata_name(label: str, used: set[str]) -> str:
     return name
 
 
-def write_downloads(side: dict, number: int, folder: Path, source_note: str) -> dict:
+def write_downloads(side: dict, number: int, folder: Path, source_note: str, cite: str = "") -> dict:
     folder.mkdir(parents=True, exist_ok=True)
     stem = f"abb{number:02d}_{side['id']}"
     df, key = chart_frame(side)
@@ -63,6 +63,7 @@ def write_downloads(side: dict, number: int, folder: Path, source_note: str) -> 
     st = df.rename(columns=names)
     labels = {names[c]: c[:80] for c in df.columns}
     dta = folder / f"{stem}.dta"
+    licenses = "; ".join(dict.fromkeys(s.get("license", "") for s in side["series"] if s.get("license")))
     st.to_stata(dta, write_index=False, version=118, variable_labels=labels, data_label=title[:80],
                 convert_dates={"date": "td"} if "date" in st.columns else None)
     files["dta"] = dta.name
@@ -119,5 +120,24 @@ def write_downloads(side: dict, number: int, folder: Path, source_note: str) -> 
             chart.set_size({"width": 720, "height": 400})
             sheet.insert_chart(3, 0, chart)
             sheet.activate()
+        # Info: Zitation, Lizenz, Quellen und Hinweise je Reihe
+        info = wb.add_worksheet("Info")
+        bold = wb.add_format({"bold": True, "font_name": FONT})
+        norm = wb.add_format({"font_name": FONT, "text_wrap": True, "valign": "top"})
+        info.set_column(0, 0, 26); info.set_column(1, 6, 30)
+        rows = [("Abbildung", title), ("Zitiervorschlag", cite), ("Lizenzen", licenses),
+                ("Hinweis", side.get("note", "") or "–"),
+                ("Bearbeitung", "Werte wie von den Quellen geliefert, außer: abgeleitete Reihen (eigene Berechnung), "
+                                "Verlängerung langer Reihen mit Jahresmitteln aktueller Werte (siehe Hinweis), "
+                                "Krisenvergleich als Index Hoch = 100.")]
+        for r_, (k_, v_) in enumerate(rows):
+            info.write(r_, 0, k_, bold); info.write(r_, 1, v_, norm)
+        head = ["Reihe", "Quelle", "Lizenz", "Einheit", "Frequenz", "Direktlink", "Anmerkung"]
+        for c_, h_ in enumerate(head):
+            info.write(len(rows) + 1, c_, h_, bold)
+        for r_, s_ in enumerate([x for x in side["series"] if x["x"]], start=len(rows) + 2):
+            for c_, v_ in enumerate([s_["label"], s_.get("source", ""), s_.get("license", ""), s_.get("unit", ""),
+                                     s_.get("frequency", ""), s_.get("link", ""), s_.get("note", "")]):
+                info.write(r_, c_, v_, norm)
     files["xlsx"] = xlsx.name
     return files

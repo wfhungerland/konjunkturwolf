@@ -119,7 +119,7 @@ def test_panel_facts_rank_and_history():
     facts = panel_facts(Cat(), sides)
     assert facts[0] == "Zuletzt (September 2026): Deutschland 2,0 %."
     assert facts[1].startswith("Von 2 Nachbarn liegen 1 höher und 1 niedriger")
-    assert "Höher als 50 % der Jahreswerte" in facts[2]
+    assert "Der aktuelle Wert ist höher als 50 % der Jahreswerte" in facts[2]
 
 
 def test_extend_long_appends_annual_means():
@@ -130,7 +130,7 @@ def test_extend_long_appends_annual_means():
              "x": ["2020-12-01", "2021-01-01", "2021-02-01"]}
     note = extend_long({"left": {"series": [left]}, "right": {"series": [right]}})
     assert left["x"][-1] == "2021-01-01" and left["y"][-1] == 4.5
-    assert note.startswith("Ab 2021") and "2021 nur bis Februar." in note
+    assert note.startswith("Ab 2021") and "2021 nur bis Februar (hohler Punkt)" in note and left["partial_last"]
 
 
 def test_derive_diff():

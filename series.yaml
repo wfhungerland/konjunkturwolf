@@ -109,7 +109,7 @@ panels:
   - id: offenheit
     title: Offenheit
     question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
-    left: {chart: lang_open, title: "Exporte plus Importe seit 1827, % des BIP", note: "Hellblau: Fouquin und Hugot (2017), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
+    left: {chart: lang_open, title: "Exporte plus Importe seit 1827, % des BIP", note: "Hellblau: Fouquin und Hugot (2016), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
     right: {chart: eu_open, title: "Exporte plus Importe aktuell, % des BIP", decimals: 0}
   - id: zinsstruktur
     title: Zinsabstand
@@ -831,7 +831,7 @@ series:
     adjustment: nicht bereinigt
     label: €STR
     start: "2019-10-01"
-    note: Täglicher €STR der EZB, als Monatsmittel. Nachfolger von EONIA, dem der kurze Zins der JST-Reihe für Deutschland seit 1999 folgt.
+    note: "Täglicher €STR der EZB, als Monatsmittel; heutiger Tagesgeldsatz und Nachfolger von EONIA. Gewählt, weil der kurze Zins der JST-Reihe für Deutschland seit 1999 nahe an Tagesgeldsätzen liegt; eine genaue Übereinstimmung ist nicht geprüft."
 
   - id: eu_term
     expand: {geo: [DE, FR, IT, ES, NL]}
@@ -1189,4 +1189,4 @@ series:
     label: "Zollverein/DE (Fouquin, Hugot)"
     start: "1827-01-01"
     stale_after_months: 2400
-    note: "Fouquin und Hugot (2017), TRADHIST, eigene Summen der bilateralen Ströme je Jahr geteilt durch BIP. Bilaterale Summen erfassen nicht den ganzen Handel und liegen unter dem JST-Niveau (1872 rund 21 % gegen rund 35 %); daher als eigene Linie, nicht angeschlossen."
+    note: "Fouquin und Hugot (2016), TRADHIST, eigene Summen der bilateralen Ströme je Jahr geteilt durch BIP. Bilaterale Summen erfassen nicht den ganzen Handel und liegen unter dem JST-Niveau (1872 rund 21 % gegen rund 35 %); daher als eigene Linie, nicht angeschlossen."
