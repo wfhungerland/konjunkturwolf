@@ -110,7 +110,7 @@ charts:
   de_energy_use: {title: "Energieverbrauch Deutschland"}
   ecb_rates: {title: "EZB-Leitzinsen"}
   de_yields: {title: "Renditen deutscher Bundeswertpapiere"}
-  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand, €Bio."}
+  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand, €Mrd."}
   de_loans_growth: {title: "Kredite an Unternehmen und Haushalte, Wachstum"}
   fx_major: {title: "Wechselkurse: USD, GBP, CHF je Euro"}
   fx_asia: {title: "Wechselkurse: JPY, CNY je Euro"}
@@ -581,8 +581,8 @@ series:
     source: ecb
     key: BSI/M.DE.N.A.A20.A.1.U2.2240.Z01.E
     title: Kredite deutscher MFIs an nichtfinanzielle Unternehmen, Bestand
-    params: {scale: 0.000001}
-    unit: "€Bio."
+    params: {scale: 0.001}
+    unit: "€Mrd."
     frequency: M
     adjustment: nicht bereinigt
     chart: de_loans_stock
@@ -593,8 +593,8 @@ series:
     source: ecb
     key: BSI/M.DE.N.A.A20.A.1.U2.2250.Z01.E
     title: Kredite deutscher MFIs an private Haushalte, Bestand
-    params: {scale: 0.000001}
-    unit: "€Bio."
+    params: {scale: 0.001}
+    unit: "€Mrd."
     frequency: M
     adjustment: nicht bereinigt
     chart: de_loans_stock
