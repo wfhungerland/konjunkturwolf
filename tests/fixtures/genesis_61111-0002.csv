@@ -1,0 +1,6 @@
+statistics_code;statistics_label;time_code;time_label;time;1_variable_code;1_variable_label;1_variable_attribute_code;1_variable_attribute_label;2_variable_code;2_variable_label;2_variable_attribute_code;2_variable_attribute_label;value;value_unit;value_variable_code;value_variable_label;value_q
+61111;Consumer price index;JAHR;Year;2024;DINSG;Germany;DG;Germany;MONAT;Months;MONAT01;January;117.6;2020=100;PREIS1;Consumer price index;e
+61111;Consumer price index;JAHR;Year;2024;DINSG;Germany;DG;Germany;MONAT;Months;MONAT02;February;118.1;2020=100;PREIS1;Consumer price index;e
+61111;Consumer price index;JAHR;Year;2024;DINSG;Germany;DG;Germany;MONAT;Months;MONAT03;March;118.6;2020=100;PREIS1;Consumer price index;e
+61111;Consumer price index;JAHR;Year;2024;DINSG;Germany;DG;Germany;MONAT;Months;MONAT04;April;...;2020=100;PREIS1;Consumer price index;
+61111;Consumer price index;JAHR;Year;2024;DINSG;Germany;DG;Germany;MONAT;Months;MONAT01;January;2.9;%;PREIS2;Change on previous year;e

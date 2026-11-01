@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "konjunkturwolf"
+version = "0.1.0"
+description = "Offizielle Wirtschaftsdaten (Destatis, Bundesbank, EZB, Eurostat) als Excel und Web-Dashboard"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.0",
+  "PyYAML>=6.0",
+  "requests>=2.31",
+  "XlsxWriter>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "openpyxl>=3.1"]
+
+[tool.setuptools]
+packages = ["konjunkturwolf"]
+
+[tool.setuptools.package-data]
+konjunkturwolf = ["templates/*.html", "static/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
