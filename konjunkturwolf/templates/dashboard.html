@@ -56,7 +56,9 @@
     nav { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; }
     nav a { white-space: nowrap; }
     .ranges { margin-left: 0; }
-    .card .chart { aspect-ratio: 4 / 3; }
+    .card .chart { aspect-ratio: 4 / 3; min-height: 260px; }
+    .card { padding: 12px 10px; }
+    section > .question { font-size: 16px; }
     .bar h1 { font-size: 16px; }
   }
 </style>
@@ -208,6 +210,10 @@ function periodLabel(date, freq) {
   if (freq === "täglich") return `${Number(date.slice(8, 10))}. ${MONTHS[m - 1]} ${y}`;
   return `${MONTHS[m - 1]} ${y}`;
 }
+// Handy: Wischen scrollt die Seite, Tippen zeigt Werte; kein Zoom, keine Werkzeugleiste
+const TOUCH = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 700;
+const HOVER_FMT = { "jährlich": "%Y", "vierteljährlich": "Q%q %Y", "monatlich": "%m/%Y", "täglich": "%d.%m.%Y" };
+function hoverUnit(u) { return u.startsWith("%") ? "%" : u; }
 function lastLine(s) {
   if (!s.x.length) return "";
   return `${s.label} ${num1(s.y[s.y.length - 1])} ${s.unit} (${periodLabel(s.x[s.x.length - 1], s.frequency)})`;
@@ -232,23 +238,23 @@ function comparisonTraces(withData) {
     { x: xs, y: xs.map(x => byX.get(x)[0]), type: "scatter", mode: "lines", line: { width: 0 },
       hoverinfo: "skip", showlegend: false, legendgroup: "peers" },
     { x: xs, y: xs.map(x => byX.get(x)[1]), type: "scatter", mode: "lines", line: { width: 0 },
-      fill: "tonexty", fillcolor: HS.peerBand, hoverinfo: "skip", name: "Spanne Vergleichsländer",
+      fill: "tonexty", fillcolor: HS.peerBand, hoverinfo: "skip", name: TOUCH ? "Vergleichsländer" : "Spanne Vergleichsländer",
       legendgroup: "peers" },
   ];
   peers.forEach((s, i) => traces.push({
     x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label, legendgroup: "peers",
     showlegend: false, line: { color: HS.peerLine, width: 1.2 },
-    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+    hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   others.forEach((s, i) => traces.push({
     x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
     line: { color: PALETTE[(i + 1) % PALETTE.length], width: HS.line * 0.6 },
-    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+    hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   focus.forEach(s => traces.push({
     x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
     line: { color: PALETTE[0], width: HS.line },
-    hovertemplate: `%{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+    hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   traces.peerNames = names;
   return traces;
@@ -272,22 +278,23 @@ function renderChart(el, chart) {
   const traces = (chart.kind === "stacked" ? stackedTraces(withData) : null) || comparisonTraces(withData) || withData.map((s, i) => ({
     x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
-    hovertemplate: `%{x|%d.%m.%Y}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
+    hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   const layout = {
     margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
     hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
     barmode: "relative", bargap: 0.2, hoverlabel: { font: { family: HS.font } },
-    legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: 12 } },
+    legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: TOUCH ? 11 : 12 } },
     font: { family: HS.font, size: 13, color: "#000000" },
     paper_bgcolor: "#FFFFFF", plot_bgcolor: "#FFFFFF", separators: ",.",
     xaxis: { type: "date", showgrid: false, showline: false, zeroline: false, ticks: "", tickmode: "array",
-             fixedrange: false },
+             fixedrange: TOUCH, hoverformat: HOVER_FMT[(chart.series.find(x => x.x.length) || {}).frequency] || "%d.%m.%Y" },
+    dragmode: TOUCH ? false : "zoom",
     yaxis: { side: "right", showline: false, zeroline: false, zerolinecolor: HS.zero, zerolinewidth: HS.thin,
              ticks: "", tickmode: "array",
-             showgrid: true, gridcolor: HS.gridH, gridwidth: HS.thin, automargin: true },
+             showgrid: true, gridcolor: HS.gridH, gridwidth: HS.thin, automargin: true, fixedrange: TOUCH },
   };
-  Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false,
+  Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: TOUCH ? false : "hover",
     modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"], locale: "de" })
     .then(() => Plotly.relayout(el, houseAxes(el, chart)));
   el.on && el.on("plotly_relayout", ev => {
