@@ -549,26 +549,35 @@ function buildIO(content) {
   const scatter = (a, b, fmt, unit) => el => {
     const all = a.concat(b), lo = Math.min(...all), hi = Math.max(...all), span = hi - lo, pad = span * 0.12;
     const r = [lo - pad, hi + pad], mid = (r[0] + r[1]) / 2, gap = span * 0.055;
-    // Beschriftungsspalte rechts der Fläche: global nach y gestapelt, Hinweislinie zum Punkt
-    const notes = [];
-    const idx = b.map((v, i) => i).sort((i, k) => b[i] - b[k]);
-    let last = -Infinity;
-    const ys = [];
-    idx.forEach(i => { const ty = Math.max(b[i], last + gap); ys[i] = ty; last = ty; });
-    const over = Math.max(0, last - (hi + pad));
-    idx.forEach(i => { ys[i] -= over * (ys[i] - (lo - pad)) / ((last - (lo - pad)) || 1); });
-    idx.forEach(i => notes.push({ x: a[i], y: b[i], xref: "x", yref: "y", axref: "x", ayref: "y",
-      ax: r[1] + span * 0.04, ay: ys[i], text: S[i], showarrow: true, arrowhead: 0, arrowwidth: 0.5,
-      arrowcolor: "#BFBFBF", xanchor: "left", yanchor: "middle", font: { family: HS.font, size: TOUCH ? 10 : 11 } }));
+    // Beschriftung direkt am Punkt: je Punkt die Seite wählen, die nicht mit bereits gesetzten Beschriftungen kollidiert
+    const fs = TOUCH ? 10 : 11, W = Math.max(200, (el.clientWidth || 560) - 84), H = 360;
+    const px = v => (v - r[0]) / (r[1] - r[0]), boxes = [], notes = [];
+    a.forEach((v, i) => boxes.push({ x0: px(v) * W - 4, x1: px(v) * W + 4, y0: px(b[i]) * H - 4, y1: px(b[i]) * H + 4 }));
+    const hit = bx => boxes.some(o => bx.x0 < o.x1 && bx.x1 > o.x0 && bx.y0 < o.y1 && bx.y1 > o.y0)
+      || bx.x0 < 0 || bx.x1 > W || bx.y0 < 0 || bx.y1 > H;
+    b.map((v, i) => i).sort((i, k) => b[k] - b[i]).forEach(i => {
+      const cx = px(a[i]) * W, cy = px(b[i]) * H, tw = S[i].length * fs * 0.48, th = fs + 2;
+      const cand = [["right", 7, 0], ["left", -7, 0], ["right", 7, th], ["left", -7, th], ["right", 7, -th], ["left", -7, -th],
+                    ["center", 0, th + 2], ["center", 0, -th - 2]];
+      let pick = cand[0];
+      for (const c of cand) {
+        const x0 = c[0] === "right" ? cx + c[1] : c[0] === "left" ? cx + c[1] - tw : cx - tw / 2;
+        const bx = { x0, x1: x0 + tw, y0: cy + c[2] - th / 2, y1: cy + c[2] + th / 2 };
+        if (!hit(bx)) { pick = c; boxes.push(bx); break; }
+      }
+      notes.push({ x: a[i], y: b[i], xref: "x", yref: "y", text: S[i], showarrow: false,
+        xanchor: pick[0] === "right" ? "left" : pick[0] === "left" ? "right" : "center", yanchor: "middle",
+        xshift: pick[1], yshift: pick[2], font: { family: HS.font, size: fs } });
+    });
     const corner = (x, y, text, xa, ya) => ({ x, y, xref: "x", yref: "y", text, showarrow: false, xanchor: xa, yanchor: ya,
       font: { family: HS.font, size: 10, color: "#7F7F7F" } });
     Plotly.newPlot(el, [
       { x: r, y: r, type: "scatter", mode: "lines", line: { color: "#BFBFBF", width: 1, dash: "dot" }, hoverinfo: "skip", showlegend: false },
       { x: a, y: b, text: S, type: "scatter", mode: "markers", marker: { color: PALETTE[0], size: 8 }, showlegend: false,
         hovertemplate: "%{text}<br>1936: %{x:" + fmt + "}" + unit + "<br>" + Y + ": %{y:" + fmt + "}" + unit + "<extra></extra>" }],
-      Object.assign({}, base, { margin: { l: 44, r: TOUCH ? 120 : 175, t: 12, b: 40 },
+      Object.assign({}, base, { margin: { l: 44, r: 40, t: 12, b: 40 },
         xaxis: { range: r, gridcolor: HS.gridV, zeroline: false, title: { text: "1936", font: F } },
-        yaxis: { range: r, gridcolor: HS.gridH, zeroline: false, side: "left", title: { text: Y, font: F } },
+        yaxis: { range: r, gridcolor: HS.gridH, zeroline: false, side: "right", title: { text: Y, font: F } },
         annotations: notes.concat([corner(r[1], r[1], "unverändert", "right", "bottom"),
           corner(r[0], r[1], "höher als 1936", "left", "top"), corner(r[1], r[0], "niedriger als 1936", "right", "bottom")]) }), cfg);
   };
