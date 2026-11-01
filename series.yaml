@@ -67,6 +67,25 @@ geo_names:
   GBR: Vereinigtes Königreich
   USA: USA
 
+# Webseite: je Kernindikator links der lange Rand (seit 1870), rechts der aktuelle Rand (5 Jahre)
+panels:
+  - id: inflation
+    title: Inflation
+    left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr"}
+    right: {series: [de_cpi_yoy, de_hicp_yoy, de_hicp_core_yoy], title: "Inflation aktuell, % gg. Vorjahresmonat", decimals: 1}
+  - id: wachstum
+    title: Wachstum
+    left: {chart: lang_growth, title: "Reales BIP seit 1870, % gg. Vorjahr"}
+    right: {chart: de_gdp_contrib, title: "Wachstumsbeiträge aktuell, Pp gg. Vorquartal"}
+  - id: arbeit
+    title: Arbeitslosigkeit
+    left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %"}
+    right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
+  - id: zinsen
+    title: Zinsen
+    left: {chart: lang_ltrate, title: "Langfristiger Zins seit 1870, % p. a."}
+    right: {series: [de_bund10_bbk, de_bund2_bbk, ecb_dfr], title: "Zinsen aktuell, % p. a."}
+
 names:
   item:
     P31_S14_S15: Private Konsumausgaben

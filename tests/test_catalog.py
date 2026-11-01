@@ -124,3 +124,10 @@ def test_repository_catalog_resolves_names_and_comparison():
     assert spec.member == "FR"
     assert "DE" in cat.comparison["focus"]
     assert "FR" in cat.comparison["peers"]
+
+
+def test_repository_panels_are_valid():
+    cat = load_catalog(ROOT / "series.yaml")
+    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen"]
+    for p in cat.panels:
+        assert p["left"] and p["right"]

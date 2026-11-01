@@ -156,6 +156,10 @@ Die Global Macro Database (Müller, Xu, Lehbib, Chen 2025) kommt in der jeweils 
 
 Welche Reihen beim letzten Lauf Daten lieferten, steht im Blatt Info der xlsx und in `data/processed/run_status.json`.
 
+## Webseite
+
+Die Webseite zeigt vier Kernindikatoren: Inflation, Wachstum, Arbeitslosigkeit und Zinsen. Jeder bekommt eine Zeile mit zwei Grafiken, links den langen Rand seit 1870, rechts die letzten fünf Jahre. Welche Diagramme oder Reihen dort stehen, steht in `series.yaml` unter `panels`. Alle übrigen Reihen liegen im Excel-Workbook.
+
 ## Grafikstil
 
 Die Diagramme folgen dem Hausstandard: feste Linienfarben (#002060, #0070C0, #00B0F0, #51154A, #7030A0, #D86DCD, #47D359), Werteachse rechts ohne Linie, Einheit an der obersten Zahl, Jahreszahl mittig unter dem Jahr, alternierende Jahresbänder, rote Nulllinie, Legende oben links. In den Diagrammen steht Arial Narrow, auf der Seite Palatino. Jahresbänder bei 80 % Transparenz, alle Grafiken sind durchnummeriert.
