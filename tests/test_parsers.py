@@ -152,3 +152,27 @@ def test_http_client_memoizes_identical_requests(tmp_path, monkeypatch):
     client.post("https://example.test/x", data={"name": "61111-0010"})
     client.post("https://example.test/x", data={"name": "61111-0010"})
     assert len(calls) == 1
+
+
+def test_genesis_stops_after_rejected_login(tmp_path, monkeypatch):
+    from konjunkturwolf.catalog import SeriesSpec
+    from konjunkturwolf.fetchers import SkipSeries, fetch_genesis
+    from konjunkturwolf.http import FetchError, HttpClient
+
+    monkeypatch.setenv("GENESIS_USER", "u")
+    monkeypatch.setenv("GENESIS_PASSWORD", "p")
+    client = HttpClient(tmp_path, use_cache=False, pause=0)
+    calls = []
+
+    def reject(*args, **kwargs):
+        calls.append(1)
+        raise FetchError('HTTP 404: {"Code":2,"Content":"Your username/token or password is wrong"}')
+
+    monkeypatch.setattr(client, "post", reject)
+    spec = SeriesSpec(id="x", source="genesis", key="61111-0010", title="t", unit="u", frequency="M",
+                      adjustment="-", block="b")
+    with pytest.raises(FetchError, match="lehnt die Zugangsdaten ab"):
+        fetch_genesis(spec, client)
+    with pytest.raises(SkipSeries):
+        fetch_genesis(spec, client)
+    assert len(calls) == 1

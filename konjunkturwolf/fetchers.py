@@ -9,13 +9,13 @@ from datetime import datetime
 import pandas as pd
 
 from .catalog import SeriesSpec
-from .http import HttpClient
+from .http import FetchError, HttpClient
 from .parsers import parse_genesis_ffcsv, parse_jsonstat, parse_sdmx
 
 ECB_BASE = "https://data-api.ecb.europa.eu/service/data"
 BUNDESBANK_BASE = "https://api.statistiken.bundesbank.de/rest/data"
 EUROSTAT_BASE = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data"
-GENESIS_BASE = "https://www-genesis.destatis.de/genesisWS/rest/2020"
+GENESIS_BASE = "https://genesis.destatis.de/genesisWS/rest/2020"
 
 SDMX_CSV = "application/vnd.sdmx.data+csv;version=1.0.0"
 
@@ -82,10 +82,16 @@ def genesis_credentials() -> tuple[str, str] | None:
     return user, os.environ.get("GENESIS_PASSWORD", "").strip()
 
 
+_GENESIS_AUTH_FAILED: dict[int, str] = {}
+
+
 def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     creds = genesis_credentials()
     if creds is None:
         raise SkipSeries("GENESIS-Zugangsdaten fehlen (GENESIS_USER/GENESIS_PASSWORD nicht gesetzt).")
+    if id(client) in _GENESIS_AUTH_FAILED:
+        # nach abgelehntem Login keine weiteren Versuche (Schutz vor Kontosperre)
+        raise SkipSeries(_GENESIS_AUTH_FAILED[id(client)])
     user, password = creds
     data = {
         "name": spec.key,
@@ -96,11 +102,19 @@ def fetch_genesis(spec: SeriesSpec, client: HttpClient) -> FetchResult:
         "startyear": str(spec.start_year),
     }
     data.update({k: str(v) for k, v in (spec.params.get("query") or {}).items()})
-    resp = client.post(
-        f"{GENESIS_BASE}/data/tablefile",
-        data=data,
-        headers={"username": user, "password": password, "Content-Type": "application/x-www-form-urlencoded"},
-    )
+    try:
+        resp = client.post(
+            f"{GENESIS_BASE}/data/tablefile",
+            data=data,
+            headers={"username": user, "password": password, "Content-Type": "application/x-www-form-urlencoded"},
+        )
+    except FetchError as exc:
+        text = str(exc).lower()
+        if "password" in text or "passwort" in text or "anmeld" in text or "token" in text:
+            msg = "GENESIS lehnt die Zugangsdaten ab (Secrets GENESIS_USER/GENESIS_PASSWORD prüfen)."
+            _GENESIS_AUTH_FAILED[id(client)] = msg
+            raise FetchError(msg) from exc
+        raise
     df = parse_genesis_ffcsv(
         resp.text,
         value_variable=spec.params.get("value_variable"),
