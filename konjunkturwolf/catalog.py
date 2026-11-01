@@ -49,6 +49,8 @@ class Block:
 class Chart:
     id: str
     title: str
+    y_min: float | None = None  # feste Achsengrenzen, z.B. gegen Hyperinflationsspitzen
+    y_max: float | None = None
 
 
 @dataclass(frozen=True)
@@ -216,8 +218,13 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
 
     charts = {}
     for cid, c in (raw.get("charts") or {}).items():
-        title = (c or {}).get("title") if isinstance(c, dict) else None
-        charts[str(cid)] = Chart(id=str(cid), title=str(title or cid))
+        c = c if isinstance(c, dict) else {}
+        charts[str(cid)] = Chart(
+            id=str(cid),
+            title=str(c.get("title") or cid),
+            y_min=float(c["y_min"]) if c.get("y_min") is not None else None,
+            y_max=float(c["y_max"]) if c.get("y_max") is not None else None,
+        )
 
     entries = raw.get("series")
     if not isinstance(entries, list) or not entries:

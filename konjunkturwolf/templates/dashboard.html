@@ -133,12 +133,14 @@ function shortUnit(units) {
   return "";
 }
 // Werteachse: runde Stufen, je ein Drittel Stufe Luft oben und unten, Einheit an der obersten Zahl
-function yAxis(series, range, unit) {
+function yAxis(series, range, unit, limits) {
   let lo = Infinity, hi = -Infinity;
   series.forEach(s => s.x.forEach((x, i) => {
     if (x >= range[0] && x <= range[1]) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
   }));
   if (!isFinite(lo)) return null;
+  if (limits && limits[0] != null) lo = Math.max(lo, limits[0]);
+  if (limits && limits[1] != null) hi = Math.min(hi, limits[1]);
   if (lo === hi) { lo -= 1; hi += 1; }
   const step = niceStep(hi - lo, 4), d = decimals(step);
   const first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
@@ -182,7 +184,7 @@ function houseAxes(el, chart) {
   const data = chart.series.filter(s => s.x.length);
   const range = xRange(data, chart.full);
   const units = [...new Set(data.map(s => s.unit))];
-  const ya = yAxis(data, range, shortUnit(units));
+  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max]);
   const xa = xAxis(range, el.clientWidth || 560);
   const shapes = xa.shapes.slice();
   return {
@@ -264,7 +266,7 @@ function renderChart(el, chart) {
       el._kwBusy = true;
       const r = [ev["xaxis.range[0]"].slice(0, 10), ev["xaxis.range[1]"].slice(0, 10)];
       const data = chart.series.filter(s => s.x.length);
-      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]));
+      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]), [chart.y_min, chart.y_max]);
       const xa = xAxis(r, el.clientWidth || 560);
       Plotly.relayout(el, { "xaxis.tickvals": xa.vals, "xaxis.ticktext": xa.text, shapes: xa.shapes,
                             "yaxis.range": ya && ya.range, "yaxis.tickvals": ya && ya.vals, "yaxis.ticktext": ya && ya.text,
@@ -304,6 +306,18 @@ function build() {
       const src = document.createElement("div"); src.className = "src";
       src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
       card.appendChild(src);
+      if (chart.y_min != null || chart.y_max != null) {
+        const out = [];
+        chart.series.forEach(x => x.x.forEach((d, i) => {
+          if ((chart.y_max != null && x.y[i] > chart.y_max) || (chart.y_min != null && x.y[i] < chart.y_min)) out.push(`${x.label} ${d.slice(0, 4)}`);
+        }));
+        if (out.length) {
+          const n = document.createElement("div"); n.className = "src";
+          const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : v.toLocaleString("de-DE"));
+          n.textContent = `Achse begrenzt auf ${lim[0]} bis ${lim[1]}. Außerhalb: ${out.slice(0, 12).join(", ")}${out.length > 12 ? ` und ${out.length - 12} weitere` : ""}.`;
+          card.appendChild(n);
+        }
+      }
       const cmp = DATA.comparison || {};
       const peerLabels = chart.series.filter(x => (cmp.peers || []).includes(x.member) && x.x.length).map(x => x.label);
       if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {

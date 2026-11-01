@@ -25,7 +25,8 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
         for spec in catalog.series_in_block(block.id):
             chart = catalog.chart(spec.chart_id, spec)
             entry = charts.setdefault(
-                chart.id, {"id": chart.id, "title": chart.title, "full": block.history, "series": []}
+                chart.id, {"id": chart.id, "title": chart.title, "full": block.history,
+                 "y_min": chart.y_min, "y_max": chart.y_max, "series": []}
             )
             g = grouped.get(spec.id)
             st = statuses.get(spec.id)

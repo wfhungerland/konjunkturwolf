@@ -48,7 +48,7 @@ blocks:
 # Vergleichsdiagramme: Fokusland hervorgehoben, Vergleichsländer als graue Spanne (Minimum bis Maximum)
 comparison:
   focus: [DE, DEU]
-  peers: [FR, IT, ES, NL, PL, FRA, ITA, ESP, NLD, GBR, USA]
+  peers: [FR, IT, ES, NL, PL, FRA, ITA, ESP, NLD, POL, GBR, USA]
 
 geo_names:
   DE: Deutschland
@@ -111,8 +111,8 @@ charts:
   eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
-  lang_infl: {title: "Inflation, % gg. Vorjahr"}
-  lang_growth: {title: "Reales BIP, % gg. Vorjahr"}
+  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40}
+  lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -25, y_max: 25}
   lang_debt: {title: "Staatsschulden, % des BIP"}
   lang_unemp: {title: "Arbeitslosenquote, %"}
   lang_ca: {title: "Leistungsbilanz, % des BIP"}
