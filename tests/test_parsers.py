@@ -207,3 +207,14 @@ def test_panel_series_transforms():
     with pytest.raises(ParseError, match="Land"):
         panel_series(panel, SeriesSpec(id="x", source="jst", key="cpi", title="t", unit="u", frequency="A",
                                        adjustment="-", block="b", params={"country": "XXX"}), "iso")
+
+
+def test_genesis_skips_preamble(fixture_text):
+    text = "GENESIS-Tabelle: 61111-0002\nVerbraucherpreisindex\n\n" + fixture_text("genesis_61111-0002.csv")
+    df = parse_genesis_ffcsv(text, value_variable="PREIS1")
+    assert len(df) == 3
+
+
+def test_genesis_reports_unknown_format():
+    with pytest.raises(ParseError, match="Anfang: Titel"):
+        parse_genesis_ffcsv("Titel\nnoch eine Zeile\n1;2;3;4\n")

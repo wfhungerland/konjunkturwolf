@@ -218,7 +218,17 @@ def parse_genesis_ffcsv(
         obj = json.loads(stripped)
         status = obj.get("Status") or obj.get("status") or {}
         raise ParseError(f"GENESIS-Fehler: {status.get('Content') or status.get('content') or str(obj)[:200]}")
-    df = pd.read_csv(io.StringIO(text), sep=";", dtype=str, keep_default_na=False)
+    # Vorspann (Titelzeilen) überspringen: Kopfzeile ist die erste Zeile mit Zeit- und Wertspalte
+    lines = text.splitlines()
+    start = next(
+        (i for i, line in enumerate(lines[:60])
+         if line.count(";") >= 3 and re.search(r"(^|;)\"?(time|zeit)\"?(;|$)", line.lower())),
+        None,
+    )
+    if start is None:
+        preview = " | ".join(l.strip() for l in lines[:6])[:400]
+        raise ParseError(f"GENESIS-Antwort ohne erkennbare ffcsv-Kopfzeile. Anfang: {preview}")
+    df = pd.read_csv(io.StringIO("\n".join(lines[start:])), sep=";", dtype=str, keep_default_na=False)
     df.columns = [_genesis_norm(c) for c in df.columns]
     if "time" not in df.columns or "value" not in df.columns:
         raise ParseError(f"ffcsv ohne Spalten time/value (Spalten: {', '.join(df.columns[:8])}).")
