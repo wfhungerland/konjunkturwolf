@@ -271,6 +271,12 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
     return out
 
 
+def _load_io() -> dict | None:
+    """Abgeleitete Kennzahlen des IO-Vergleichs (data/static/io_compare.json), falls vorhanden."""
+    path = Path(__file__).resolve().parent.parent / "data" / "static" / "io_compare.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
 def build_payload(catalog: Catalog, result: RunResult) -> dict:
     obs = result.observations
     statuses = result.status_map()
@@ -314,6 +320,7 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
         "counts": result.counts(),
         "comparison": catalog.comparison,
         "panels": build_panels(catalog, result),
+        "io": _load_io(),
         "blocks": blocks,
     }
 
