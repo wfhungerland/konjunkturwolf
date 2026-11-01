@@ -129,3 +129,26 @@ def test_sdmx_start_matches_frequency():
     assert sdmx_start(spec("D")) == "2000-04-01"
     assert sdmx_start(spec("A")) == "2000"
     assert sdmx_start(spec("S")) == "2000-S1"
+
+
+def test_http_client_memoizes_identical_requests(tmp_path, monkeypatch):
+    from konjunkturwolf.http import HttpClient
+
+    client = HttpClient(tmp_path, use_cache=False, pause=0)
+    calls = []
+
+    class Fake:
+        status_code = 200
+        text = "ok"
+        url = "https://example.test/x"
+        encoding = "utf-8"
+        headers = {"Content-Type": "text/plain"}
+
+    def fake_request(*args, **kwargs):
+        calls.append(1)
+        return Fake()
+
+    monkeypatch.setattr(client.session, "request", fake_request)
+    client.post("https://example.test/x", data={"name": "61111-0010"})
+    client.post("https://example.test/x", data={"name": "61111-0010"})
+    assert len(calls) == 1

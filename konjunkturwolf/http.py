@@ -54,6 +54,7 @@ class HttpClient:
         self.offline = offline
         self.timeout = timeout
         self.pause = pause
+        self._memo: dict[Path, Response] = {}  # gleiche Anfrage nur einmal je Lauf
         self.session = requests.Session()
         self.session.headers["User-Agent"] = USER_AGENT
         retry = Retry(
@@ -107,6 +108,8 @@ class HttpClient:
     ) -> Response:
         """Ruft eine URL ab. Zugangsdaten gehören in 'headers' (nie im Cache-Schlüssel)."""
         body_path, meta_path = self._cache_paths(method, url, params, data, accept)
+        if body_path in self._memo:
+            return self._memo[body_path]
         cached = self._read_cache(body_path, meta_path) if (self.use_cache or self.offline) else None
         if cached and (self.offline or _now() - cached.retrieved_at < self.ttl):
             return cached
@@ -144,6 +147,7 @@ class HttpClient:
         )
         if self.use_cache:
             self._write_cache(body_path, meta_path, resp)
+        self._memo[body_path] = resp
         return resp
 
     def get(self, url: str, params: dict[str, Any] | None = None, accept: str = "", headers: dict[str, str] | None = None) -> Response:

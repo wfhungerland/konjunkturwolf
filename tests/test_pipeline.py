@@ -44,12 +44,13 @@ def test_full_run(project, monkeypatch):
     st = result.status_map()
     assert st["fx_gbp"].status == "failed"
     assert st["de_orders"].status == "skipped"
-    assert st["de_cpi_yoy"].status == "ok"
+    assert st["de_cpi_energy_yoy"].status == "ok"
+    assert st["de_cpi_land_yoy_09"].status == "skipped"
     assert st["fx_usd"].n_obs == 36
 
     obs = pd.read_csv(project.observations)
     assert list(obs.columns) == pipeline.TIDY_COLUMNS
-    yoy = obs[obs["series_id"] == "de_cpi_yoy"]
+    yoy = obs[obs["series_id"] == "de_cpi_energy_yoy"]
     assert len(yoy) == 24
     assert yoy["value"].iloc[0] == pytest.approx(12 / 100 * 100)
 

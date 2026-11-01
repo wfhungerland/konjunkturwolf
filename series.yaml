@@ -25,6 +25,9 @@ defaults:
   start: "2000-01-01"
 
 blocks:
+  - id: inflation
+    title: Inflation
+    sheet: Inflation
   - id: konjunktur
     title: Konjunktur Deutschland
     sheet: Konjunktur DE
@@ -47,10 +50,32 @@ geo_names:
   PL: Polen
   EU27_2020: EU27
 
+names:
+  land:
+    "01": Schleswig-Holstein
+    "02": Hamburg
+    "03": Niedersachsen
+    "04": Bremen
+    "05": Nordrhein-Westfalen
+    "06": Hessen
+    "07": Rheinland-Pfalz
+    "08": Baden-Württemberg
+    "09": Bayern
+    "10": Saarland
+    "11": Berlin
+    "12": Brandenburg
+    "13": Mecklenburg-Vorpommern
+    "14": Sachsen
+    "15": Sachsen-Anhalt
+    "16": Thüringen
+
 charts:
   de_gdp: {title: "BIP real, Veränderung in %"}
-  de_cpi: {title: "Verbraucherpreise (VPI), Index"}
-  de_inflation: {title: "Inflation Deutschland, % gg. Vorjahresmonat"}
+  de_cpi: {title: "Verbraucherpreisindex (VPI), 2020=100"}
+  de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat"}
+  de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat"}
+  de_cpi_laender_index: {title: "VPI der Bundesländer, 2020=100"}
+  de_perceived: {title: "Gefühlte und erwartete Inflation (Verbraucherumfrage)"}
   de_labour_rate: {title: "Arbeitslosenquote (ILO)"}
   de_employment: {title: "Erwerbstätige (Inland)"}
   de_production: {title: "Industrieproduktion und Auftragseingang, Index"}
@@ -100,31 +125,121 @@ series:
     label: Vorjahresquartal
 
   - id: de_cpi
-    block: konjunktur
-    source: genesis
-    key: "61111-0002"
-    params: {value_variable: PREIS1}
-    title: Verbraucherpreisindex (VPI)
+    block: inflation
+    source: bundesbank
+    key: BBDP1/M.DE.N.VPI.C.A00000.I20.A
+    title: Verbraucherpreisindex (VPI) Deutschland
     unit: Index 2020=100
     frequency: M
     adjustment: nicht bereinigt
     chart: de_cpi
-    note: GENESIS-Zugang erforderlich (Secrets GENESIS_USER/GENESIS_PASSWORD).
+    label: VPI gesamt
+    note: Destatis-Daten über die Bundesbank-Zeitreihendatenbank; kein GENESIS-Zugang nötig.
 
   - id: de_cpi_yoy
-    block: konjunktur
-    source: derived
-    derive: {from: de_cpi, op: yoy_pct}
-    title: VPI, % gg. Vorjahresmonat (berechnet)
+    block: inflation
+    source: bundesbank
+    key: BBDP1/M.DE.N.VPI.C.A00000.VGJ.LV
+    title: VPI, % gg. Vorjahresmonat (Inflationsrate)
     unit: "% gg. Vorjahresmonat"
     frequency: M
     adjustment: nicht bereinigt
-    chart: de_inflation
-    label: VPI (berechnet aus Index)
-    note: Aus dem VPI-Index berechnet; kann von der amtlich gerundeten Rate um 0,1 Punkte abweichen.
+    chart: de_cpi_rate
+    label: VPI gesamt
+
+  - id: de_cpi_energy
+    block: inflation
+    source: bundesbank
+    key: BBDP1/M.DE.N.VPI.C.NRGY00.I20.A
+    title: VPI Energie
+    unit: Index 2020=100
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_cpi
+    label: Energie
+
+  - id: de_cpi_energy_yoy
+    block: inflation
+    source: derived
+    derive: {from: de_cpi_energy, op: yoy_pct}
+    title: VPI Energie, % gg. Vorjahresmonat (berechnet)
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_cpi_rate
+    label: Energie (berechnet)
+    note: Aus dem Index berechnet; kann von der amtlich gerundeten Rate um 0,1 Punkte abweichen.
+
+  - id: de_cpi_services
+    block: inflation
+    source: bundesbank
+    key: BBDP1/M.DE.N.VPI.C.SERV00.I20.A
+    title: VPI Dienstleistungen
+    unit: Index 2020=100
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: de_cpi
+    label: Dienstleistungen
+
+  - id: de_cpi_land
+    expand: {land: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]}
+    block: inflation
+    source: genesis
+    key: "61111-0010"
+    params:
+      value_variable: PREIS1
+      filters: {DLAND: "{land}"}
+    title: "VPI {land_name}"
+    unit: Index 2020=100
+    frequency: M
+    adjustment: nicht bereinigt
+    label: "{land_name}"
+    chart: de_cpi_laender_index
+    note: GENESIS-Zugang erforderlich (Secrets GENESIS_USER/GENESIS_PASSWORD). Merkmalscodes ungeprüft.
+
+  - id: de_cpi_land_yoy
+    expand: {land: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]}
+    block: inflation
+    source: derived
+    derive: {from: "de_cpi_land_{land}", op: yoy_pct}
+    title: "VPI {land_name}, % gg. Vorjahresmonat (berechnet)"
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    label: "{land_name}"
+    chart: de_cpi_laender
+    note: Aus dem Landes-VPI berechnet.
+
+  - id: de_perceived_inflation
+    expand: {geo: [DE, EU27_2020]}
+    block: inflation
+    source: eurostat
+    key: ei_bsco_m
+    params: {geo: "{geo}", indic: BS-PT-LY, s_adj: SA, unit: BAL}
+    title: "Gefühlte Inflation {geo_name}: Preisentwicklung der letzten 12 Monate"
+    unit: Saldo in Prozentpunkten
+    frequency: M
+    adjustment: saisonbereinigt
+    chart: de_perceived
+    label: "Gefühlt, {geo_name}"
+    note: EU-Verbraucherumfrage (Frage Q5). Saldo aus Anteilen der Antworten 'stark gestiegen' bis 'gesunken'; kein Prozentwert der Teuerung.
+
+  - id: de_expected_inflation
+    expand: {geo: [DE, EU27_2020]}
+    block: inflation
+    source: eurostat
+    key: ei_bsco_m
+    params: {geo: "{geo}", indic: BS-PT-NY, s_adj: SA, unit: BAL}
+    title: "Erwartete Inflation {geo_name}: Preisentwicklung der nächsten 12 Monate"
+    unit: Saldo in Prozentpunkten
+    frequency: M
+    adjustment: saisonbereinigt
+    chart: de_perceived
+    label: "Erwartet, {geo_name}"
+    note: EU-Verbraucherumfrage (Frage Q6). Saldo, kein Prozentwert.
 
   - id: de_hicp_yoy
-    block: konjunktur
+    block: inflation
     source: eurostat
     key: prc_hicp_minr
     params: {geo: DE, unit: RCH_A, coicop18: TOTAL}
@@ -133,11 +248,11 @@ series:
     unit: "% gg. Vorjahresmonat"
     frequency: M
     adjustment: nicht bereinigt
-    chart: de_inflation
+    chart: de_cpi_rate
     label: HVPI gesamt
 
   - id: de_hicp_core_yoy
-    block: konjunktur
+    block: inflation
     source: eurostat
     key: prc_hicp_minr
     params: {geo: DE, unit: RCH_A, coicop18: TOT_X_NRG_FOOD}
@@ -145,7 +260,7 @@ series:
     unit: "% gg. Vorjahresmonat"
     frequency: M
     adjustment: nicht bereinigt
-    chart: de_inflation
+    chart: de_cpi_rate
     label: HVPI ohne Energie, Nahrungsmittel, Alkohol, Tabak
 
   - id: de_unemp_ilo
@@ -290,7 +405,7 @@ series:
     note: GENESIS-Zugang erforderlich.
 
   - id: de_hicp_energy_yoy
-    block: energie
+    block: inflation
     source: eurostat
     key: prc_hicp_minr
     params: {geo: DE, unit: RCH_A, coicop18: NRG}
@@ -298,7 +413,7 @@ series:
     unit: "% gg. Vorjahresmonat"
     frequency: M
     adjustment: nicht bereinigt
-    chart: de_inflation
+    chart: de_cpi_rate
     label: HVPI Energie
 
   - id: de_energy_gae

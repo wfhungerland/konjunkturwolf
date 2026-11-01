@@ -158,8 +158,11 @@ def _contains_placeholder(value: Any) -> bool:
     return False
 
 
-def expand_entry(entry: dict[str, Any], geo_names: dict[str, str]) -> list[dict[str, Any]]:
-    """Vervielfacht einen Eintrag mit 'expand' zu einzelnen Reihen."""
+def expand_entry(entry: dict[str, Any], names: dict[str, dict[str, str]]) -> list[dict[str, Any]]:
+    """Vervielfacht einen Eintrag mit 'expand' zu einzelnen Reihen.
+
+    names: je Expand-Schlüssel eine Zuordnung Code -> Name, nutzbar als {<schlüssel>_name}.
+    """
     expand = entry.get("expand")
     if not expand:
         return [entry]
@@ -168,8 +171,8 @@ def expand_entry(entry: dict[str, Any], geo_names: dict[str, str]) -> list[dict[
     out = []
     for combo in itertools.product(*(expand[k] for k in keys)):
         mapping = {k: str(v) for k, v in zip(keys, combo)}
-        if "geo" in mapping:
-            mapping["geo_name"] = geo_names.get(mapping["geo"], mapping["geo"])
+        for k in keys:
+            mapping[f"{k}_name"] = names.get(k, {}).get(mapping[k], mapping[k])
         new = _format_value(base, mapping)
         suffix = "_".join(str(v).lower() for v in combo)
         new["id"] = f"{base['id']}_{suffix}"
@@ -184,6 +187,8 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
 
     defaults = raw.get("defaults") or {}
     geo_names = {str(k): str(v) for k, v in (raw.get("geo_names") or {}).items()}
+    names = {str(k): {str(c): str(n) for c, n in (v or {}).items()} for k, v in (raw.get("names") or {}).items()}
+    names.setdefault("geo", {}).update(geo_names)
 
     blocks: list[Block] = []
     for b in raw.get("blocks") or []:
@@ -218,7 +223,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
         if "expand" in entry and not isinstance(entry["expand"], dict):
             errors.append(f"{label}: 'expand' muss ein Objekt sein.")
             continue
-        for e in expand_entry(entry, geo_names):
+        for e in expand_entry(entry, names):
             errors.extend(_validate_entry(e, block_ids, charts))
             sid = e.get("id")
             if sid in seen:

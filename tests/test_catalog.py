@@ -103,3 +103,15 @@ def test_errors_are_collected():
     with pytest.raises(CatalogError) as err:
         parse_catalog(raw)
     assert len(err.value.errors) >= 2
+
+
+def test_expand_with_custom_names():
+    raw = make(
+        id="land_cpi", source="genesis", key="61111-0010", expand={"land": ["09"]},
+        params={"filters": {"DLAND": "{land}"}}, title="VPI {land_name}",
+    )
+    raw["names"] = {"land": {"09": "Bayern"}}
+    spec = parse_catalog(raw).series[0]
+    assert spec.id == "land_cpi_09"
+    assert spec.title == "VPI Bayern"
+    assert spec.params["filters"] == {"DLAND": "09"}
