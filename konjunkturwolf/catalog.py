@@ -13,7 +13,7 @@ import yaml
 SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
-DERIVE_OPS = {"yoy_pct", "diff"}
+DERIVE_OPS = {"yoy_pct", "diff", "sum"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 PLACEHOLDER_PATTERN = re.compile(r"\{[a-z_]+\}")
@@ -288,10 +288,11 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                 errors.append(f"{s.id}: abgeleitet von unbekannter Reihe '{src}'.")
             elif by_id[src].source == "derived":
                 errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
-            if s.derive.get("op") == "diff":
-                other = s.derive.get("minus")
+            if s.derive.get("op") in ("diff", "sum"):
+                key = "minus" if s.derive.get("op") == "diff" else "plus"
+                other = s.derive.get(key)
                 if other not in ids:
-                    errors.append(f"{s.id}: 'derive.minus' fehlt oder ist unbekannt ('{other}').")
+                    errors.append(f"{s.id}: 'derive.{key}' fehlt oder ist unbekannt ('{other}').")
                 elif by_id[other].source == "derived":
                     errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
 

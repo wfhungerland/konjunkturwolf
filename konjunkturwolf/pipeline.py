@@ -167,10 +167,11 @@ def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | No
 
                 base_id = spec.derive["from"]
                 base = _base(base_id)
-                other = _base(spec.derive["minus"]) if spec.derive.get("minus") else None
+                second = spec.derive.get("minus") or spec.derive.get("plus")
+                other = _base(second) if second else None
                 data = derive_series(spec, base, other)
-                if spec.derive.get("minus"):
-                    base_id = f"{base_id} minus {spec.derive['minus']}"
+                if second:
+                    base_id = f"{base_id} {'minus' if spec.derive.get('minus') else 'plus'} {second}"
                 retrieved = _iso(datetime.now(timezone.utc))
                 st.status = "ok"
                 st.message = f"berechnet aus {base_id}"

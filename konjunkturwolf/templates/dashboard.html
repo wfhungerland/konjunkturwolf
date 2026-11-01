@@ -421,11 +421,11 @@ function build() {
     entries.forEach(e => { if (e.isIntersecting) { observer.unobserve(e.target); renderChart(e.target, e.target._chart); } });
   }, { rootMargin: "300px" }) : null;
 
-  (DATA.panels || []).forEach(panel => {
+  (DATA.panels || []).forEach((panel, pi) => {
     const a = document.createElement("a"); a.href = `#${panel.id}`; a.textContent = panel.title; nav.appendChild(a);
     const sec = document.createElement("section"); sec.id = panel.id;
     sec.innerHTML = `<div class="head2"><h2>${esc(panel.title)}</h2><button class="btn scale" type="button">Gleiche Skala</button></div>`
-      + (panel.question ? `<p class="question">${esc(panel.question)}</p>` : "")
+      + (panel.question ? `<p class="question">${esc(panel.question.replace("{abb}", `Abb. ${2 * pi + 1} und ${2 * pi + 2}`))}</p>` : "")
       + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "")
       + ((panel.facts || []).length ? `<ul class="facts">${panel.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "");
     const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);

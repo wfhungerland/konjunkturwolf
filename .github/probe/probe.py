@@ -1,15 +1,7 @@
-import re, requests
+import requests
 H = {"User-Agent": "konjunkturwolf-probe"}
-r = requests.get("https://data.nber.org/databases/macrohistory/contents/de.html", headers=H, timeout=60)
-print(r.status_code, len(r.text))
-links = re.findall(r'href="([^"]+)"', r.text)
-print("SAMPLELINKS", links[:15])
-t = re.sub(r"<[^>]+>", "\n", r.text)
-for line in t.split("\n"):
-    line = " ".join(line.split())
-    if re.match(r"^[am]\d{5}", line) or "Germany" in line[:60]:
-        print("S", line[:170])
-# Datei-URL-Muster an einer Reihe testen
-for u in [l for l in links if l.endswith(".dat")][:2]:
-    u2 = u if u.startswith("http") else "https://data.nber.org/databases/macrohistory/" + u.lstrip("./").replace("../", "")
-    rr = requests.get(u2, headers=H, timeout=60); print("DAT", u2, rr.status_code); print(rr.text[:400])
+for sid in ["m13018", "m13015", "m13028a", "m13028c", "m04054", "m04056", "m08028", "a01008ac", "a01008ad", "a01008aa", "m01134b"]:
+    u = f"https://data.nber.org/databases/macrohistory/rectdata/{sid[1:3]}/{sid}.dat"
+    r = requests.get(u, headers=H, timeout=60)
+    print("DAT", sid, r.status_code, len(r.text.splitlines()))
+    print("\n".join(r.text.splitlines()[:4])); print("..."); print("\n".join(r.text.splitlines()[-2:]))

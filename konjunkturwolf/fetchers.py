@@ -164,7 +164,7 @@ _PANELS: dict[tuple[int, str], tuple[pd.DataFrame, datetime, bool, str]] = {}
 def panel_series(panel: pd.DataFrame, spec: SeriesSpec, country_col: str) -> pd.DataFrame:
     """Wählt Land und Variable aus einem Länder-Jahres-Panel und wendet einfache Umformungen an.
 
-    params: country (ISO3), optional divide_by (zweite Variable), scale (Faktor),
+    params: country (ISO3), optional add (Variable addieren), divide_by (Variable teilen), scale (Faktor),
     transform: pct_change (Veränderung gegenüber Vorjahr in %), max_year.
     """
     p = spec.params
@@ -176,6 +176,8 @@ def panel_series(panel: pd.DataFrame, spec: SeriesSpec, country_col: str) -> pd.
     if var not in rows.columns:
         raise ParseError(f"Variable {var} nicht im Datensatz.")
     df = rows[["year", var]].rename(columns={var: "value"}).copy()
+    if p.get("add"):
+        df["value"] = pd.to_numeric(df["value"], errors="coerce") + pd.to_numeric(rows[p["add"]], errors="coerce").values
     if p.get("divide_by"):
         df["value"] = df["value"] / rows[p["divide_by"]].values
     df["value"] = pd.to_numeric(df["value"], errors="coerce") * float(p.get("scale", 1))
@@ -268,10 +270,10 @@ def derive_series(spec: SeriesSpec, base: pd.DataFrame, other: pd.DataFrame | No
         merged = base.merge(prev, on="date", how="inner")
         merged["value"] = (merged["value"] / merged["prev"] - 1.0) * 100.0
         return merged[["date", "value"]].dropna().reset_index(drop=True)
-    if op == "diff":
+    if op in ("diff", "sum"):
         if other is None:
-            raise ValueError("Ableitung diff braucht eine zweite Reihe (minus).")
+            raise ValueError(f"Ableitung {op} braucht eine zweite Reihe (minus bzw. plus).")
         merged = base.merge(other.rename(columns={"value": "other"}), on="date", how="inner")
-        merged["value"] = merged["value"] - merged["other"]
+        merged["value"] = merged["value"] - merged["other"] if op == "diff" else merged["value"] + merged["other"]
         return merged[["date", "value"]].dropna().reset_index(drop=True)
     raise ValueError(f"Unbekannte Ableitung: {op}")
