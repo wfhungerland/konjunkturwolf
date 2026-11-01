@@ -173,13 +173,14 @@ series:
   - id: de_cpi_services
     block: inflation
     source: bundesbank
-    key: BBDP1/M.DE.N.VPI.C.SERV00.I20.A
-    title: VPI Dienstleistungen
+    key: BBDP1/M.DE.Y.VPI.C.SERV00.I20.A
+    title: VPI Dienstleistungen (saisonbereinigt)
     unit: Index 2020=100
     frequency: M
-    adjustment: nicht bereinigt
+    adjustment: saison- und kalenderbereinigt (Bundesbank)
     chart: de_cpi
-    label: Dienstleistungen
+    label: Dienstleistungen (saisonbereinigt)
+    note: Die Bundesbank führt diese Reihe nur saisonbereinigt.
 
   - id: de_cpi_land
     expand: {land: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]}
