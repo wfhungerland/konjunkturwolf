@@ -140,6 +140,7 @@ def test_http_client_memoizes_identical_requests(tmp_path, monkeypatch):
     class Fake:
         status_code = 200
         text = "ok"
+        content = b"ok"
         url = "https://example.test/x"
         encoding = "utf-8"
         headers = {"Content-Type": "text/plain"}

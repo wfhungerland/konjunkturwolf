@@ -73,7 +73,8 @@ names:
     P3_S13: Staatskonsum
     P51G: Bruttoanlageinvestitionen
     P52_P53: Vorratsveränderungen
-    B11: Außenbeitrag
+    P6: Exporte
+    P7: Importe
   land:
     "01": Schleswig-Holstein
     "02": Hamburg
@@ -298,7 +299,7 @@ series:
     label: HVPI ohne Energie, Nahrungsmittel, Alkohol, Tabak
 
   - id: de_gdp_contrib
-    expand: {item: [P31_S14_S15, P3_S13, P51G, P52_P53, B11]}
+    expand: {item: [P31_S14_S15, P3_S13, P51G, P52_P53, P6, P7]}
     block: konjunktur
     source: eurostat
     key: namq_10_gdp
