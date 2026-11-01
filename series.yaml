@@ -108,7 +108,7 @@ panels:
   - id: offenheit
     title: Offenheit
     question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
-    left: {chart: lang_open, title: "Exporte plus Importe seit 1870, % des BIP"}
+    left: {chart: lang_open, title: "Exporte plus Importe seit 1827, % des BIP", note: "Hellblau: Fouquin und Hugot (2017), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
     right: {chart: eu_open, title: "Exporte plus Importe aktuell, % des BIP", decimals: 0}
   - id: zinsstruktur
     title: Zinsabstand
@@ -1175,3 +1175,17 @@ series:
     start: "1879-01-01"
     stale_after_months: 2400
     note: Aus dem NBER-Index berechnet.
+
+  - id: tradhist_de_open
+    block: lang
+    source: static
+    key: tradhist_de_open
+    title: "Offenheit Zollverein (bis 1870) und Deutschland: Exporte plus Importe, % des BIP (bilaterale Summen)"
+    unit: "% des BIP"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_open
+    label: "Zollverein/DE (Fouquin, Hugot)"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Fouquin und Hugot (2017), TRADHIST, eigene Summen der bilateralen Ströme je Jahr geteilt durch BIP. Bilaterale Summen erfassen nicht den ganzen Handel und liegen unter dem JST-Niveau (1872 rund 21 % gegen rund 35 %); daher als eigene Linie, nicht angeschlossen."

@@ -259,6 +259,21 @@ def fetch_nber(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     return FetchResult(_since(parse_nber(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
 
 
+STATIC_URL = "https://github.com/wfhungerland/konjunkturwolf/blob/main/data/static"
+
+
+def fetch_static(spec: SeriesSpec, client: HttpClient) -> FetchResult:
+    """Fest im Repo abgelegte, einmalig aufbereitete Reihe (data/static/<key>.csv mit date,value)."""
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parent.parent / "data" / "static" / f"{spec.key}.csv"
+    if not path.exists():
+        raise FetchError(f"Statische Datei fehlt: data/static/{spec.key}.csv")
+    df = pd.read_csv(path, parse_dates=["date"])[["date", "value"]]
+    when = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).replace(microsecond=0)
+    return FetchResult(_since(df, spec), f"{STATIC_URL}/{spec.key}.csv", when, False)
+
+
 FETCHERS = {
     "ecb": fetch_ecb,
     "bundesbank": fetch_bundesbank,
@@ -267,6 +282,7 @@ FETCHERS = {
     "jst": fetch_jst,
     "gmd": fetch_gmd,
     "nber": fetch_nber,
+    "static": fetch_static,
 }
 
 
@@ -289,6 +305,8 @@ def api_url_hint(spec: SeriesSpec) -> str:
         return JST_URL
     if spec.source == "gmd":
         return "https://www.globalmacrodata.com"
+    if spec.source == "static":
+        return f"{STATIC_URL}/{spec.key}.csv"
     if spec.source == "nber":
         return f"{NBER_BASE}/{spec.key[1:3]}/{spec.key}.dat"
     return ""

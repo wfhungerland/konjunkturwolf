@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "derived"}
+SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "static", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
 DERIVE_OPS = {"yoy_pct", "diff", "sum"}
@@ -27,6 +27,7 @@ SOURCE_LABELS = {
     "gmd": "Global Macro Database",
     "derived": "Eigene Berechnung",
     "nber": "NBER Macrohistory Database",
+    "static": "Eigene Aufbereitung",
 }
 
 
@@ -146,6 +147,8 @@ def default_link(spec: SeriesSpec) -> str:
         return "https://www.macrohistory.net/database/"
     if spec.source == "gmd":
         return "https://www.globalmacrodata.com"
+    if spec.source == "static":
+        return f"https://github.com/wfhungerland/konjunkturwolf/blob/main/data/static/{spec.key}.csv"
     if spec.source == "nber":
         return "https://www.nber.org/research/data/nber-macrohistory-database"
     if spec.source == "genesis":
