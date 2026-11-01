@@ -119,4 +119,4 @@ def test_panel_facts_rank_and_history():
     facts = panel_facts(Cat(), sides)
     assert facts[0] == "Zuletzt (September 2026): Deutschland 2,0 %."
     assert facts[1].startswith("Rang 2 von 3 Ländern")
-    assert "in 50 % der Jahre darunter" in facts[2]
+    assert "in 50 % der Jahre unter dem aktuellen Wert" in facts[2]

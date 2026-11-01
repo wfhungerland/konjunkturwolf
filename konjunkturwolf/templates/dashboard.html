@@ -153,7 +153,7 @@ function yAxis(series, range, unit, limits, fixedDecimals) {
   for (let v = first; v <= last + step / 1000; v += step) {
     const r = Number(v.toFixed(d));
     vals.push(r);
-    text.push(r.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d }));
+    text.push(minus(r.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d })));
   }
   if (unit) text[text.length - 1] += " " + unit;
   return { range: [first - step / 3, last + step / 3], vals, text, zero: first < 0 && last > 0 };
@@ -198,9 +198,19 @@ function houseAxes(el, chart) {
     "yaxis.ticktext": ya ? ya.text : undefined, "yaxis.zeroline": !!(ya && ya.zero), shapes,
   };
 }
+const MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+function minus(t) { return String(t).replace(/-/g, "\u2212"); }
+function num1(v) { return minus(v.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })); }
+function periodLabel(date, freq) {
+  const y = date.slice(0, 4), m = Number(date.slice(5, 7));
+  if (freq === "jährlich") return y;
+  if (freq === "vierteljährlich") return `Q${Math.floor((m - 1) / 3) + 1} ${y}`;
+  if (freq === "täglich") return `${Number(date.slice(8, 10))}. ${MONTHS[m - 1]} ${y}`;
+  return `${MONTHS[m - 1]} ${y}`;
+}
 function lastLine(s) {
   if (!s.x.length) return "";
-  return `${s.label}: ${fmt.format(s.y[s.y.length - 1])} ${s.unit} (${s.x[s.x.length - 1]})`;
+  return `${s.label} ${num1(s.y[s.y.length - 1])} ${s.unit} (${periodLabel(s.x[s.x.length - 1], s.frequency)})`;
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
@@ -314,13 +324,24 @@ function makeCard(chart, observer) {
   card.appendChild(src);
   if (chart.y_min != null || chart.y_max != null) {
     const out = [];
-    chart.series.forEach(x => x.x.forEach((d, i) => {
-      if ((chart.y_max != null && x.y[i] > chart.y_max) || (chart.y_min != null && x.y[i] < chart.y_min)) out.push(`${x.label} ${d.slice(0, 4)}`);
-    }));
+    chart.series.forEach(x => {
+      const yrs = [];
+      x.x.forEach((d, i) => {
+        if ((chart.y_max != null && x.y[i] > chart.y_max) || (chart.y_min != null && x.y[i] < chart.y_min)) yrs.push(Number(d.slice(0, 4)));
+      });
+      if (!yrs.length) return;
+      const parts = [];
+      yrs.forEach(y => {
+        const p = parts[parts.length - 1];
+        if (p && y === p[1] + 1) p[1] = y; else parts.push([y, y]);
+      });
+      out.push(`${x.label} ${parts.map(p => p[0] === p[1] ? p[0] : `${p[0]}\u2013${p[1]}`).join(", ")}`);
+    });
     if (out.length) {
       const n = document.createElement("div"); n.className = "src";
-      const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : v.toLocaleString("de-DE"));
-      n.textContent = `Achse begrenzt auf ${lim[0]} bis ${lim[1]}. Außerhalb: ${out.slice(0, 12).join(", ")}${out.length > 12 ? ` und ${out.length - 12} weitere` : ""}.`;
+      const u = shortUnit([...new Set(chart.series.map(x => x.unit))]);
+      const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : minus(v.toLocaleString("de-DE")));
+      n.textContent = `Achse abgeschnitten bei ${lim[0]} und ${lim[1]}${u ? " " + u : ""}. Außerhalb: ${out.join("; ")}.`;
       card.appendChild(n);
     }
   }
