@@ -156,7 +156,7 @@ charts:
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
   lang_term: {title: "Zinsabstand lang minus kurz, Pp", y_min: -10, y_max: 10, decimals: 1}
-  now_term: {title: "Zinsabstand 10 Jahre minus Geldmarkt, Pp", decimals: 1}
+  now_term: {title: "Zinsabstand 10 Jahre minus Tagesgeld, Pp", decimals: 1}
   lang_spread: {title: "Renditeabstand zu Deutschland, Pp", y_min: -5, y_max: 15, decimals: 1}
   eu_spread: {title: "Renditeabstand zu Deutschland (10 Jahre), Pp", decimals: 1}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
@@ -793,28 +793,31 @@ series:
     chart: eu_ltrate
     label: Polen
 
-  - id: ea_euribor3m
+  - id: ea_estr
     block: finanzen
     source: ecb
-    key: FM/M.U2.EUR.RT.MM.EURIBOR3MD_.HSTA
-    title: 3-Monats-Euribor (Monatsdurchschnitt)
+    key: EST/B.EU000A2X2A25.WT
+    params: {aggregate: monthly_mean}
+    title: Euro-Tagesgeldsatz €STR (Monatsmittel)
     unit: "% p. a."
     frequency: M
     adjustment: nicht bereinigt
-    label: 3-Monats-Euribor
+    label: €STR
+    start: "2019-10-01"
+    note: Täglicher €STR der EZB, als Monatsmittel. Nachfolger von EONIA, dem der kurze Zins der JST-Reihe für Deutschland seit 1999 folgt.
 
   - id: eu_term
     expand: {geo: [DE, FR, IT, ES, NL]}
     block: eu
     source: derived
-    derive: {from: "eu_ltrate_{geo_id}", minus: ea_euribor3m, op: diff}
-    title: "Zinsabstand {geo_name}: Rendite 10 Jahre minus 3-Monats-Euribor"
+    derive: {from: "eu_ltrate_{geo_id}", minus: ea_estr, op: diff}
+    title: "Zinsabstand {geo_name}: Rendite 10 Jahre minus Tagesgeld (€STR)"
     unit: "Pp"
     frequency: M
     adjustment: nicht bereinigt
     chart: now_term
     label: "{geo_name}"
-    note: Eigene Berechnung aus EZB-Konvergenzzins und 3-Monats-Euribor.
+    note: Eigene Berechnung aus EZB-Konvergenzzins und €STR (Monatsmittel).
 
   - id: de_term_2y
     block: finanzen
