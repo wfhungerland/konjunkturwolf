@@ -108,6 +108,7 @@ class Catalog:
     geo_names: dict[str, str] = field(default_factory=dict)
     comparison: dict[str, list[str]] = field(default_factory=dict)
     panels: list[dict[str, Any]] = field(default_factory=list)
+    panel_members: list[str] = field(default_factory=list)
 
     def by_id(self) -> dict[str, SeriesSpec]:
         return {s.id: s for s in self.series}
@@ -308,7 +309,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
     if errors:
         raise CatalogError(errors)
     return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison,
-                   panels=panels)
+                   panels=panels, panel_members=[str(m) for m in raw.get("panel_members") or []])
 
 
 def _validate_entry(e: dict[str, Any], block_ids: set[str], charts: dict[str, Chart]) -> list[str]:

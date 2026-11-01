@@ -304,7 +304,7 @@ function makeCard(chart, observer) {
   const focusSer = chart.series.filter(s => ((DATA.comparison || {}).focus || []).includes(s.member) && s.x.length);
   const lasts = (focusSer.length ? focusSer : chart.series.filter(s => s.x.length)).map(lastLine);
   chartNo += 1;
-  card.innerHTML = `<h3>Grafik ${chartNo}: ${esc(chart.title)}</h3>
+  card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(chart.title)}</h3>
     <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
   const src = document.createElement("div"); src.className = "src";

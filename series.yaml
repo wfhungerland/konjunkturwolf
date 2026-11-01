@@ -71,20 +71,23 @@ geo_names:
 panels:
   - id: inflation
     title: Inflation
-    left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr"}
-    right: {series: [de_cpi_yoy, de_hicp_yoy, de_hicp_core_yoy], title: "Inflation aktuell, % gg. Vorjahresmonat", decimals: 1}
+    left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr", decimals: 1}
+    right: {chart: eu_hicp, title: "Inflation aktuell (HVPI), % gg. Vorjahresmonat", decimals: 1}
   - id: wachstum
     title: Wachstum
     left: {chart: lang_growth, title: "Reales BIP seit 1870, % gg. Vorjahr"}
-    right: {chart: de_gdp_contrib, title: "Wachstumsbeiträge aktuell, Pp gg. Vorquartal"}
+    right: {chart: eu_gdp, title: "Reales BIP aktuell, % gg. Vorjahresquartal", decimals: 1}
   - id: arbeit
     title: Arbeitslosigkeit
     left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %"}
     right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
   - id: zinsen
     title: Zinsen
-    left: {chart: lang_ltrate, title: "Langfristiger Zins seit 1870, % p. a."}
-    right: {series: [de_bund10_bbk, de_bund2_bbk, ecb_dfr], title: "Zinsen aktuell, % p. a."}
+    left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870, % p. a."}
+    right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell, % p. a.", decimals: 1}
+
+# Nur diese Länder erscheinen in den Panels (links und rechts dieselbe Gruppe)
+panel_members: [DE, FR, IT, ES, NL, PL, DEU, FRA, ITA, ESP, NLD, POL]
 
 names:
   item:
@@ -138,6 +141,7 @@ charts:
   eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
+  eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
   lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -25, y_max: 25}
   lang_debt: {title: "Staatsschulden, % des BIP"}
@@ -746,6 +750,30 @@ series:
     chart: eu_elec_nonhh
     label: "{geo_name}"
     start: "2007-01-01"
+
+  - id: eu_ltrate
+    expand: {geo: [DE, FR, IT, ES, NL]}
+    block: eu
+    source: ecb
+    key: "IRS/M.{geo}.L.L40.CI.0000.EUR.N.Z"
+    title: "Rendite Staatsanleihen 10 Jahre {geo_name} (Konvergenzzins)"
+    unit: "% p. a."
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: eu_ltrate
+    label: "{geo_name}"
+
+  - id: eu_ltrate_pl
+    member: PL
+    block: eu
+    source: ecb
+    key: IRS/M.PL.L.L40.CI.0000.PLN.N.Z
+    title: Rendite Staatsanleihen 10 Jahre Polen (Konvergenzzins)
+    unit: "% p. a."
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: eu_ltrate
+    label: Polen
 
   # ------------------------------------------------------------------
   # 5. Langfristig: Global Macro Database (Makro) und JST (Finanzen)

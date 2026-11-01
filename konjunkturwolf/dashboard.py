@@ -47,6 +47,8 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
             else:
                 specs = [by_id[sid] for sid in cfg["series"]]
                 base = catalog.chart(f"{p['id']}_{side}")
+            if catalog.panel_members:
+                specs = [s for s in specs if not s.member or s.member in catalog.panel_members]
             sides[side] = {
                 "id": f"{p['id']}_{side}",
                 "title": cfg.get("title") or base.title,
