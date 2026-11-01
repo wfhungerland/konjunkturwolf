@@ -118,8 +118,8 @@ def test_panel_facts_rank_and_history():
     }
     facts = panel_facts(Cat(), sides)
     assert facts[0] == "Zuletzt (September 2026): Deutschland 2,0 %."
-    assert facts[1].startswith("Rang 2 von 3 Ländern")
-    assert "in 50 % der Jahre unter dem aktuellen Wert" in facts[2]
+    assert facts[1].startswith("Von 2 Nachbarn liegen 1 höher und 1 niedriger")
+    assert "Höher als 50 % der Jahreswerte" in facts[2]
 
 
 def test_extend_long_appends_annual_means():
@@ -152,3 +152,17 @@ def test_extend_long_skips_gap():
     right = {"member": "DE", "frequency": "monatlich", "y": [3.0], "x": ["2000-01-01"]}
     assert extend_long({"left": {"series": [left]}, "right": {"series": [right]}}) == ""
     assert left["x"][-1] == "1914-01-01"
+
+
+def test_write_downloads(tmp_path):
+    import pandas as pd
+    from konjunkturwolf.downloads import write_downloads
+
+    side = {"id": "x_left", "title": "Test", "kind": "line", "decimals": 1, "y_min": None, "y_max": None,
+            "series": [{"label": "Deutschland", "member": "DE", "x": ["2020-01-01", "2021-01-01"], "y": [1.0, 2.0]},
+                       {"label": "Frankreich", "member": "FR", "x": ["2021-01-01"], "y": [3.0]}]}
+    files = write_downloads(side, 3, tmp_path, "Quelle: Test")
+    assert files == {"csv": "abb03_x_left.csv", "dta": "abb03_x_left.dta", "xlsx": "abb03_x_left.xlsx"}
+    d = pd.read_stata(tmp_path / files["dta"])
+    assert list(d.columns) == ["date", "deutschland", "frankreich"] and len(d) == 2
+    assert "1,0" in (tmp_path / files["csv"]).read_text(encoding="utf-8-sig")

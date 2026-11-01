@@ -63,8 +63,36 @@ def _quantile(ys: list[float], q: float) -> float:
     return v[lo] + (v[hi] - v[lo]) * (k - lo)
 
 
-def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
-    """Kurze Einordnung aus den Daten: aktueller Wert, Rang, Lage zur Geschichte."""
+def _std(ys: list[float]) -> float:
+    m = sum(ys) / len(ys)
+    return (sum((v - m) ** 2 for v in ys) / max(len(ys) - 1, 1)) ** 0.5
+
+
+def episode_facts(eps: list[dict]) -> list[str]:
+    """Krisenvergleich: Tiefpunkt und Erholung je Episode."""
+    out = []
+    for e in eps:
+        if len(e["y"]) < 2:
+            continue
+        name = e["label"]
+        low = min(e["y"]); t_low = e["x"][e["y"].index(low)]
+        back = next((x for x, y in zip(e["x"], e["y"]) if x > t_low and y >= 100), None)
+        last_x, last_y = e["x"][-1], e["y"][-1]
+        def yrs(n):
+            return "einem Jahr" if n == 1 else f"{n} Jahren"
+        if back is not None:
+            out.append(f"{name}: Tiefpunkt nach {yrs(t_low)} bei {_num(low)} % des Hochs, "
+                       f"nach {yrs(back)} wieder auf dem Hoch.")
+        elif low == last_y:
+            out.append(f"{name}: nach {yrs(last_x)} bei {_num(last_y)} % des Hochs, so tief wie noch nie seit dem Hoch.")
+        else:
+            out.append(f"{name}: nach {yrs(last_x)} bei {_num(last_y)} % des Hochs, Tiefpunkt bisher "
+                       f"{_num(low)} % nach {yrs(t_low)}; das Hoch ist nicht wieder erreicht.")
+    return out
+
+
+def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None) -> list[str]:
+    """Kurze Einordnung aus den Daten: aktueller Wert, Lage unter den Nachbarn, Lage zur Geschichte."""
     focus = set(catalog.comparison.get("focus") or [])
     right = [s for s in sides["right"]["series"] if s["y"] and s["member"]]
     left = [s for s in sides["left"]["series"] if s["y"]]
@@ -80,23 +108,41 @@ def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
                 + ", ".join(f"{lab} {_num(v)} {u}" for v, lab in vals) + "."]
     u = _unit(de["unit"])
     date, value = de["x"][-1], de["y"][-1]
-    facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} {u}."]
+    if de["unit"].startswith("Index") and "=100" in de["unit"].replace(" ", ""):
+        base = de["unit"].split()[-1].split("=")[0]
+        facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} ({base} = 100), "
+                 f"also {_num(abs(value - 100))} % {'unter' if value < 100 else 'über'} {base}."]
+    else:
+        facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} {u}."]
     peers = {s["label"]: dict(zip(s["x"], s["y"]))[date]
              for s in right if s is not de and date in s["x"]}
     if peers:
-        rank = 1 + sum(v > value for v in peers.values())
+        higher = sum(v > value for v in peers.values())
         lo, hi = min(peers, key=peers.get), max(peers, key=peers.get)
         missing = [s["label"] for s in right if s is not de and s["label"] not in peers]
-        facts.append(f"Rang {rank} von {len(peers) + 1} Ländern (1 = höchster Wert); "
-                     f"Spanne von {lo} {_num(peers[lo])} {u} bis {hi} {_num(peers[hi])} {u}"
-                     + (f" ({', '.join(missing)} noch ohne Wert)." if missing else "."))
+        n = len(peers)
+        lage = (f"Höher als bei allen {n} Nachbarn" if higher == 0 else f"Niedriger als bei allen {n} Nachbarn"
+                if higher == n else f"Von {n} Nachbarn liegen {higher} höher und {n - higher} niedriger")
+        facts.append(f"{lage} (Spanne {lo} {_num(peers[lo])} bis {hi} {_num(peers[hi])} {u})"
+                     + (f"; {', '.join(missing)} noch ohne Wert." if missing else "."))
     hist = next((s for s in left if s["member"] in focus), None)
     if hist and len(hist["y"]) >= 30:
         ys = hist["y"]
         share = round(100 * sum(v < value for v in ys) / len(ys))
-        unit_word = ("Monatswert", "Monate") if hist["frequency"] == "monatlich" else ("Jahreswert", "Jahre")
-        facts.append(f"Von {hist['x'][0][:4]} bis {hist['x'][-1][:4]} lag der {unit_word[0]} in {share} % "
-                     f"der {unit_word[1]} unter dem aktuellen Wert; Median {_num(_quantile(ys, 0.5))} {u}.")
+        what = "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte"
+        span = f"{hist['x'][0][:4]} bis {hist['x'][-1][:4]}"
+        if share >= 99:
+            facts.append(f"So hoch wie in keinem {'Monat' if what == 'Monatswerte' else 'Jahr'} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+        elif share <= 1:
+            facts.append(f"So niedrig wie in keinem {'Monat' if what == 'Monatswerte' else 'Jahr'} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+        else:
+            facts.append(f"Höher als {share} % der {what} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+        if "volatility" in (extra or []):
+            cut = f"{int(date[:4]) - 5}{date[4:]}"
+            recent = [y for x, y in zip(de["x"], de["y"]) if x > cut]
+            if len(recent) > 12:
+                facts.append(f"Schwankung (Standardabweichung): {span} {_num(_std(ys))} Pp, "
+                             f"letzte fünf Jahre {_num(_std(recent))} Pp.")
     return facts
 
 
@@ -110,6 +156,7 @@ def history_band(catalog: Catalog, sides: dict) -> dict | None:
     return {"p25": round(_quantile(ys, 0.25), 3), "p50": round(_quantile(ys, 0.5), 3),
             "p75": round(_quantile(ys, 0.75), 3), "from": hist["x"][0][:4], "to": hist["x"][-1][:4],
             "values": "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte",
+            "p05": round(_quantile(ys, 0.05), 3), "p95": round(_quantile(ys, 0.95), 3),
             "label": hist["label"]}
 
 
@@ -212,7 +259,9 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                 sides[side].update(kind="episodes", series=eps, full=True, decimals=0,
                                    note="x-Achse: Jahre nach dem Hoch; Jahresmittel."
                                         + (f" Laufendes Jahr unvollständig ({'; '.join(partial)})." if partial else ""))
-        facts = panel_facts(catalog, sides)
+        facts = panel_facts(catalog, sides, p.get("facts"))
+        if sides["left"].get("kind") == "episodes":
+            facts = episode_facts(sides["left"]["series"]) + facts
         sides["right"]["history"] = history_band(catalog, sides)
         ext = extend_long(sides)
         if ext:
@@ -273,6 +322,17 @@ def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_p
     site = Path(site_dir)
     site.mkdir(parents=True, exist_ok=True)
     payload = build_payload(catalog, result)
+    from .downloads import write_downloads
+
+    for pi, panel in enumerate(payload["panels"]):
+        for k, side in enumerate(("left", "right")):
+            sd = panel[side]
+            note = "Quelle: " + ", ".join(dict.fromkeys(s["source"] for s in sd["series"] if s["x"])) + ". konjunkturwolf, Stand " + str(payload["generated_at"])[:10]
+            try:
+                sd["downloads"] = write_downloads(sd, 2 * pi + k + 1, site / "downloads", note)
+            except Exception as exc:  # Downloads dürfen die Seite nicht verhindern
+                sd["downloads"] = {}
+                print(f"Download für {sd['id']} fehlgeschlagen: {exc}")
     data_js = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     template = resources.files("konjunkturwolf").joinpath("templates/dashboard.html").read_text(encoding="utf-8")
     html = template.replace("/*__DATA__*/null", data_js)
