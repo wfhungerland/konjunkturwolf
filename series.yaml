@@ -97,8 +97,8 @@ charts:
   de_gdp: {title: "BIP real, Veränderung in %"}
   de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal, Prozentpunkte", kind: stacked}
   de_cpi: {title: "Verbraucherpreisindex (VPI), 2020=100"}
-  de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat"}
-  de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat"}
+  de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat", decimals: 1}
+  de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat", decimals: 1}
   de_cpi_laender_index: {title: "VPI der Bundesländer, 2020=100"}
   de_perceived: {title: "Gefühlte und erwartete Inflation (Verbraucherumfrage)"}
   de_labour_rate: {title: "Arbeitslosenquote (ILO)"}
@@ -110,16 +110,16 @@ charts:
   de_energy_use: {title: "Energieverbrauch Deutschland"}
   ecb_rates: {title: "EZB-Leitzinsen"}
   de_yields: {title: "Renditen deutscher Bundeswertpapiere"}
-  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand"}
+  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand, €Bio."}
   de_loans_growth: {title: "Kredite an Unternehmen und Haushalte, Wachstum"}
   fx_major: {title: "Wechselkurse: USD, GBP, CHF je Euro"}
   fx_asia: {title: "Wechselkurse: JPY, CNY je Euro"}
   eu_gdp: {title: "BIP real, % gg. Vorjahresquartal"}
-  eu_hicp: {title: "HVPI-Inflationsrate, % gg. Vorjahresmonat"}
+  eu_hicp: {title: "HVPI-Inflationsrate, % gg. Vorjahresmonat", decimals: 1}
   eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
-  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40}
+  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -25, y_max: 25}
   lang_debt: {title: "Staatsschulden, % des BIP"}
   lang_unemp: {title: "Arbeitslosenquote, %"}
@@ -296,7 +296,7 @@ series:
     frequency: M
     adjustment: nicht bereinigt
     chart: de_cpi_rate
-    label: HVPI ohne Energie, Nahrungsmittel, Alkohol, Tabak
+    label: HVPI Kern (ohne Energie, Nahrung)
 
   - id: de_gdp_contrib
     expand: {item: [P31_S14_S15, P3_S13, P51G, P52_P53, P6, P7]}
@@ -581,7 +581,8 @@ series:
     source: ecb
     key: BSI/M.DE.N.A.A20.A.1.U2.2240.Z01.E
     title: Kredite deutscher MFIs an nichtfinanzielle Unternehmen, Bestand
-    unit: Mio. EUR
+    params: {scale: 0.000001}
+    unit: "€Bio."
     frequency: M
     adjustment: nicht bereinigt
     chart: de_loans_stock
@@ -592,7 +593,8 @@ series:
     source: ecb
     key: BSI/M.DE.N.A.A20.A.1.U2.2250.Z01.E
     title: Kredite deutscher MFIs an private Haushalte, Bestand
-    unit: Mio. EUR
+    params: {scale: 0.000001}
+    unit: "€Bio."
     frequency: M
     adjustment: nicht bereinigt
     chart: de_loans_stock

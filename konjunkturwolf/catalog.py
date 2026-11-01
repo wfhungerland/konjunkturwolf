@@ -52,6 +52,7 @@ class Chart:
     y_min: float | None = None  # feste Achsengrenzen, z.B. gegen Hyperinflationsspitzen
     y_max: float | None = None
     kind: str = "line"  # line | stacked (gestapelte Säulen mit Summenlinie)
+    decimals: int | None = None  # feste Nachkommastellen der Werteachse (Inflationsraten: 1)
 
 
 @dataclass(frozen=True)
@@ -226,6 +227,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
             y_min=float(c["y_min"]) if c.get("y_min") is not None else None,
             y_max=float(c["y_max"]) if c.get("y_max") is not None else None,
             kind=str(c.get("kind") or "line"),
+            decimals=int(c["decimals"]) if c.get("decimals") is not None else None,
         )
 
     entries = raw.get("series")

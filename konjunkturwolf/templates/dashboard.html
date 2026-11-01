@@ -38,6 +38,7 @@
   .card .src { color: var(--muted); font-size: 12px; margin: 4px 0; }
   .card .src a { color: var(--accent); }
   .missing { color: var(--warn); font-size: 13px; }
+  .chart .js-line { stroke-linecap: round; stroke-linejoin: round; }
   .ranges { display: flex; gap: 4px; margin-left: auto; }
   .ranges .btn { padding: 3px 8px; font-size: 13px; }
   .ranges .btn.on { border-color: var(--accent); color: var(--accent); }
@@ -84,7 +85,7 @@ const DATA = /*__DATA__*/null;
 const PALETTE = ["#002060", "#0070C0", "#00B0F0", "#51154A", "#7030A0", "#D86DCD", "#47D359"];
 const HS = {
   font: '"Arial Narrow", "Arial Nova Cond", "Liberation Sans Narrow", "Helvetica Neue Condensed", Arial, sans-serif',
-  band: "rgba(193, 229, 245, 0.20)",   // #C1E5F5 bei 80 % Transparenz
+  band: "rgba(193, 229, 245, 0.30)",   // #C1E5F5 bei 70 % Transparenz (Grafikstandard)
   gridH: "#BFBFBF", gridV: "#F2F2F2", zero: "#FF0000",
   thin: 0.5,                            // 0,25 Pt am Bildschirm
   line: 3,                              // Datenlinie
@@ -130,11 +131,12 @@ function shortUnit(units) {
   if (units.every(u => u.startsWith("%"))) return "%";
   if (units.every(u => u.startsWith("Saldo"))) return "Pp";
   if (units.some(u => u.startsWith("Pp"))) return "Pp";
+  if (units.every(u => u.startsWith("€"))) return units[0];
   if (units.length === 1 && units[0].length <= 9 && !units[0].startsWith("Index")) return units[0];
   return "";
 }
 // Werteachse: runde Stufen, je ein Drittel Stufe Luft oben und unten, Einheit an der obersten Zahl
-function yAxis(series, range, unit, limits) {
+function yAxis(series, range, unit, limits, fixedDecimals) {
   let lo = Infinity, hi = -Infinity;
   series.forEach(s => s.x.forEach((x, i) => {
     if (x >= range[0] && x <= range[1]) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
@@ -143,7 +145,7 @@ function yAxis(series, range, unit, limits) {
   if (limits && limits[0] != null) lo = Math.max(lo, limits[0]);
   if (limits && limits[1] != null) hi = Math.min(hi, limits[1]);
   if (lo === hi) { lo -= 1; hi += 1; }
-  const step = niceStep(hi - lo, 4), d = decimals(step);
+  const step = niceStep(hi - lo, 4), d = fixedDecimals != null ? fixedDecimals : decimals(step);
   const first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
   const vals = [], text = [];
   for (let v = first; v <= last + step / 1000; v += step) {
@@ -185,7 +187,7 @@ function houseAxes(el, chart) {
   const data = chart.series.filter(s => s.x.length);
   const range = xRange(data, chart.full);
   const units = [...new Set(data.map(s => s.unit))];
-  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max]);
+  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max], chart.decimals);
   const xa = xAxis(range, el.clientWidth || 560);
   const shapes = xa.shapes.slice();
   return {
@@ -281,7 +283,7 @@ function renderChart(el, chart) {
       el._kwBusy = true;
       const r = [ev["xaxis.range[0]"].slice(0, 10), ev["xaxis.range[1]"].slice(0, 10)];
       const data = chart.series.filter(s => s.x.length);
-      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]), [chart.y_min, chart.y_max]);
+      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]), [chart.y_min, chart.y_max], chart.decimals);
       const xa = xAxis(r, el.clientWidth || 560);
       Plotly.relayout(el, { "xaxis.tickvals": xa.vals, "xaxis.ticktext": xa.text, shapes: xa.shapes,
                             "yaxis.range": ya && ya.range, "yaxis.tickvals": ya && ya.vals, "yaxis.ticktext": ya && ya.text,

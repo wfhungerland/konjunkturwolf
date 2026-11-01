@@ -170,6 +170,8 @@ def run(catalog: Catalog, paths: Paths, client: HttpClient, only: list[str] | No
             else:
                 res = FETCHERS[spec.source](spec, client)
                 data = res.data
+                if spec.params.get("scale") and spec.source not in ("jst", "gmd"):
+                    data = data.assign(value=data["value"] * float(spec.params["scale"]))
                 retrieved = _iso(res.retrieved_at)
                 st.api_url = res.api_url
                 st.status = "cache" if res.from_cache else "ok"
