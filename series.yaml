@@ -67,7 +67,33 @@ geo_names:
   GBR: Vereinigtes Königreich
   USA: USA
 
+# Webseite: je Kernindikator links der lange Rand (seit 1870), rechts der aktuelle Rand (5 Jahre)
+panels:
+  - id: inflation
+    title: Inflation
+    left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr"}
+    right: {series: [de_cpi_yoy, de_hicp_yoy, de_hicp_core_yoy], title: "Inflation aktuell, % gg. Vorjahresmonat", decimals: 1}
+  - id: wachstum
+    title: Wachstum
+    left: {chart: lang_growth, title: "Reales BIP seit 1870, % gg. Vorjahr"}
+    right: {chart: de_gdp_contrib, title: "Wachstumsbeiträge aktuell, Pp gg. Vorquartal"}
+  - id: arbeit
+    title: Arbeitslosigkeit
+    left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %"}
+    right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
+  - id: zinsen
+    title: Zinsen
+    left: {chart: lang_ltrate, title: "Langfristiger Zins seit 1870, % p. a."}
+    right: {series: [de_bund10_bbk, de_bund2_bbk, ecb_dfr], title: "Zinsen aktuell, % p. a."}
+
 names:
+  item:
+    P31_S14_S15: Private Konsumausgaben
+    P3_S13: Staatskonsum
+    P51G: Bruttoanlageinvestitionen
+    P52_P53: Vorratsveränderungen
+    P6: Exporte
+    P7: Importe
   land:
     "01": Schleswig-Holstein
     "02": Hamburg
@@ -88,9 +114,10 @@ names:
 
 charts:
   de_gdp: {title: "BIP real, Veränderung in %"}
+  de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal, Prozentpunkte", kind: stacked}
   de_cpi: {title: "Verbraucherpreisindex (VPI), 2020=100"}
-  de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat"}
-  de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat"}
+  de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat", decimals: 1}
+  de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat", decimals: 1}
   de_cpi_laender_index: {title: "VPI der Bundesländer, 2020=100"}
   de_perceived: {title: "Gefühlte und erwartete Inflation (Verbraucherumfrage)"}
   de_labour_rate: {title: "Arbeitslosenquote (ILO)"}
@@ -102,16 +129,16 @@ charts:
   de_energy_use: {title: "Energieverbrauch Deutschland"}
   ecb_rates: {title: "EZB-Leitzinsen"}
   de_yields: {title: "Renditen deutscher Bundeswertpapiere"}
-  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand"}
+  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand, €Mrd."}
   de_loans_growth: {title: "Kredite an Unternehmen und Haushalte, Wachstum"}
   fx_major: {title: "Wechselkurse: USD, GBP, CHF je Euro"}
   fx_asia: {title: "Wechselkurse: JPY, CNY je Euro"}
   eu_gdp: {title: "BIP real, % gg. Vorjahresquartal"}
-  eu_hicp: {title: "HVPI-Inflationsrate, % gg. Vorjahresmonat"}
+  eu_hicp: {title: "HVPI-Inflationsrate, % gg. Vorjahresmonat", decimals: 1}
   eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
   eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
   eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
-  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40}
+  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -15, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -25, y_max: 25}
   lang_debt: {title: "Staatsschulden, % des BIP"}
   lang_unemp: {title: "Arbeitslosenquote, %"}
@@ -212,7 +239,7 @@ series:
     expand: {land: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]}
     block: inflation
     source: genesis
-    key: "61111-0010"
+    key: "61111-0011"
     params:
       value_variable: PREIS1
       filters: {DLAND: "{land}"}
@@ -288,7 +315,34 @@ series:
     frequency: M
     adjustment: nicht bereinigt
     chart: de_cpi_rate
-    label: HVPI ohne Energie, Nahrungsmittel, Alkohol, Tabak
+    label: HVPI Kern (ohne Energie, Nahrung)
+
+  - id: de_gdp_contrib
+    expand: {item: [P31_S14_S15, P3_S13, P51G, P52_P53, P6, P7]}
+    block: konjunktur
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: DE, na_item: "{item}", unit: CON_PPCH_PRE, s_adj: SCA}
+    title: "Wachstumsbeitrag {item_name}"
+    unit: Pp gg. Vorquartal
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: de_gdp_contrib
+    label: "{item_name}"
+    style: bar
+    note: Beitrag zur Veränderung des realen BIP gegenüber dem Vorquartal in Prozentpunkten (Eurostat). Die Summe der Beiträge weicht wegen der Verkettung leicht von der BIP-Rate ab.
+
+  - id: de_gdp_contrib_total
+    block: konjunktur
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: DE, na_item: B1GQ, unit: CLV_PCH_PRE, s_adj: SCA}
+    title: BIP real, % gg. Vorquartal
+    unit: "% gg. Vorquartal"
+    frequency: Q
+    adjustment: preis-, saison- und kalenderbereinigt
+    chart: de_gdp_contrib
+    label: BIP real
 
   - id: de_unemp_ilo
     block: konjunktur
@@ -324,24 +378,6 @@ series:
     chart: de_production
     label: Produktion Industrie (Eurostat)
 
-  - id: de_orders
-    block: konjunktur
-    source: genesis
-    key: "42151-0004"
-    params:
-      value_variable: AUF103
-      filters: {WZ08V2: WZ08-C, BERWE5: X13JDKSB}
-    title: Auftragseingang im Verarbeitenden Gewerbe, real
-    unit: Index 2021=100
-    frequency: M
-    adjustment: saison- und kalenderbereinigt (X13 JDemetra+)
-    chart: de_production
-    label: Auftragseingang Verarb. Gewerbe (Destatis)
-    note: GENESIS-Zugang erforderlich. Merkmals-Codes ungeprüft; bei Fehler listet das Lauf-Log die verfügbaren Codes.
-
-  # ------------------------------------------------------------------
-  # 2. Energie und Preise
-  # ------------------------------------------------------------------
   - id: de_elec_hh
     block: energie
     source: eurostat
@@ -422,7 +458,7 @@ series:
     block: energie
     source: genesis
     key: "61241-0002"
-    params: {value_variable: PREIS1}
+    params: {value_variable: PRE001, value_unit: "2021=100"}
     title: Erzeugerpreisindex gewerblicher Produkte (Inlandsabsatz)
     unit: Index 2021=100
     frequency: M
@@ -545,7 +581,8 @@ series:
     source: ecb
     key: BSI/M.DE.N.A.A20.A.1.U2.2240.Z01.E
     title: Kredite deutscher MFIs an nichtfinanzielle Unternehmen, Bestand
-    unit: Mio. EUR
+    params: {scale: 0.001}
+    unit: "€Mrd."
     frequency: M
     adjustment: nicht bereinigt
     chart: de_loans_stock
@@ -556,7 +593,8 @@ series:
     source: ecb
     key: BSI/M.DE.N.A.A20.A.1.U2.2250.Z01.E
     title: Kredite deutscher MFIs an private Haushalte, Bestand
-    unit: Mio. EUR
+    params: {scale: 0.001}
+    unit: "€Mrd."
     frequency: M
     adjustment: nicht bereinigt
     chart: de_loans_stock

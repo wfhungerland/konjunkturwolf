@@ -31,6 +31,7 @@ class Response:
     retrieved_at: datetime
     from_cache: bool
     content_type: str = ""
+    raw: bytes = b""
 
 
 def _now() -> datetime:
@@ -78,17 +79,19 @@ class HttpClient:
         if not (body.exists() and meta.exists()):
             return None
         info = json.loads(meta.read_text(encoding="utf-8"))
+        raw = body.read_bytes()
         return Response(
-            text=body.read_text(encoding="utf-8"),
+            text=raw.decode("utf-8", errors="replace"),
             url=info["url"],
             retrieved_at=datetime.fromisoformat(info["retrieved_at"]),
             from_cache=True,
             content_type=info.get("content_type", ""),
+            raw=raw,
         )
 
     def _write_cache(self, body: Path, meta: Path, resp: Response) -> None:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        body.write_text(resp.text, encoding="utf-8")
+        body.write_bytes(resp.raw or resp.text.encode("utf-8"))
         meta.write_text(
             json.dumps(
                 {"url": resp.url, "retrieved_at": resp.retrieved_at.isoformat(), "content_type": resp.content_type}
@@ -144,6 +147,7 @@ class HttpClient:
             retrieved_at=_now(),
             from_cache=False,
             content_type=r.headers.get("Content-Type", ""),
+            raw=r.content,
         )
         if self.use_cache:
             self._write_cache(body_path, meta_path, resp)

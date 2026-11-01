@@ -20,7 +20,11 @@
   header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); }
   .bar { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px;
          align-items: center; flex-wrap: wrap; }
-  .bar h1 { font-size: 18px; margin: 0 12px 0 0; }
+  .bar h1 { font-size: 18px; margin: 0 4px 0 0; }
+  .stand { color: var(--muted); font-size: 13px; margin-right: 12px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
+  section > .lead { color: var(--muted); font-size: 14px; margin: -6px 0 12px; }
   nav { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
   nav a, .btn { color: var(--text); text-decoration: none; padding: 5px 10px; border: 1px solid var(--line);
                 border-radius: 6px; background: transparent; font: inherit; font-size: 14px; cursor: pointer; }
@@ -38,6 +42,7 @@
   .card .src { color: var(--muted); font-size: 12px; margin: 4px 0; }
   .card .src a { color: var(--accent); }
   .missing { color: var(--warn); font-size: 13px; }
+  .chart .js-line { stroke-linecap: round; stroke-linejoin: round; }
   .ranges { display: flex; gap: 4px; margin-left: auto; }
   .ranges .btn { padding: 3px 8px; font-size: 13px; }
   .ranges .btn.on { border-color: var(--accent); color: var(--accent); }
@@ -58,14 +63,9 @@
 <header>
   <div class="bar">
     <h1>konjunkturwolf</h1>
+    <span class="stand" id="stand"></span>
     <nav id="nav"></nav>
-    <div class="ranges" id="ranges">
-      <button class="btn" data-years="5">5 J.</button>
-      <button class="btn on" data-years="10">10 J.</button>
-      <button class="btn" data-years="0">Alles</button>
-    </div>
     <a class="btn primary" href="konjunkturwolf.xlsx" download>Excel</a>
-    <button class="btn" id="theme" aria-label="Hell/Dunkel umschalten">Hell/Dunkel</button>
   </div>
 </header>
 <main>
@@ -73,8 +73,8 @@
   <div id="content"></div>
 </main>
 <footer>
-  Daten: Destatis, Deutsche Bundesbank, EZB, Eurostat. Werte unverändert aus den offiziellen Schnittstellen.
-  Perioden sind auf ihren ersten Tag datiert. Details und Direktlinks im
+  Daten: Destatis, Deutsche Bundesbank, EZB, Eurostat, Global Macro Database (Müller u. a. 2025), JST Macrohistory Database (Jordà, Schularick, Taylor). Werte unverändert aus den Quellen.
+  Perioden sind auf ihren ersten Tag datiert. Alle weiteren Reihen, Details und Direktlinks im
   <a href="konjunkturwolf.xlsx" download>Excel-Workbook</a> (Blatt Quellen) und auf
   <a href="https://github.com/wfhungerland/konjunkturwolf">GitHub</a>.
 </footer>
@@ -83,13 +83,13 @@ const DATA = /*__DATA__*/null;
 // Hausstandard: Farben, Linien, Achsen (siehe README, Abschnitt Grafikstil)
 const PALETTE = ["#002060", "#0070C0", "#00B0F0", "#51154A", "#7030A0", "#D86DCD", "#47D359"];
 const HS = {
-  font: '"Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", serif',
-  band: "rgba(193, 229, 245, 0.30)",   // #C1E5F5 bei 30 % Deckkraft
+  font: '"Arial Narrow", "Arial Nova Cond", "Liberation Sans Narrow", "Helvetica Neue Condensed", Arial, sans-serif',
+  band: "rgba(193, 229, 245, 0.30)",   // #C1E5F5 bei 70 % Transparenz (Grafikstandard)
   gridH: "#BFBFBF", gridV: "#F2F2F2", zero: "#FF0000",
   thin: 0.5,                            // 0,25 Pt am Bildschirm
   line: 3,                              // Datenlinie
-  peerBand: "rgba(160, 160, 160, 0.22)", // Spanne der Vergleichsländer
-  peerLine: "#8C8C8C",                  // Einzelne Vergleichsländer, dunkler als die Fläche
+  peerBand: "rgba(170, 170, 170, 0.22)", // Spanne der Vergleichsländer
+  peerLine: "#B4B4B4",                  // Einzelne Vergleichsländer, hellgrau
 };
 const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
 let rangeYears = 10;
@@ -100,7 +100,7 @@ function setTheme(t) {
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem("kw-theme", t); } catch (e) {}
 }
-function xRange(series, full) {
+function xRange(series, full, years) {
   let min = null, max = null;
   series.forEach(s => {
     if (!s.x.length) return;
@@ -110,8 +110,9 @@ function xRange(series, full) {
   if (!max) return null;
   const end = new Date(max); end.setMonth(end.getMonth() + 1);
   let start = new Date(min);
-  if (rangeYears && !full) {
-    const cut = new Date(max); cut.setFullYear(cut.getFullYear() - rangeYears);
+  const span = years || rangeYears;
+  if (span && !full) {
+    const cut = new Date(max); cut.setFullYear(cut.getFullYear() - span);
     if (cut > start) start = cut;
   }
   return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)];
@@ -129,11 +130,13 @@ function shortUnit(units) {
   if (!units.length) return "";
   if (units.every(u => u.startsWith("%"))) return "%";
   if (units.every(u => u.startsWith("Saldo"))) return "Pp";
+  if (units.some(u => u.startsWith("Pp"))) return "Pp";
+  if (units.every(u => u.startsWith("€"))) return units[0];
   if (units.length === 1 && units[0].length <= 9 && !units[0].startsWith("Index")) return units[0];
   return "";
 }
 // Werteachse: runde Stufen, je ein Drittel Stufe Luft oben und unten, Einheit an der obersten Zahl
-function yAxis(series, range, unit, limits) {
+function yAxis(series, range, unit, limits, fixedDecimals) {
   let lo = Infinity, hi = -Infinity;
   series.forEach(s => s.x.forEach((x, i) => {
     if (x >= range[0] && x <= range[1]) { lo = Math.min(lo, s.y[i]); hi = Math.max(hi, s.y[i]); }
@@ -142,7 +145,7 @@ function yAxis(series, range, unit, limits) {
   if (limits && limits[0] != null) lo = Math.max(lo, limits[0]);
   if (limits && limits[1] != null) hi = Math.min(hi, limits[1]);
   if (lo === hi) { lo -= 1; hi += 1; }
-  const step = niceStep(hi - lo, 4), d = decimals(step);
+  const step = niceStep(hi - lo, 4), d = fixedDecimals != null ? fixedDecimals : decimals(step);
   const first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
   const vals = [], text = [];
   for (let v = first; v <= last + step / 1000; v += step) {
@@ -161,7 +164,7 @@ function xAxis(range, width) {
   const maxLabels = Math.max(3, Math.floor(width / 48));
   const every = [1, 2, 5, 10, 20, 25, 50, 100].find(k => years / k <= maxLabels) || 100;
   const vals = [], text = [], shapes = [];
-  const bands = years <= 30;
+  const bands = true;
   for (let y = startY; y <= endY; y++) {
     const a = new Date(Date.UTC(y, 0, 1)), b = new Date(Date.UTC(y + 1, 0, 1));
     const lo = a < y0 ? y0 : a, hi = b > y1 ? y1 : b;
@@ -169,7 +172,7 @@ function xAxis(range, width) {
       vals.push(new Date((lo.getTime() + hi.getTime()) / 2).toISOString().slice(0, 10));
       text.push(String(y));
     }
-    if (a > y0 && (bands || y % every === 0)) {
+    if (a > y0 && (years <= 30 || y % every === 0)) {
       shapes.push({ type: "line", xref: "x", yref: "paper", x0: a.toISOString().slice(0, 10), x1: a.toISOString().slice(0, 10),
                     y0: 0, y1: 1, line: { color: HS.gridV, width: HS.thin }, layer: "below" });
     }
@@ -182,9 +185,9 @@ function xAxis(range, width) {
 }
 function houseAxes(el, chart) {
   const data = chart.series.filter(s => s.x.length);
-  const range = xRange(data, chart.full);
+  const range = xRange(data, chart.full, chart.years);
   const units = [...new Set(data.map(s => s.unit))];
-  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max]);
+  const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max], chart.decimals);
   const xa = xAxis(range, el.clientWidth || 560);
   const shapes = xa.shapes.slice();
   return {
@@ -239,9 +242,22 @@ function comparisonTraces(withData) {
   return traces;
 }
 
+function stackedTraces(withData) {
+  let i = 0;
+  return withData.map(s => s.style === "bar" ? {
+    x: s.x, y: s.y, name: s.label, type: "bar",
+    marker: { color: PALETTE[1 + (i++ % (PALETTE.length - 1))], line: { width: 0 } },
+    hovertemplate: `%{y:,.2f} Pp<extra>${esc(s.label)}</extra>`,
+  } : {
+    x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
+    line: { color: PALETTE[0], width: HS.line },
+    hovertemplate: `%{y:,.2f} %<extra>${esc(s.label)}</extra>`,
+  });
+}
+
 function renderChart(el, chart) {
   const withData = chart.series.filter(s => s.x.length);
-  const traces = comparisonTraces(withData) || withData.map((s, i) => ({
+  const traces = (chart.kind === "stacked" ? stackedTraces(withData) : null) || comparisonTraces(withData) || withData.map((s, i) => ({
     x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
     hovertemplate: `%{x|%d.%m.%Y}: %{y:,.3~f} ${esc(s.unit)}<extra>${esc(s.label)}</extra>`,
@@ -249,6 +265,7 @@ function renderChart(el, chart) {
   const layout = {
     margin: { l: 8, r: 8, t: traces.length > 1 ? 30 : 8, b: 26 },
     hovermode: "x unified", showlegend: traces.filter(t => t.showlegend !== false).length > 1,
+    barmode: "relative", bargap: 0.2, hoverlabel: { font: { family: HS.font } },
     legend: { orientation: "h", x: 0, xanchor: "left", y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", borderwidth: 0, font: { size: 12 } },
     font: { family: HS.font, size: 13, color: "#000000" },
     paper_bgcolor: "#FFFFFF", plot_bgcolor: "#FFFFFF", separators: ",.",
@@ -266,7 +283,7 @@ function renderChart(el, chart) {
       el._kwBusy = true;
       const r = [ev["xaxis.range[0]"].slice(0, 10), ev["xaxis.range[1]"].slice(0, 10)];
       const data = chart.series.filter(s => s.x.length);
-      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]), [chart.y_min, chart.y_max]);
+      const ya = yAxis(data, r, shortUnit([...new Set(data.map(s => s.unit))]), [chart.y_min, chart.y_max], chart.decimals);
       const xa = xAxis(r, el.clientWidth || 560);
       Plotly.relayout(el, { "xaxis.tickvals": xa.vals, "xaxis.ticktext": xa.text, shapes: xa.shapes,
                             "yaxis.range": ya && ya.range, "yaxis.tickvals": ya && ya.vals, "yaxis.ticktext": ya && ya.text,
@@ -277,84 +294,78 @@ function renderChart(el, chart) {
   rendered.push({ el, chart });
 }
 
+let chartNo = 0;
+function makeCard(chart, observer) {
+  const card = document.createElement("div"); card.className = "card";
+  const units = [...new Set(chart.series.map(s => s.unit))].join(" / ");
+  const sources = [...new Map(chart.series.map(s => [s.source, s])).values()]
+    .map(s => s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.source)}</a>` : esc(s.source));
+  const missing = chart.series.filter(s => !s.x.length);
+  const focusSer = chart.series.filter(s => ((DATA.comparison || {}).focus || []).includes(s.member) && s.x.length);
+  const lasts = (focusSer.length ? focusSer : chart.series.filter(s => s.x.length)).map(lastLine);
+  chartNo += 1;
+  card.innerHTML = `<h3>Grafik ${chartNo}: ${esc(chart.title)}</h3>
+    <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
+  const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
+  const src = document.createElement("div"); src.className = "src";
+  src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
+  card.appendChild(src);
+  if (chart.y_min != null || chart.y_max != null) {
+    const out = [];
+    chart.series.forEach(x => x.x.forEach((d, i) => {
+      if ((chart.y_max != null && x.y[i] > chart.y_max) || (chart.y_min != null && x.y[i] < chart.y_min)) out.push(`${x.label} ${d.slice(0, 4)}`);
+    }));
+    if (out.length) {
+      const n = document.createElement("div"); n.className = "src";
+      const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : v.toLocaleString("de-DE"));
+      n.textContent = `Achse begrenzt auf ${lim[0]} bis ${lim[1]}. Außerhalb: ${out.slice(0, 12).join(", ")}${out.length > 12 ? ` und ${out.length - 12} weitere` : ""}.`;
+      card.appendChild(n);
+    }
+  }
+  const cmp = DATA.comparison || {};
+  const peerLabels = chart.series.filter(x => (cmp.peers || []).includes(x.member) && x.x.length).map(x => x.label);
+  if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {
+    const n = document.createElement("div"); n.className = "src";
+    n.textContent = "Graue Fläche: Spanne (Minimum bis Maximum) von " + peerLabels.join(", ") + ".";
+    card.appendChild(n);
+  }
+  const old = chart.series.filter(s => s.x.length && s.outdated);
+  if (old.length) {
+    const o = document.createElement("div"); o.className = "missing";
+    o.textContent = "Veraltet (Quelle liefert keine neuen Werte): " + old.map(s => s.label).join(", ");
+    card.appendChild(o);
+  }
+  if (missing.length) {
+    const m = document.createElement("div"); m.className = "missing";
+    m.textContent = "Ohne Daten: " + missing.map(s => `${s.label} (${s.status})`).join(", ");
+    card.appendChild(m);
+  }
+  if (!chart.series.some(s => s.x.length)) { el.style.height = "auto"; el.textContent = "Keine Daten verfügbar."; }
+  else if (observer) observer.observe(el); else renderChart(el, chart);
+  return card;
+}
+
 function build() {
   const nav = document.getElementById("nav"), content = document.getElementById("content");
-  const c = DATA.counts || {};
-  const okCount = (c.ok || 0) + (c.cache || 0) + (c.stale || 0);
-  const total = Object.values(c).reduce((a, b) => a + b, 0);
+  const d = new Date(DATA.generated_at);
+  document.getElementById("stand").textContent = "Stand: " + d.toLocaleDateString("de-DE");
   document.getElementById("meta").textContent =
-    `Stand: ${DATA.generated_at.replace("T", " ").replace("Z", " UTC")} · ${okCount} von ${total} Reihen mit Daten`;
+    "Je Indikator links der lange Rand seit 1870, rechts die letzten fünf Jahre. Deutschland dunkelblau, graue Fläche: Spanne der Vergleichsländer.";
   const observer = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { observer.unobserve(e.target); renderChart(e.target, e.target._chart); } });
   }, { rootMargin: "300px" }) : null;
 
-  DATA.blocks.forEach(block => {
-    const a = document.createElement("a"); a.href = `#${block.id}`; a.textContent = block.title; nav.appendChild(a);
-    const sec = document.createElement("section"); sec.id = block.id;
-    sec.innerHTML = `<h2>${esc(block.title)}</h2>`;
-    const grid = document.createElement("div"); grid.className = "grid"; sec.appendChild(grid);
-    block.charts.forEach(chart => {
-      const card = document.createElement("div"); card.className = "card";
-      const units = [...new Set(chart.series.map(s => s.unit))].join(" / ");
-      const sources = [...new Map(chart.series.map(s => [s.source, s])).values()]
-        .map(s => s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.source)}</a>` : esc(s.source));
-      const missing = chart.series.filter(s => !s.x.length);
-      const lasts = chart.series.filter(s => s.x.length).map(lastLine);
-      card.innerHTML = `<h3>${esc(chart.title)}</h3>
-        <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
-      const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
-      const src = document.createElement("div"); src.className = "src";
-      src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt: ${lasts.map(esc).join(" · ")}` : "");
-      card.appendChild(src);
-      if (chart.y_min != null || chart.y_max != null) {
-        const out = [];
-        chart.series.forEach(x => x.x.forEach((d, i) => {
-          if ((chart.y_max != null && x.y[i] > chart.y_max) || (chart.y_min != null && x.y[i] < chart.y_min)) out.push(`${x.label} ${d.slice(0, 4)}`);
-        }));
-        if (out.length) {
-          const n = document.createElement("div"); n.className = "src";
-          const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : v.toLocaleString("de-DE"));
-          n.textContent = `Achse begrenzt auf ${lim[0]} bis ${lim[1]}. Außerhalb: ${out.slice(0, 12).join(", ")}${out.length > 12 ? ` und ${out.length - 12} weitere` : ""}.`;
-          card.appendChild(n);
-        }
-      }
-      const cmp = DATA.comparison || {};
-      const peerLabels = chart.series.filter(x => (cmp.peers || []).includes(x.member) && x.x.length).map(x => x.label);
-      if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {
-        const n = document.createElement("div"); n.className = "src";
-        n.textContent = "Graue Fläche: Spanne (Minimum bis Maximum) von " + peerLabels.join(", ") + ".";
-        card.appendChild(n);
-      }
-      const old = chart.series.filter(s => s.x.length && s.outdated);
-      if (old.length) {
-        const o = document.createElement("div"); o.className = "missing";
-        o.textContent = "Veraltet (Quelle liefert keine neuen Werte): " + old.map(s => s.label).join(", ");
-        card.appendChild(o);
-      }
-      if (missing.length) {
-        const m = document.createElement("div"); m.className = "missing";
-        m.textContent = "Ohne Daten: " + missing.map(s => `${s.label} (${s.status})`).join(", ");
-        card.appendChild(m);
-      }
-      if (!chart.series.some(s => s.x.length)) { el.style.height = "auto"; el.textContent = "Keine Daten verfügbar."; }
-      else if (observer) observer.observe(el); else renderChart(el, chart);
-      grid.appendChild(card);
-    });
+  (DATA.panels || []).forEach(panel => {
+    const a = document.createElement("a"); a.href = `#${panel.id}`; a.textContent = panel.title; nav.appendChild(a);
+    const sec = document.createElement("section"); sec.id = panel.id;
+    sec.innerHTML = `<h2>${esc(panel.title)}</h2>` + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "");
+    const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
+    [panel.left, panel.right].forEach(chart => pair.appendChild(makeCard(chart, observer)));
     content.appendChild(sec);
   });
-
-  document.querySelectorAll("#ranges .btn").forEach(btn => btn.addEventListener("click", () => {
-    document.querySelectorAll("#ranges .btn").forEach(b => b.classList.remove("on"));
-    btn.classList.add("on"); rangeYears = Number(btn.dataset.years);
-    rendered.forEach(r => Plotly.relayout(r.el, houseAxes(r.el, r.chart)));
-  }));
 }
 
 (function init() {
-  let t = null; try { t = localStorage.getItem("kw-theme"); } catch (e) {}
-  if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  document.documentElement.dataset.theme = t;
-  document.getElementById("theme").addEventListener("click", () => setTheme(theme() === "dark" ? "light" : "dark"));
   if (!DATA) { document.getElementById("meta").textContent = "Keine Daten eingebettet."; return; }
   build();
 })();

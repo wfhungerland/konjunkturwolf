@@ -12,7 +12,7 @@ import yaml
 
 SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
-STYLES = {"line", "step"}
+STYLES = {"line", "step", "bar"}
 DERIVE_OPS = {"yoy_pct"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -51,6 +51,8 @@ class Chart:
     title: str
     y_min: float | None = None  # feste Achsengrenzen, z.B. gegen Hyperinflationsspitzen
     y_max: float | None = None
+    kind: str = "line"  # line | stacked (gestapelte Säulen mit Summenlinie)
+    decimals: int | None = None  # feste Nachkommastellen der Werteachse (Inflationsraten: 1)
 
 
 @dataclass(frozen=True)
@@ -105,6 +107,7 @@ class Catalog:
     series: list[SeriesSpec]
     geo_names: dict[str, str] = field(default_factory=dict)
     comparison: dict[str, list[str]] = field(default_factory=dict)
+    panels: list[dict[str, Any]] = field(default_factory=list)
 
     def by_id(self) -> dict[str, SeriesSpec]:
         return {s.id: s for s in self.series}
@@ -224,6 +227,8 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
             title=str(c.get("title") or cid),
             y_min=float(c["y_min"]) if c.get("y_min") is not None else None,
             y_max=float(c["y_max"]) if c.get("y_max") is not None else None,
+            kind=str(c.get("kind") or "line"),
+            decimals=int(c["decimals"]) if c.get("decimals") is not None else None,
         )
 
     entries = raw.get("series")
@@ -289,7 +294,21 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
         "focus": [str(x) for x in comp.get("focus") or []],
         "peers": [str(x) for x in comp.get("peers") or []],
     }
-    return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison)
+    panels = list(raw.get("panels") or [])
+    for p in panels:
+        for side in ("left", "right"):
+            cfg = p.get(side) or {}
+            if cfg.get("chart") and cfg["chart"] not in charts and cfg["chart"] not in {s.chart_id for s in series}:
+                errors.append(f"Panel {p.get('id')}: Diagramm '{cfg['chart']}' unbekannt.")
+            for sid in cfg.get("series") or []:
+                if sid not in ids:
+                    errors.append(f"Panel {p.get('id')}: Reihe '{sid}' unbekannt.")
+            if not cfg.get("chart") and not cfg.get("series"):
+                errors.append(f"Panel {p.get('id')}: Seite '{side}' braucht 'chart' oder 'series'.")
+    if errors:
+        raise CatalogError(errors)
+    return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison,
+                   panels=panels)
 
 
 def _validate_entry(e: dict[str, Any], block_ids: set[str], charts: dict[str, Chart]) -> list[str]:

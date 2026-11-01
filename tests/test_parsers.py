@@ -140,6 +140,7 @@ def test_http_client_memoizes_identical_requests(tmp_path, monkeypatch):
     class Fake:
         status_code = 200
         text = "ok"
+        content = b"ok"
         url = "https://example.test/x"
         encoding = "utf-8"
         headers = {"Content-Type": "text/plain"}
@@ -207,3 +208,43 @@ def test_panel_series_transforms():
     with pytest.raises(ParseError, match="Land"):
         panel_series(panel, SeriesSpec(id="x", source="jst", key="cpi", title="t", unit="u", frequency="A",
                                        adjustment="-", block="b", params={"country": "XXX"}), "iso")
+
+
+def test_genesis_skips_preamble(fixture_text):
+    text = "GENESIS-Tabelle: 61111-0002\nVerbraucherpreisindex\n\n" + fixture_text("genesis_61111-0002.csv")
+    df = parse_genesis_ffcsv(text, value_variable="PREIS1")
+    assert len(df) == 3
+
+
+def test_genesis_reports_unknown_format():
+    with pytest.raises(ParseError, match="Anfang: Titel"):
+        parse_genesis_ffcsv("Titel\nnoch eine Zeile\n1;2;3;4\n")
+
+
+def test_genesis_zip_is_unpacked(fixture_text):
+    import io
+    import zipfile
+
+    from konjunkturwolf.fetchers import genesis_text
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("61111-0002_flat.csv", fixture_text("genesis_61111-0002.csv").encode("utf-8"))
+    text = genesis_text(buf.getvalue())
+    assert parse_genesis_ffcsv(text, value_variable="PREIS1")["value"].tolist() == [117.6, 118.1, 118.6]
+    assert genesis_text("ä;b".encode("cp1252")) == "ä;b"
+
+
+def test_genesis_value_unit_selects_index():
+    head = "statistics_code;time;1_variable_code;1_variable_attribute_code;value;value_unit;value_variable_code\n"
+    rows = [
+        "61241;2012;MONAT;MONAT01;0.4;%;PRE001",
+        "61241;2012;MONAT;MONAT01;2.9;%;PRE001",
+        "61241;2012;MONAT;MONAT01;89.7;2021=100;PRE001",
+        "61241;2012;MONAT;MONAT02;90.0;2021=100;PRE001",
+    ]
+    text = head + "\n".join(rows) + "\n"
+    with pytest.raises(ParseError, match="Mehrere Werte"):
+        parse_genesis_ffcsv(text, value_variable="PRE001")
+    df = parse_genesis_ffcsv(text, value_variable="PRE001", value_unit="2021=100")
+    assert df["value"].tolist() == [89.7, 90.0]
