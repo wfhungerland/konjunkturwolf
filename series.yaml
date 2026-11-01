@@ -71,32 +71,53 @@ geo_names:
 panels:
   - id: inflation
     title: Inflation
-    question: "Ist die Inflation heute hoch, gemessen an 150 Jahren und an den Nachbarn? Abb. 1 zeigt den langen Rand, Abb. 2 die letzten fünf Jahre."
+    question: "Ist die Inflation heute hoch, gemessen an 150 Jahren und an den Nachbarn? Dazu {abb}."
     left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr", decimals: 1}
     right: {chart: eu_hicp, title: "Inflation aktuell (HVPI), % gg. Vorjahresmonat", decimals: 1}
   - id: wachstum
     title: Wachstum
-    question: "Wächst Deutschland heute langsamer als früher und als die Nachbarn? Dazu Abb. 3 und 4."
+    question: "Wächst Deutschland heute langsamer als früher und als die Nachbarn? Dazu {abb}."
     left: {chart: lang_growth, title: "Reales BIP seit 1870, % gg. Vorjahr"}
     right: {chart: eu_gdp, title: "Reales BIP aktuell, % gg. Vorjahresquartal", decimals: 1}
   - id: arbeit
     title: Arbeitslosigkeit
-    question: "Ist die Arbeitslosigkeit im langen Vergleich niedrig? Dazu Abb. 5 und 6."
+    question: "Ist die Arbeitslosigkeit im langen Vergleich niedrig? Dazu {abb}."
     left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %"}
     right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
   - id: zinsen
     title: Zinsen
-    question: "Sind die Zinsen nach der Nullzinsphase wieder normal? Dazu Abb. 7 und 8."
+    question: "Sind die Zinsen nach der Nullzinsphase wieder normal? Dazu {abb}."
     left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870, % p. a."}
     right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell, % p. a.", decimals: 1}
+  - id: krise
+    title: Industrie in der Krise
+    question: "Wie tief ist der Rückgang der Industrie seit 2017 im Vergleich zur Weltwirtschaftskrise und zur Finanzkrise? Dazu {abb}."
+    left:
+      title: "Industrieproduktion nach dem Hoch, Hoch = 100"
+      years: 8
+      episodes:
+        - {series: nber_ip_2537, window: [1927, 1930], label: Weltwirtschaftskrise}
+        - {series: eu_ip_de, window: [2007, 2008], label: Finanzkrise}
+        - {series: eu_ip_de, window: [2016, 2019], label: Heute}
+    right: {chart: eu_ip, title: "Industrieproduktion aktuell, Index 2021 = 100", decimals: 0}
+  - id: preise
+    title: Erzeugerpreise
+    question: "Schwanken die Preise heute stärker als im Kaiserreich? Großhandelspreise damals, Erzeugerpreise heute. Dazu {abb}."
+    left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914, % gg. Vorjahresmonat"}
+    right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell, % gg. Vorjahresmonat", decimals: 1}
+  - id: offenheit
+    title: Offenheit
+    question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
+    left: {chart: lang_open, title: "Exporte plus Importe seit 1827, % des BIP", note: "Hellblau: Fouquin und Hugot (2017), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
+    right: {chart: eu_open, title: "Exporte plus Importe aktuell, % des BIP", decimals: 0}
   - id: zinsstruktur
     title: Zinsabstand
-    question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand ging oft einer Rezession voraus. Dazu Abb. 9 und 10."
+    question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand ging oft einer Rezession voraus. Dazu {abb}."
     left: {chart: lang_term, title: "Zinsabstand lang minus kurz seit 1870, Pp"}
     right: {chart: now_term, title: "Zinsabstand aktuell, Pp", decimals: 1}
   - id: spreads
     title: Spreads
-    question: "Wie viel mehr Zins zahlen die Nachbarn als Deutschland? Steigende Abstände zeigen Stress im Euroraum. Dazu Abb. 11 und 12."
+    question: "Wie viel mehr Zins zahlen die Nachbarn als Deutschland? Steigende Abstände zeigen Stress im Euroraum. Dazu {abb}."
     left: {chart: lang_spread, title: "Renditeabstand zu Deutschland seit 1870, Pp"}
     right: {chart: eu_spread, title: "Renditeabstand zu Deutschland aktuell, Pp", decimals: 1}
 
@@ -159,6 +180,11 @@ charts:
   now_term: {title: "Zinsabstand 10 Jahre minus Tagesgeld, Pp", decimals: 1}
   lang_spread: {title: "Renditeabstand zu Deutschland, Pp", y_min: -5, y_max: 15, decimals: 1}
   eu_spread: {title: "Renditeabstand zu Deutschland (10 Jahre), Pp", decimals: 1}
+  lang_open: {title: "Exporte plus Importe, % des BIP", decimals: 0}
+  eu_open: {title: "Exporte plus Importe, % des BIP", decimals: 0}
+  eu_ip: {title: "Industrieproduktion, Index 2021 = 100", decimals: 0}
+  eu_ppi_yoy: {title: "Erzeugerpreise Industrie, % gg. Vorjahresmonat", decimals: 1}
+  nber_wpi_yoy: {title: "Großhandelspreise Hamburg, % gg. Vorjahresmonat", decimals: 1, y_min: -20, y_max: 30}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
   lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -20, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -20, y_max: 20}
@@ -857,6 +883,70 @@ series:
     label: Polen
     note: Eigene Berechnung aus den EZB-Konvergenzzinsen; Polen in Zloty, Abstand enthält Währungsrisiko.
 
+  - id: eu_exp_gdp
+    expand: {geo: [DE, FR, IT, ES, NL, PL]}
+    block: eu
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: "{geo}", na_item: P6, unit: PC_GDP, s_adj: SCA}
+    title: "Exporte {geo_name}, % des BIP"
+    unit: "% des BIP"
+    frequency: Q
+    adjustment: saison- und kalenderbereinigt
+    label: "{geo_name}"
+
+  - id: eu_imp_gdp
+    expand: {geo: [DE, FR, IT, ES, NL, PL]}
+    block: eu
+    source: eurostat
+    key: namq_10_gdp
+    params: {geo: "{geo}", na_item: P7, unit: PC_GDP, s_adj: SCA}
+    title: "Importe {geo_name}, % des BIP"
+    unit: "% des BIP"
+    frequency: Q
+    adjustment: saison- und kalenderbereinigt
+    label: "{geo_name}"
+
+  - id: eu_open
+    expand: {geo: [DE, FR, IT, ES, NL, PL]}
+    block: eu
+    source: derived
+    derive: {from: "eu_exp_gdp_{geo_id}", plus: "eu_imp_gdp_{geo_id}", op: sum}
+    title: "Offenheit {geo_name}: Exporte plus Importe, % des BIP"
+    unit: "% des BIP"
+    frequency: Q
+    adjustment: saison- und kalenderbereinigt
+    chart: eu_open
+    label: "{geo_name}"
+    note: Eigene Berechnung aus Eurostat namq_10_gdp (P6 plus P7, in % des BIP).
+
+  - id: eu_ip
+    expand: {geo: [DE, FR, IT, ES, NL, PL]}
+    block: eu
+    source: eurostat
+    key: sts_inpr_m
+    params: {geo: "{geo}", indic_bt: PRD, nace_r2: B-D, s_adj: SCA, unit: I21}
+    title: "Industrieproduktion {geo_name} (ohne Bau)"
+    unit: Index 2021=100
+    frequency: M
+    adjustment: saison- und kalenderbereinigt
+    chart: eu_ip
+    label: "{geo_name}"
+    start: "1991-01-01"
+
+  - id: eu_ppi_yoy
+    expand: {geo: [DE, FR, IT, ES, NL, PL]}
+    block: eu
+    source: eurostat
+    key: sts_inppd_m
+    params: {geo: "{geo}", indic_bt: PRC_PRR_DOM, nace_r2: B-E36, s_adj: NSA, unit: PCH_SM}
+    title: "Erzeugerpreise Industrie {geo_name} (Inlandsabsatz), % gg. Vorjahresmonat"
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: eu_ppi_yoy
+    label: "{geo_name}"
+
   # ------------------------------------------------------------------
   # 5. Langfristig: Global Macro Database (Makro) und JST (Finanzen)
   # ------------------------------------------------------------------
@@ -1028,3 +1118,74 @@ series:
     start: "1870-01-01"
     stale_after_months: 1200
     note: Eigene Berechnung aus JST (ltrate), endet 2020.
+
+  - id: lang_open
+    expand: {geo: [DEU, FRA, ITA, ESP, NLD]}
+    block: lang
+    source: jst
+    key: exports
+    params: {country: "{geo}", add: imports, divide_by: gdp, scale: 100}
+    title: "Offenheit {geo_name}: Exporte plus Importe, % des BIP"
+    unit: "% des BIP"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_open
+    label: "{geo_name}"
+    start: "1870-01-01"
+    stale_after_months: 1200
+    note: JST Macrohistory Database (exports plus imports durch gdp, nominal), endet 2020.
+
+  - id: nber_ip_2537
+    block: lang
+    source: nber
+    key: a01008ac
+    title: Industrieproduktion Deutschland 1925 bis 1937 (NBER)
+    unit: Index 1928=100
+    frequency: A
+    adjustment: nicht bereinigt
+    label: Deutschland 1925 bis 1937
+    start: "1925-01-01"
+    stale_after_months: 2400
+    note: NBER Macrohistory Database, Reihe a01008ac (Index of Production, Germany).
+
+  - id: nber_wpi
+    block: lang
+    source: nber
+    key: m04054
+    title: Großhandelspreisindex Hamburg (NBER)
+    unit: Index
+    frequency: M
+    adjustment: nicht bereinigt
+    label: Hamburg
+    start: "1879-01-01"
+    stale_after_months: 2400
+    note: NBER Macrohistory Database, Reihe m04054 (Hamburg Wholesale Price Index, 1879 bis 1914 mit Lücke 1903 bis 1906).
+
+  - id: nber_wpi_yoy
+    member: DEU
+    block: lang
+    source: derived
+    derive: {from: nber_wpi, op: yoy_pct}
+    title: Großhandelspreise Hamburg, % gg. Vorjahresmonat (berechnet)
+    unit: "% gg. Vorjahresmonat"
+    frequency: M
+    adjustment: nicht bereinigt
+    chart: nber_wpi_yoy
+    label: Deutschland (Hamburg)
+    start: "1879-01-01"
+    stale_after_months: 2400
+    note: Aus dem NBER-Index berechnet.
+
+  - id: tradhist_de_open
+    block: lang
+    source: static
+    key: tradhist_de_open
+    title: "Offenheit Zollverein (bis 1870) und Deutschland: Exporte plus Importe, % des BIP (bilaterale Summen)"
+    unit: "% des BIP"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_open
+    label: "Zollverein/DE (Fouquin, Hugot)"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Fouquin und Hugot (2017), TRADHIST, eigene Summen der bilateralen Ströme je Jahr geteilt durch BIP. Bilaterale Summen erfassen nicht den ganzen Handel und liegen unter dem JST-Niveau (1872 rund 21 % gegen rund 35 %); daher als eigene Linie, nicht angeschlossen."

@@ -143,3 +143,12 @@ def test_derive_diff():
     spec = type("S", (), {"derive": {"op": "diff"}})()
     out = derive_series(spec, a, b)
     assert out["value"].tolist() == [2.0]
+
+
+def test_extend_long_skips_gap():
+    from konjunkturwolf.dashboard import extend_long
+
+    left = {"member": "DEU", "x": ["1913-01-01", "1914-01-01"], "y": [1.0, 2.0]}
+    right = {"member": "DE", "frequency": "monatlich", "y": [3.0], "x": ["2000-01-01"]}
+    assert extend_long({"left": {"series": [left]}, "right": {"series": [right]}}) == ""
+    assert left["x"][-1] == "1914-01-01"

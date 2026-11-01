@@ -10,10 +10,10 @@ from typing import Any
 
 import yaml
 
-SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "derived"}
+SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "static", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
-DERIVE_OPS = {"yoy_pct", "diff"}
+DERIVE_OPS = {"yoy_pct", "diff", "sum"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 PLACEHOLDER_PATTERN = re.compile(r"\{[a-z_]+\}")
@@ -26,6 +26,8 @@ SOURCE_LABELS = {
     "jst": "JST Macrohistory Database",
     "gmd": "Global Macro Database",
     "derived": "Eigene Berechnung",
+    "nber": "NBER Macrohistory Database",
+    "static": "Eigene Aufbereitung",
 }
 
 
@@ -145,6 +147,10 @@ def default_link(spec: SeriesSpec) -> str:
         return "https://www.macrohistory.net/database/"
     if spec.source == "gmd":
         return "https://www.globalmacrodata.com"
+    if spec.source == "static":
+        return f"https://github.com/wfhungerland/konjunkturwolf/blob/main/data/static/{spec.key}.csv"
+    if spec.source == "nber":
+        return "https://www.nber.org/research/data/nber-macrohistory-database"
     if spec.source == "genesis":
         stat = spec.key.split("-")[0]
         return f"https://www-genesis.destatis.de/datenbank/online/statistic/{stat}/table/{spec.key}"
@@ -288,10 +294,11 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                 errors.append(f"{s.id}: abgeleitet von unbekannter Reihe '{src}'.")
             elif by_id[src].source == "derived":
                 errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
-            if s.derive.get("op") == "diff":
-                other = s.derive.get("minus")
+            if s.derive.get("op") in ("diff", "sum"):
+                key = "minus" if s.derive.get("op") == "diff" else "plus"
+                other = s.derive.get(key)
                 if other not in ids:
-                    errors.append(f"{s.id}: 'derive.minus' fehlt oder ist unbekannt ('{other}').")
+                    errors.append(f"{s.id}: 'derive.{key}' fehlt oder ist unbekannt ('{other}').")
                 elif by_id[other].source == "derived":
                     errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
 
@@ -311,8 +318,13 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
             for sid in cfg.get("series") or []:
                 if sid not in ids:
                     errors.append(f"Panel {p.get('id')}: Reihe '{sid}' unbekannt.")
-            if not cfg.get("chart") and not cfg.get("series"):
-                errors.append(f"Panel {p.get('id')}: Seite '{side}' braucht 'chart' oder 'series'.")
+            for ep in cfg.get("episodes") or []:
+                if ep.get("series") not in ids:
+                    errors.append(f"Panel {p.get('id')}: Episode mit unbekannter Reihe '{ep.get('series')}'.")
+                if len(ep.get("window") or []) != 2:
+                    errors.append(f"Panel {p.get('id')}: Episode braucht 'window: [von, bis]'.")
+            if not cfg.get("chart") and not cfg.get("series") and not cfg.get("episodes"):
+                errors.append(f"Panel {p.get('id')}: Seite '{side}' braucht 'chart', 'series' oder 'episodes'.")
     if errors:
         raise CatalogError(errors)
     return Catalog(blocks=blocks, charts=charts, series=series, geo_names=geo_names, comparison=comparison,

@@ -164,7 +164,7 @@ _PANELS: dict[tuple[int, str], tuple[pd.DataFrame, datetime, bool, str]] = {}
 def panel_series(panel: pd.DataFrame, spec: SeriesSpec, country_col: str) -> pd.DataFrame:
     """Wählt Land und Variable aus einem Länder-Jahres-Panel und wendet einfache Umformungen an.
 
-    params: country (ISO3), optional divide_by (zweite Variable), scale (Faktor),
+    params: country (ISO3), optional add (Variable addieren), divide_by (Variable teilen), scale (Faktor),
     transform: pct_change (Veränderung gegenüber Vorjahr in %), max_year.
     """
     p = spec.params
@@ -176,6 +176,8 @@ def panel_series(panel: pd.DataFrame, spec: SeriesSpec, country_col: str) -> pd.
     if var not in rows.columns:
         raise ParseError(f"Variable {var} nicht im Datensatz.")
     df = rows[["year", var]].rename(columns={var: "value"}).copy()
+    if p.get("add"):
+        df["value"] = pd.to_numeric(df["value"], errors="coerce") + pd.to_numeric(rows[p["add"]], errors="coerce").values
     if p.get("divide_by"):
         df["value"] = df["value"] / rows[p["divide_by"]].values
     df["value"] = pd.to_numeric(df["value"], errors="coerce") * float(p.get("scale", 1))
@@ -227,6 +229,50 @@ def fetch_gmd(spec: SeriesSpec, client: HttpClient) -> FetchResult:
 
 GMD_COUNTRIES: set[str] = set()
 
+NBER_BASE = "https://data.nber.org/databases/macrohistory/rectdata"
+
+
+def parse_nber(text: str) -> pd.DataFrame:
+    """NBER Macrohistory, rectdata: 'Jahr Wert' (jährlich) oder 'Jahr Monat Wert'; '.' = fehlt."""
+    rows = []
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 2 or not parts[0].isdigit():
+            continue
+        year = int(parts[0])
+        if len(parts) >= 3 and parts[1].isdigit() and 1 <= int(parts[1]) <= 12:
+            month, raw = int(parts[1]), parts[2]
+        else:
+            month, raw = 1, parts[1]
+        try:
+            rows.append((pd.Timestamp(year=year, month=month, day=1), float(raw)))
+        except ValueError:
+            continue  # '.' = fehlender Wert
+    if not rows:
+        raise ParseError("NBER-Datei ohne Werte.")
+    return pd.DataFrame(rows, columns=["date", "value"])
+
+
+def fetch_nber(spec: SeriesSpec, client: HttpClient) -> FetchResult:
+    sid = spec.key
+    resp = client.get(f"{NBER_BASE}/{sid[1:3]}/{sid}.dat")
+    return FetchResult(_since(parse_nber(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
+
+
+STATIC_URL = "https://github.com/wfhungerland/konjunkturwolf/blob/main/data/static"
+
+
+def fetch_static(spec: SeriesSpec, client: HttpClient) -> FetchResult:
+    """Fest im Repo abgelegte, einmalig aufbereitete Reihe (data/static/<key>.csv mit date,value)."""
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parent.parent / "data" / "static" / f"{spec.key}.csv"
+    if not path.exists():
+        raise FetchError(f"Statische Datei fehlt: data/static/{spec.key}.csv")
+    df = pd.read_csv(path, parse_dates=["date"])[["date", "value"]]
+    when = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).replace(microsecond=0)
+    return FetchResult(_since(df, spec), f"{STATIC_URL}/{spec.key}.csv", when, False)
+
 
 FETCHERS = {
     "ecb": fetch_ecb,
@@ -235,6 +281,8 @@ FETCHERS = {
     "genesis": fetch_genesis,
     "jst": fetch_jst,
     "gmd": fetch_gmd,
+    "nber": fetch_nber,
+    "static": fetch_static,
 }
 
 
@@ -257,6 +305,10 @@ def api_url_hint(spec: SeriesSpec) -> str:
         return JST_URL
     if spec.source == "gmd":
         return "https://www.globalmacrodata.com"
+    if spec.source == "static":
+        return f"{STATIC_URL}/{spec.key}.csv"
+    if spec.source == "nber":
+        return f"{NBER_BASE}/{spec.key[1:3]}/{spec.key}.dat"
     return ""
 
 
@@ -268,10 +320,10 @@ def derive_series(spec: SeriesSpec, base: pd.DataFrame, other: pd.DataFrame | No
         merged = base.merge(prev, on="date", how="inner")
         merged["value"] = (merged["value"] / merged["prev"] - 1.0) * 100.0
         return merged[["date", "value"]].dropna().reset_index(drop=True)
-    if op == "diff":
+    if op in ("diff", "sum"):
         if other is None:
-            raise ValueError("Ableitung diff braucht eine zweite Reihe (minus).")
+            raise ValueError(f"Ableitung {op} braucht eine zweite Reihe (minus bzw. plus).")
         merged = base.merge(other.rename(columns={"value": "other"}), on="date", how="inner")
-        merged["value"] = merged["value"] - merged["other"]
+        merged["value"] = merged["value"] - merged["other"] if op == "diff" else merged["value"] + merged["other"]
         return merged[["date", "value"]].dropna().reset_index(drop=True)
     raise ValueError(f"Unbekannte Ableitung: {op}")

@@ -41,6 +41,8 @@ def _num(v: float) -> str:
 
 
 def _unit(u: str) -> str:
+    if u.startswith("Index"):
+        return "Punkte"
     return "%" if u.startswith("%") else ("Pp" if u.startswith("Pp") else u)
 
 
@@ -92,8 +94,9 @@ def panel_facts(catalog: Catalog, sides: dict) -> list[str]:
     if hist and len(hist["y"]) >= 30:
         ys = hist["y"]
         share = round(100 * sum(v < value for v in ys) / len(ys))
-        facts.append(f"Von {hist['x'][0][:4]} bis {hist['x'][-1][:4]} lag der Jahreswert in {share} % "
-                     f"der Jahre unter dem aktuellen Wert; Median {_num(_quantile(ys, 0.5))} {u}.")
+        unit_word = ("Monatswert", "Monate") if hist["frequency"] == "monatlich" else ("Jahreswert", "Jahre")
+        facts.append(f"Von {hist['x'][0][:4]} bis {hist['x'][-1][:4]} lag der {unit_word[0]} in {share} % "
+                     f"der {unit_word[1]} unter dem aktuellen Wert; Median {_num(_quantile(ys, 0.5))} {u}.")
     return facts
 
 
@@ -106,6 +109,7 @@ def history_band(catalog: Catalog, sides: dict) -> dict | None:
     ys = hist["y"]
     return {"p25": round(_quantile(ys, 0.25), 3), "p50": round(_quantile(ys, 0.5), 3),
             "p75": round(_quantile(ys, 0.75), 3), "from": hist["x"][0][:4], "to": hist["x"][-1][:4],
+            "values": "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte",
             "label": hist["label"]}
 
 
@@ -122,8 +126,8 @@ def extend_long(sides: dict) -> str:
         for x, y in zip(cur["x"], cur["y"]):
             if int(x[:4]) > last_year:
                 by_year.setdefault(int(x[:4]), []).append(y)
-        if not by_year:
-            continue
+        if not by_year or min(by_year) > last_year + 1:
+            continue  # nur lückenlos anschließen
         for year in sorted(by_year):
             s["x"].append(f"{year}-01-01")
             s["y"].append(round(sum(by_year[year]) / len(by_year[year]), 6))
@@ -131,11 +135,42 @@ def extend_long(sides: dict) -> str:
         first_ext = min(first_ext or 9999, min(by_year))
         y_last = max(by_year)
         per_year = {"monatlich": 12, "vierteljährlich": 4}.get(cur["frequency"])
-        if per_year and len(by_year[y_last]) < per_year:
+        if per_year and len(by_year[y_last]) < per_year and (not last_info or s["member"] in ("DEU", "DE")):
             last_info = f"; {y_last} nur bis {_period(cur['x'][-1], cur['frequency']).rsplit(' ', 1)[0]}"
     if first_ext is None:
         return ""
     return f"Ab {first_ext}: Jahresmittel der aktuellen Werte aus der rechten Abbildung{last_info}."
+
+
+def episode_items(cfg: dict, items: dict[str, dict]) -> list[dict]:
+    """Krisenvergleich: Jahresmittel je Reihe, Hoch im Fenster = 100, x = Jahre nach dem Hoch."""
+    out = []
+    horizon = int(cfg.get("years") or 8)
+    for ep in cfg["episodes"]:
+        src = items[ep["series"]]
+        by_year: dict[int, list[float]] = {}
+        for x, y in zip(src["x"], src["y"]):
+            by_year.setdefault(int(x[:4]), []).append(y)
+        annual = {yr: sum(v) / len(v) for yr, v in by_year.items()}
+        lo, hi = ep["window"]
+        cands = {yr: v for yr, v in annual.items() if lo <= yr <= hi}
+        item = dict(src, id=f"{src['id']}_{ep['label']}", member=None, unit="Index, Hoch = 100",
+                    frequency="jährlich", x=[], y=[])
+        if cands:
+            peak = max(cands, key=cands.get)
+            item["label"] = f"{ep['label']} (Hoch {peak})"
+            for yr in range(peak, peak + horizon + 1):
+                if yr in annual:
+                    item["x"].append(yr - peak)
+                    item["y"].append(round(annual[yr] / annual[peak] * 100, 3))
+            last = src["x"][-1] if src["x"] else ""
+            per_year = {"monatlich": 12, "vierteljährlich": 4}.get(src["frequency"])
+            if per_year and last and len(by_year.get(int(last[:4]), [])) < per_year and int(last[:4]) - peak <= horizon:
+                item["partial"] = f"{last[:4]} bis {_period(last, src['frequency']).rsplit(' ', 1)[0]}"
+        else:
+            item["label"] = ep["label"]
+        out.append(item)
+    return out
 
 
 def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
@@ -149,7 +184,10 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
         sides = {}
         for side in ("left", "right"):
             cfg = p.get(side) or {}
-            if cfg.get("chart"):
+            if cfg.get("episodes"):
+                specs = [by_id[e["series"]] for e in cfg["episodes"]]
+                base = catalog.chart(f"{p['id']}_{side}")
+            elif cfg.get("chart"):
                 specs = [s for s in catalog.series if s.chart_id == cfg["chart"]]
                 base = catalog.chart(cfg["chart"], specs[0] if specs else None)
             else:
@@ -167,6 +205,13 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                 "note": cfg.get("note", ""),
                 "series": [_item(s, grouped.get(s.id), statuses.get(s.id)) for s in specs],
             }
+            if cfg.get("episodes"):
+                items = {s["id"]: s for s in sides[side]["series"]}
+                eps = episode_items(cfg, items)
+                partial = [f"{e['label'].split(' (')[0]}: {e['partial']}" for e in eps if e.get("partial")]
+                sides[side].update(kind="episodes", series=eps, full=True, decimals=0,
+                                   note="x-Achse: Jahre nach dem Hoch; Jahresmittel."
+                                        + (f" Laufendes Jahr unvollständig ({'; '.join(partial)})." if partial else ""))
         facts = panel_facts(catalog, sides)
         sides["right"]["history"] = history_band(catalog, sides)
         ext = extend_long(sides)
