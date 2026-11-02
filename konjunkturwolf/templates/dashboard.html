@@ -63,14 +63,19 @@
   .ov .per { color: var(--muted); font-size: 11px; margin-left: 4px; }
   .ov svg { display: block; }
   .ov .lage { font-size: 11px; color: var(--muted); }
+  .claim { font-size: 19px; margin: 12px 0 6px; }
+  .key { margin: 0 0 14px; padding-left: 18px; font-size: 15px; }
+  .key a { color: var(--text); font-weight: bold; }
+  .ovnote { font: 12px "Arial Narrow", Arial, sans-serif; color: var(--muted); margin: -18px 0 24px; }
   @media (max-width: 700px) {
-    .ov th:nth-child(3), .ov td:nth-child(3) { display: none; }
-    .ov { font-size: 13px; } .ov td { padding-right: 6px; }
-    .ov td:nth-child(1) { white-space: normal; }
-    .ov td:nth-child(2) svg { width: 72px; } .ov td:nth-child(5) svg { width: 64px; }
-    .ov { table-layout: fixed; } .ov th:nth-child(1), .ov td:nth-child(1) { width: 30%; }
-    .ov .per { white-space: normal; }
-    .ov .per { display: block; margin: 0; } .ov .lage { display: none; }
+    /* Handy: zuerst das Aktuelle (letzte fünf Jahre, letzter Wert, Veränderung); Geschichte in den Abbildungen */
+    .ov .c-hist, .ov .c-lage { display: none; }
+    .ov { font-size: 13px; table-layout: fixed; } .ov td { padding-right: 6px; }
+    .ov td:nth-child(1) { white-space: normal; } .ov th:nth-child(1) { width: 32%; }
+    .ov th.c-recent { width: 24%; } .ov .c-recent svg { width: 100%; height: auto; }
+    .ov th.num { width: 22%; }
+    .ov .per { display: block; margin: 0; white-space: normal; }
+    .ov td.lage.wrap { font-size: 11px; }
   }
   .card .dl { font-family: "Arial Narrow", Arial, sans-serif; font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
   .card .dl a { color: var(--accent); margin-right: 8px; }
@@ -124,8 +129,11 @@
   </div>
 </header>
 <main>
+  <p class="claim">Deutschlands Wirtschaft heute, verglichen mit früher und mit den europäischen Nachbarn.</p>
+  <ul class="key" id="key"></ul>
   <p class="meta" id="meta"></p>
-  <table class="ov" id="top"><thead><tr><th>Thema</th><th>Langer Rand</th><th>Letzte 5 Jahre</th><th class="num">Zuletzt</th><th>Lage zur Geschichte</th></tr></thead><tbody id="ovbody"></tbody></table>
+  <table class="ov" id="top"><thead><tr><th>Thema</th><th class="c-hist">Historischer Verlauf</th><th class="c-recent">Letzte 5 Jahre</th><th class="num">Zuletzt</th><th class="num">Veränderung</th><th class="c-lage">Einordnung in die Geschichte</th></tr></thead><tbody id="ovbody"></tbody></table>
+  <p class="ovnote">Linien: Deutschland, roter Punkt: letzter Wert. Einordnung: grauer Strich 5 bis 95 % der historischen Werte, blauer Balken die mittlere Hälfte, senkrechter Strich der Median, Punkt heute.</p>
   <div id="content"></div>
 </main>
 <section class="refs" id="quellen">
@@ -602,14 +610,30 @@ document.addEventListener("click", e => {
   if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, () => {});
   else { const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); done(); }
 });
+// Veränderung zur Vorperiode: Prozentpunkte bei Raten, Prozent bei Indizes
+const MON3 = ["Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."];
+function shortPer(date, freq) {
+  const p = periodLabel(date, freq);
+  return freq === "monatlich" ? `${MON3[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}` : p;
+}
+function change(s) {
+  if (!s || s.y.length < 2) return "";
+  const a = s.y[s.y.length - 2], b = s.y[s.y.length - 1];
+  const idx = String(s.unit).startsWith("Index");
+  const d = idx ? 100 * (b / a - 1) : b - a;
+  const u = idx ? "%" : (String(s.unit).startsWith("%") || s.unit === "Pp" ? "Pp" : hoverUnit(s.unit));
+  const sign = d > 0.05 ? "+" : "";
+  const prev = shortPer(s.x[s.x.length - 2], s.frequency).replace(/ \d{4}$/, "");
+  return `${sign}${num1(d)} ${esc(u)}<span class="per">ggü. ${esc(prev)}</span>`;
+}
 function buildOverview() {
   const body = document.getElementById("ovbody");
   (DATA.panels || []).forEach(panel => {
     if (panel.charts) {
       const tr = document.createElement("tr");
       const c0 = panel.charts[0], s0 = c0 && pickSeries(c0);
-      tr.innerHTML = `<td><a href="#${panel.id}">${esc(panel.title)}</a></td><td>${spark(s0, 150, 22)}</td>`
-        + `<td colspan="3" class="lage wrap">${esc(panel.charts.map(c => c.title.split(",")[0]).join(" · "))}</td>`;
+      tr.innerHTML = `<td><a href="#${panel.id}">${esc(panel.title)}</a></td><td class="c-hist">${spark(s0, 150, 22)}</td>`
+        + `<td colspan="4" class="lage wrap">${esc(panel.charts.map(c => c.title.split(",")[0]).join(" · "))}</td>`;
       body.appendChild(tr);
       return;
     }
@@ -627,11 +651,12 @@ function buildOverview() {
     }
     const tr = document.createElement("tr");
     tr.innerHTML = `<td><a href="#${panel.id}">${esc(panel.title)}</a></td>`
-      + `<td>${spark(sl, 150, 22, [L.y_min, L.y_max])}</td>`
-      + `<td>${spark(sr, 90, 22, null, from5)}</td>`
+      + `<td class="c-hist">${spark(sl, 150, 22, [L.y_min, L.y_max])}</td>`
+      + `<td class="c-recent">${spark(sr, 90, 22, null, from5)}</td>`
       + `<td class="num">${v == null ? "" : num1(v) + " " + esc(hoverUnit(sr.unit).replace("Index 2021=100", ""))}`
-      + `${lastR ? `<span class="per">${esc((((DATA.comparison || {}).focus || []).includes(sr.member) ? "" : sr.label + ", ") + periodLabel(lastR, sr.frequency))}</span>` : ""}</td>`
-      + `<td>${lage(h, hv, 130)}<span class="lage">${esc(share)}</span></td>`;
+      + `${lastR ? `<span class="per">${esc((((DATA.comparison || {}).focus || []).includes(sr.member) ? "" : sr.label + ", ") + shortPer(lastR, sr.frequency))}</span>` : ""}</td>`
+      + `<td class="num">${change(sr)}</td>`
+      + `<td class="c-lage">${lage(h, hv, 130)}<span class="lage">${esc(share)}</span></td>`;
     body.appendChild(tr);
   });
 }
@@ -724,16 +749,22 @@ function buildIO(content) {
   content.appendChild(sec);
   const tr = document.createElement("tr");
   tr.innerHTML = `<td><a href="#verflechtung">Verflechtung 1936 und heute</a></td><td colspan="2" class="lage wrap">Fremdling und Stäglin (2014); Eurostat</td>`
-    + `<td class="num">${num1(wavg(io.now.multiplier, io.now.output_share))}<span class="per">Multiplikator ${Y}</span></td>`
-    + `<td class="lage">1936: ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}</td>`;
+    + `<td class="num">${num1(wavg(io.now.multiplier, io.now.output_share))}<span class="per">Multiplikator ${Y}</span></td><td></td>`
+    + `<td class="lage c-lage">1936: ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}</td>`;
   document.getElementById("ovbody").appendChild(tr);
 }
 function build() {
   const nav = document.getElementById("nav"), content = document.getElementById("content");
   const d = new Date(DATA.generated_at);
   document.getElementById("stand").textContent = "Stand: " + d.toLocaleDateString("de-DE");
-  document.getElementById("meta").textContent =
-    "Je Thema links der lange Rand, rechts die letzten fünf Jahre. Übersicht: Linien zeigen Deutschland, der rote Punkt den letzten Wert. Lage: grauer Strich 5 bis 95 % der historischen Werte, blauer Balken die mittlere Hälfte, Strich der Median, Punkt heute.";
+  // Drei Kernaussagen: jeweils der erste Satz zu Deutschland aus den Fakten
+  ["inflation", "wachstum", "arbeit"].forEach(id => {
+    const p = (DATA.panels || []).find(x => x.id === id);
+    if (!p || !(p.facts || []).length) return;
+    const li = document.createElement("li");
+    li.innerHTML = `<a href="#${id}">${esc(p.title)}:</a> ${esc(p.facts[0].split(", in ")[0].replace(/\.$/, ""))}.`;
+    document.getElementById("key").appendChild(li);
+  });
   const observer = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { observer.unobserve(e.target); renderChart(e.target, e.target._chart); } });
   }, { rootMargin: "300px" }) : null;
