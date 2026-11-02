@@ -278,7 +278,7 @@ function houseAxes(el, chart) {
 }
 const MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 function minus(t) { return String(t).replace(/-/g, "\u2212"); }
-function num1(v) { return minus(v.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })); }
+function num1(v, d = 1) { return minus(v.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d })); }
 function periodLabel(date, freq) {
   const y = date.slice(0, 4), m = Number(date.slice(5, 7));
   if (freq === "jährlich") return y;
@@ -290,12 +290,22 @@ function periodLabel(date, freq) {
 const TOUCH = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 700;
 const HOVER_FMT = { "jährlich": "%Y", "vierteljährlich": "Q%q %Y", "monatlich": "%m/%Y", "täglich": "%d.%m.%Y" };
 function hoverUnit(u) { return u.startsWith("%") ? "%" : u; }
-function lastLine(s) {
+function lastLine(s, d = 1) {
   if (!s.x.length) return "";
-  return `${s.label} ${num1(s.y[s.y.length - 1])} ${s.unit} (${periodLabel(s.x[s.x.length - 1], s.frequency)})`;
+  return `${s.label} ${num1(s.y[s.y.length - 1], d)} ${s.unit} (${periodLabel(s.x[s.x.length - 1], s.frequency)})`;
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+// Jahresreihen: Linie bei Datenlücken unterbrechen (statt Gerade über fehlende Jahre)
+function gapX(s) {
+  if (s.frequency !== "jährlich") return [s.x, s.y];
+  const x = [], y = [];
+  s.x.forEach((d, i) => {
+    if (i && Number(d.slice(0, 4)) - Number(s.x[i - 1].slice(0, 4)) > 1) { x.push(null); y.push(null); }
+    x.push(d); y.push(s.y[i]);
+  });
+  return [x, y];
+}
 // Vergleichsdiagramm: Fokusland vorn, Vergleichsländer als graue Spanne plus graue Einzellinien
 function comparisonTraces(withData) {
   const cmp = DATA.comparison || {};
@@ -318,7 +328,7 @@ function comparisonTraces(withData) {
       legendgroup: "peers" },
   ];
   peers.forEach((s, i) => traces.push({
-    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label, legendgroup: "peers",
+    x: gapX(s)[0], y: gapX(s)[1], type: "scatter", mode: "lines", name: s.label, legendgroup: "peers",
     showlegend: false, line: { color: HS.peerLine, width: 1.2 },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
@@ -357,7 +367,7 @@ function renderChart(el, chart) {
             width: i === withData.length - 1 ? HS.line : HS.line * 0.6 },
     hovertemplate: `%{y:,.0f}<extra>${esc(s.label)}</extra>`,
   })) : null) || (chart.kind === "stacked" ? stackedTraces(withData) : null) || comparisonTraces(withData) || withData.map((s, i) => ({
-    x: s.x, y: s.y, name: s.label, type: "scatter", mode: "lines",
+    x: gapX(s)[0], y: gapX(s)[1], name: s.label, type: "scatter", mode: "lines",
     line: { color: PALETTE[i % PALETTE.length], width: HS.line, shape: s.style === "step" ? "hv" : "linear" },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
@@ -411,7 +421,8 @@ function makeCard(chart, observer) {
     .map(s => s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.source)}</a>` : esc(s.source));
   const missing = chart.series.filter(s => !s.x.length);
   const focusSer = chart.series.filter(s => ((DATA.comparison || {}).focus || []).includes(s.member) && s.x.length);
-  const lasts = chart.kind === "episodes" ? [] : (focusSer.length ? focusSer : chart.series.filter(s => s.x.length)).map(lastLine);
+  const dLast = chart.decimals > 1 ? chart.decimals : 1;
+  const lasts = chart.kind === "episodes" ? [] : (focusSer.length ? focusSer : chart.series.filter(s => s.x.length)).map(s => lastLine(s, dLast));
   chartNo += 1;
   card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(chart.title)}</h3>
     <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
@@ -421,7 +432,7 @@ function makeCard(chart, observer) {
   const lastSer = (focusSer.length ? focusSer : chart.series.filter(s => s.x.length));
   const lastDates = [...new Set(lastSer.map(s => s.x[s.x.length - 1]))];
   if (lasts.length && lastSer.length > 1 && lastDates.length === 1)
-    lastTxt = `(${periodLabel(lastDates[0], lastSer[0].frequency)}): ` + lastSer.map(s => esc(`${s.label} ${num1(s.y[s.y.length - 1])} ${hoverUnit(s.unit)}`)).join(" · ");
+    lastTxt = `(${periodLabel(lastDates[0], lastSer[0].frequency)}): ` + lastSer.map(s => esc(`${s.label} ${num1(s.y[s.y.length - 1], dLast)} ${hoverUnit(s.unit)}`)).join(" · ");
   src.innerHTML = `Quelle: ${[...new Set(sources)].join(", ")}` + (lasts.length ? `<br>Zuletzt${lastSer.length > 1 && lastDates.length === 1 ? " " : ": "}${lastTxt}` : "");
   card.appendChild(src);
   const lics = [...new Set(chart.series.filter(x => x.x.length && x.license).map(x => x.license))];

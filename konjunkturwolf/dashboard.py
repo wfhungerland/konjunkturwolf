@@ -24,6 +24,18 @@ REFERENCES = [
     "2016-14. Daten: TRADHIST, http://www.cepii.fr.",
     "Fremdling, Rainer und Reiner Stäglin (2014): An Input-Output Table for Germany in 1936. A Documentation of Results, Sources "
     "and Research Strategy. Jahrbuch für Wirtschaftsgeschichte / Economic History Yearbook 2014/2. https://doi.org/10.1515/jbwg-2014-0018.",
+    "Anderson, James E. und Eric van Wincoop (2003): Gravity with Gravitas. A Solution to the Border Puzzle. American Economic Review 93(1), "
+    "S. 170–192, https://doi.org/10.1257/000282803321455214.",
+    "Arkolakis, Costas, Arnaud Costinot und Andrés Rodríguez-Clare (2012): New Trade Models, Same Old Gains? American Economic Review 102(1), "
+    "S. 94–130, https://doi.org/10.1257/aer.102.1.94.",
+    "Disdier, Anne-Célia und Keith Head (2008): The Puzzling Persistence of the Distance Effect on Bilateral Trade. Review of Economics and "
+    "Statistics 90(1), S. 37–48, https://doi.org/10.1162/rest.90.1.37.",
+    "Fally, Thibault (2015): Structural Gravity and Fixed Effects. Journal of International Economics 97(1), S. 76–85, "
+    "https://doi.org/10.1016/j.jinteco.2015.05.005.",
+    "Novy, Dennis (2013): Gravity Redux. Measuring International Trade Costs with Panel Data. Economic Inquiry 51(1), S. 101–121, "
+    "https://doi.org/10.1111/j.1465-7295.2011.00439.x.",
+    "Santos Silva, J. M. C. und Silvana Tenreyro (2006): The Log of Gravity. Review of Economics and Statistics 88(4), S. 641–658, "
+    "https://doi.org/10.1162/rest.88.4.641.",
     "Eurostat, Europäische Zentralbank, Deutsche Bundesbank, Statistisches Bundesamt (Destatis): Datenbanken, abgerufen über die "
     "jeweiligen Schnittstellen; Direktlinks je Reihe im Excel-Workbook (Blatt Quellen).",
 ]
@@ -148,7 +160,7 @@ def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None) -
         facts.append(f"{lage} (Spanne {lo} {_num(peers[lo])} bis {hi} {_num(peers[hi])} {u})"
                      + (f"; {', '.join(missing)} noch ohne Wert." if missing else "."))
     hist = next((s for s in left if s["member"] in focus), None)
-    if hist and len(hist["y"]) >= 30:
+    if hist and len(hist["y"]) >= 30 and "no_history" not in (extra or []):
         ys = hist["y"]
         what = "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte"
         span = f"{hist['x'][0][:4]} bis {hist['x'][-1][:4]}"
@@ -347,11 +359,13 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                                    note="x-Achse: Jahre nach dem Hoch; Jahresmittel. 1929 beruht auf dem jährlichen NBER-Produktionsindex "
                                      "(Deutsches Reich), heute auf Eurostat (Industrie ohne Bau); Jahresmittel glätten den Tiefpunkt."
                                         + (f" Laufendes Jahr unvollständig ({'; '.join(partial)})." if partial else ""))
-        facts = panel_facts(catalog, sides, p.get("facts"))
+        facts = panel_facts(catalog, sides, list(p.get("facts") or []) + ([] if p.get("comparable", True) else ["no_history"]))
         if sides["left"].get("kind") == "episodes":
             facts = episode_facts(sides["left"]["series"]) + facts
-        sides["right"]["history"] = history_band(catalog, sides)
-        ext = extend_long(sides)
+        # comparable: false = lange und aktuelle Reihe messen Verschiedenes (kein Band, keine Verlängerung)
+        same = p.get("comparable", True)
+        sides["right"]["history"] = history_band(catalog, sides) if same else None
+        ext = extend_long(sides) if same else ""
         if ext:
             sides["left"]["note"] = " ".join(x for x in (sides["left"]["note"], ext) if x)
         out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""),

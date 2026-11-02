@@ -108,18 +108,23 @@ panels:
     right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell, % gg. Vorjahresmonat", decimals: 1}
   - id: handelsgewinne
     title: Handelsgewinne
+    comparable: false
     question: "Wie viel Realeinkommen verdankt Deutschland dem Außenhandel, heute und in der ersten Globalisierung? Dazu {abb}."
     left: {chart: lang_acr, title: "Handelsgewinne seit 1827 (ACR, θ = 5), % des Realeinkommens", note: "Arkolakis, Costinot und Rodríguez-Clare (2012): Gewinn gegenüber Autarkie = 1 − λ^(1/θ), λ = Anteil der Inlandsausgaben, die auf heimische Güter entfallen; aus TRADHIST-Gesamtexporten und -importen (Waren) und BIP. θ = 5 als mittlerer Literaturwert; mit θ = 4 sind die Gewinne höher, mit θ = 8 niedriger (dünne Linien). Bis 1870 Zollverein, 1950 bis 1990 Bundesrepublik."}
     right: {chart: eu_acr, title: "Handelsgewinne aktuell (ACR, θ = 5), % des Realeinkommens", decimals: 1, note: "Aus Exporten und Importen von Waren und Dienstleistungen in % des BIP (Eurostat); die lange Reihe enthält nur Waren, daher liegt das Niveau höher."}
   - id: gravitation
     title: Gravitation
     question: "Wie haben sich Handelskosten und Handelsbeziehungen Deutschlands seit 1870 verändert? Dazu {abb}."
+    facts_text:
+      - "Handelskosten zu Frankreich (Zolläquivalent): 1913 64 %, 1938 104 %, 2014 46 %. Die Zwischenkriegszeit machte die erste Globalisierung rückgängig, erst Ende der 1960er Jahre lag es wieder unter dem Niveau von 1913."
+      - "Die Distanzelastizität stieg betragsmäßig von −0,29 (Mittel 1870 bis 1913) auf −0,86 (2000 bis 2014). Entfernung bremst den Handel heute nicht weniger als damals; die Literatur kennt das als Distanzrätsel (Disdier und Head 2008)."
+      - "Russland nahm 1870 rund ein Viertel der deutschen Exporte auf, 1913 noch 11 %, seit 1929 fast immer unter 4 % (Ausnahme 1932 mit 10 %). Frühe Anteile beruhen auf wenigen gemeldeten Partnern und sind vorsichtig zu lesen."
     charts:
-      - {chart: grav_novy, note: "Novy (2013): Zolläquivalent = ((x_ii · x_jj) / (x_ij · x_ji))^(1/(2θ)) − 1 mit θ = 8; x_ij bilaterale Ströme, x_ii Binnenhandel als BIP minus Exporte. Misst alle Handelskosten (Transport, Zölle, Sprache, Politik) relativ zum Binnenhandel."}
-      - {chart: grav_resid, note: "Tatsächliche deutsche Exporte geteilt durch die Vorhersage einer PPML-Gravitationsgleichung je Jahr (Exporteur- und Importeur-Effekte, Distanz, Grenze, Sprache, Kolonialbeziehung). Über 1: mehr Handel als erwartet."}
+      - {chart: grav_novy, note: "Novy (2013): Zolläquivalent = ((x_ii · x_jj) / (x_ij · x_ji))^(1/(2θ)) − 1 mit θ = 8; x_ij bilaterale Ströme, x_ii Binnenhandel als BIP minus Exporte. Misst alle Handelskosten (Transport, Zölle, Sprache, Politik) relativ zum Binnenhandel. Achse bei 200 % abgeschnitten; in den Weltkriegen liegen einzelne Werte darüber."}
+      - {chart: grav_resid, note: "Tatsächliche deutsche Exporte geteilt durch die Vorhersage einer PPML-Gravitationsgleichung je Jahr (Exporteur- und Importeur-Effekte, Distanz, Grenze, Sprache, Kolonialbeziehung). Über 1: mehr Handel als erwartet. Zentriertes 5-Jahres-Mittel, weil Einzeljahre in Kriegen und bei Grenzänderungen stark springen. Der niedrige Wert für die Niederlande dürfte auch daran liegen, wie der Transithandel über Rotterdam erfasst wird."}
       - {chart: grav_mrt, note: "Aus den Exporteur- und Importeur-Effekten der PPML-Schätzung je Jahr (Fally 2015), θ = 5, relativ zu den USA, weil die Effekte nur bis auf eine Normierung bestimmt sind. Höher: Deutschland ist relativ zu den USA schlechter an den Weltmarkt angebunden. Vorsichtig deuten."}
-      - {chart: grav_dist, note: "Koeffizient der logarithmierten Distanz in der PPML-Schätzung je Jahr (alle Länderpaare in TRADHIST)."}
-      - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST."}
+      - {chart: grav_dist, note: "Koeffizient der logarithmierten Distanz in der PPML-Schätzung je Jahr (alle Länderpaare in TRADHIST). Fehlende Distanzen (etwa Bundesrepublik 1950 bis 1990) sind mit dem Wert des Länderpaars aus anderen Jahren ergänzt. Der Länderkreis wächst über die Zeit; das erklärt einen Teil des Trends."}
+      - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST. Vor 1870 und um 1945 sind nur wenige Partner erfasst; die Anteile sind dort überhöht und vorsichtig zu lesen."}
   - id: offenheit
     title: Offenheit
     question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
@@ -202,11 +207,11 @@ charts:
   nber_wpi_yoy: {title: "Großhandelspreise Hamburg, % gg. Vorjahresmonat", decimals: 1, y_min: -20, y_max: 30}
   lang_acr: {title: "Handelsgewinne nach ACR, % des Realeinkommens", decimals: 1}
   eu_acr: {title: "Handelsgewinne nach ACR, % des Realeinkommens", decimals: 1}
-  grav_novy: {title: "Handelskosten Deutschlands nach Novy, Zolläquivalent in %", decimals: 0}
+  grav_novy: {title: "Handelskosten Deutschlands nach Novy, Zolläquivalent in %", decimals: 0, y_min: 0, y_max: 200}
   grav_mrt: {title: "Multilaterale Widerstände Deutschlands relativ zu den USA, log-Punkte", decimals: 2}
   grav_dist: {title: "Distanzelastizität des Welthandels (PPML)", decimals: 2}
   grav_share: {title: "Anteil an den deutschen Exporten, %", decimals: 0}
-  grav_resid: {title: "Deutsche Exporte im Verhältnis zur Gravitationserwartung", decimals: 1}
+  grav_resid: {title: "Deutsche Exporte im Verhältnis zur Gravitationserwartung (5-Jahres-Mittel)", decimals: 2, y_min: 0, y_max: 4}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
   lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -20, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -20, y_max: 20}
@@ -1510,19 +1515,6 @@ series:
     stale_after_months: 2400
     note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
 
-  - id: grav_share_ita
-    block: lang
-    source: static
-    key: grav_share_ita
-    title: "Anteil Italien an den deutschen Exporten"
-    unit: "%"
-    frequency: A
-    adjustment: nicht bereinigt
-    chart: grav_share
-    label: "Italien"
-    start: "1827-01-01"
-    stale_after_months: 2400
-    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
 
   - id: grav_share_rus
     block: lang
@@ -1538,19 +1530,6 @@ series:
     stale_after_months: 2400
     note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
 
-  - id: grav_share_aut
-    block: lang
-    source: static
-    key: grav_share_aut
-    title: "Anteil Österreich(-Ungarn) an den deutschen Exporten"
-    unit: "%"
-    frequency: A
-    adjustment: nicht bereinigt
-    chart: grav_share
-    label: "Österreich(-Ungarn)"
-    start: "1827-01-01"
-    stale_after_months: 2400
-    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
 
   - id: grav_share_chn
     block: lang
@@ -1571,7 +1550,7 @@ series:
     source: static
     key: grav_resid_fra
     title: "Deutsche Exporte nach Frankreich: tatsächlich zu erwartet"
-    unit: "Verhältnis"
+    unit: "× Erwartung"
     frequency: A
     adjustment: nicht bereinigt
     chart: grav_resid
@@ -1585,7 +1564,7 @@ series:
     source: static
     key: grav_resid_gbr
     title: "Deutsche Exporte nach Großbritannien: tatsächlich zu erwartet"
-    unit: "Verhältnis"
+    unit: "× Erwartung"
     frequency: A
     adjustment: nicht bereinigt
     chart: grav_resid
@@ -1599,7 +1578,7 @@ series:
     source: static
     key: grav_resid_usa
     title: "Deutsche Exporte nach USA: tatsächlich zu erwartet"
-    unit: "Verhältnis"
+    unit: "× Erwartung"
     frequency: A
     adjustment: nicht bereinigt
     chart: grav_resid
@@ -1613,7 +1592,7 @@ series:
     source: static
     key: grav_resid_nld
     title: "Deutsche Exporte nach Niederlande: tatsächlich zu erwartet"
-    unit: "Verhältnis"
+    unit: "× Erwartung"
     frequency: A
     adjustment: nicht bereinigt
     chart: grav_resid
@@ -1622,26 +1601,13 @@ series:
     stale_after_months: 2400
     note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
 
-  - id: grav_resid_ita
-    block: lang
-    source: static
-    key: grav_resid_ita
-    title: "Deutsche Exporte nach Italien: tatsächlich zu erwartet"
-    unit: "Verhältnis"
-    frequency: A
-    adjustment: nicht bereinigt
-    chart: grav_resid
-    label: "Italien"
-    start: "1827-01-01"
-    stale_after_months: 2400
-    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
 
   - id: grav_resid_rus
     block: lang
     source: static
     key: grav_resid_rus
     title: "Deutsche Exporte nach Russland/UdSSR: tatsächlich zu erwartet"
-    unit: "Verhältnis"
+    unit: "× Erwartung"
     frequency: A
     adjustment: nicht bereinigt
     chart: grav_resid
