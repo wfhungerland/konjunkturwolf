@@ -186,6 +186,9 @@ names:
     "16": Thüringen
 
 charts:
+  de_labour_ba: {title: "Registrierte Arbeitslosenquote (BA)", decimals: 1}
+  de_sahm_parts: {title: "Teilsignale: Arbeitslosigkeit und Vakanzen", decimals: 2}
+  de_sahm: {title: "Rezessionssignal Deutschland", decimals: 2}
   de_gdp: {title: "BIP real"}
   de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal", kind: stacked}
   de_cpi: {title: "Verbraucherpreisindex (VPI)"}
@@ -455,6 +458,82 @@ series:
     frequency: Q
     adjustment: saison- und kalenderbereinigt
     chart: de_employment
+
+  # Rezessionssignal nach Michaillat und Saez (2025), angepasst an Deutschland
+  - id: de_alq_sa
+    block: konjunktur
+    source: bundesbank
+    key: BBDL1/M.DE.Y.UNE.UBA000.A0000.A01.D00.0.R00.A
+    title: Arbeitslosenquote (BA, registriert)
+    unit: "% der zivilen Erwerbspersonen"
+    frequency: M
+    adjustment: saison- und kalenderbereinigt (Bundesbank)
+    chart: de_labour_ba
+    label: Arbeitslosenquote
+
+  - id: de_alo_sa
+    block: konjunktur
+    source: bundesbank
+    key: BBDL1/M.DE.Y.UNE.UBA000.A0000.A01.D00.0.ABA.A
+    title: Registrierte Arbeitslose (BA)
+    unit: Tsd. Personen
+    frequency: M
+    adjustment: saison- und kalenderbereinigt (Bundesbank)
+
+  - id: de_vac_sa
+    block: konjunktur
+    source: bundesbank
+    key: BBDL1/M.DE.Y.VAC.VBA000.A0000.A00.D00.0.ABA.A
+    title: Gemeldete Arbeitsstellen (BA)
+    unit: Personen
+    frequency: M
+    adjustment: saison- und kalenderbereinigt (Bundesbank)
+
+  - id: de_ka_sa
+    block: konjunktur
+    source: bundesbank
+    key: BBDL1/M.DE.Y.LMP.LKA100.A0000.A02.D00.0.ABA.A
+    title: Kurzarbeiter, konjunkturell (§ 96 SGB III)
+    unit: Personen
+    frequency: M
+    adjustment: saison- und kalenderbereinigt (Bundesbank)
+    note: Personen, nicht Vollzeitäquivalente; jüngste Monate vorläufig (Hochrechnung der BA).
+
+  - id: de_sahm_u
+    block: konjunktur
+    source: derived
+    derive: {from: de_alq_sa, op: sahm, part: u, with: {level: de_alo_sa, vac: de_vac_sa}}
+    title: "Rezessionssignal: Anstieg der Arbeitslosenquote über das 12-Monats-Tief"
+    unit: Pp
+    frequency: M
+    adjustment: saison- und kalenderbereinigt
+    chart: de_sahm_parts
+    label: Arbeitslosigkeit
+    note: 3-Monats-Mittel der registrierten Arbeitslosenquote minus ihr Tief der letzten 12 Monate.
+
+  - id: de_sahm_v
+    block: konjunktur
+    source: derived
+    derive: {from: de_alq_sa, op: sahm, part: v, with: {level: de_alo_sa, vac: de_vac_sa}}
+    title: "Rezessionssignal: Rückgang der Vakanzquote unter das 12-Monats-Hoch"
+    unit: Pp
+    frequency: M
+    adjustment: saison- und kalenderbereinigt
+    chart: de_sahm_parts
+    label: Vakanzen
+    note: Hoch der letzten 12 Monate minus 3-Monats-Mittel der Vakanzquote (gemeldete Stellen je Erwerbsperson).
+
+  - id: de_sahm
+    block: konjunktur
+    source: derived
+    derive: {from: de_alq_sa, op: sahm, part: min, with: {level: de_alo_sa, vac: de_vac_sa}}
+    title: "Rezessionssignal Deutschland (Minimum aus Arbeitslosen- und Vakanzsignal)"
+    unit: Pp
+    frequency: M
+    adjustment: saison- und kalenderbereinigt
+    chart: de_sahm
+    label: Signal
+    note: Nach Michaillat und Saez (2025); kleineres der beiden Teilsignale, positiv nur, wenn Arbeitslosigkeit steigt und Vakanzen fallen.
 
   - id: de_ip
     block: konjunktur

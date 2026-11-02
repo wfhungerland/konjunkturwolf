@@ -312,9 +312,42 @@ def api_url_hint(spec: SeriesSpec) -> str:
     return ""
 
 
-def derive_series(spec: SeriesSpec, base: pd.DataFrame, other: pd.DataFrame | None = None) -> pd.DataFrame:
+def _to_level_unit(x: pd.Series, level: pd.Series) -> pd.Series:
+    """Personen auf die Einheit der Arbeitslosenzahl bringen (Bundesbank: Arbeitslose in Tausend, Stellen teils in Personen)."""
+    return x / 1000.0 if x.median() > 20 * level.median() else x
+
+
+def sahm_frame(rate: pd.DataFrame, extra: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Michaillat-Saez-Indikator für Deutschland, Spalten u, v, min (Prozentpunkte).
+
+    rate = registrierte Arbeitslosenquote (%), extra: level = Arbeitslose, vac = gemeldete Stellen,
+    ka = Kurzarbeit in Vollzeitäquivalenten (optional). Erwerbspersonen L = Arbeitslose / Quote.
+    u: 3-Monats-Mittel der Quote inkl. Kurzarbeit minus Tief der letzten 12 Monate (einschließlich heute).
+    v: Hoch der letzten 12 Monate minus 3-Monats-Mittel der Vakanzquote V/L.
+    """
+    df = rate.rename(columns={"value": "rate"}).set_index("date")
+    for k in ("level", "vac", "ka"):
+        if k in extra and extra[k] is not None:
+            df = df.join(extra[k].set_index("date")["value"].rename(k), how="left")
+    df = df.sort_index()
+    L = df["level"] / (df["rate"] / 100.0)
+    ka = _to_level_unit(df["ka"], df["level"]).fillna(0.0) if "ka" in df else 0.0
+    u = (df["level"] + ka) / L * 100.0
+    v = _to_level_unit(df["vac"], df["level"]) / L * 100.0
+    u3, v3 = u.rolling(3).mean(), v.rolling(3).mean()
+    out = pd.DataFrame({"u": u3 - u3.rolling(13, min_periods=13).min(),
+                        "v": v3.rolling(13, min_periods=13).max() - v3})
+    out["min"] = out[["u", "v"]].min(axis=1)
+    return out.dropna().reset_index().rename(columns={"index": "date"})
+
+
+def derive_series(spec: SeriesSpec, base: pd.DataFrame, other: pd.DataFrame | None = None,
+                  extra: dict[str, pd.DataFrame] | None = None) -> pd.DataFrame:
     """Berechnet abgeleitete Reihen aus einer Basisreihe (Spalten date/value)."""
     op = spec.derive.get("op")
+    if op == "sahm":
+        f = sahm_frame(base, extra or {})
+        return f[["date", spec.derive.get("part", "min")]].rename(columns={spec.derive.get("part", "min"): "value"}).reset_index(drop=True)
     if op == "yoy_pct":
         prev = base.assign(date=base["date"] + pd.DateOffset(years=1)).rename(columns={"value": "prev"})
         merged = base.merge(prev, on="date", how="inner")

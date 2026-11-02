@@ -405,6 +405,74 @@ def license_for(spec, by_id) -> str:
     return "; ".join(parts)
 
 
+def _recessions() -> list[dict]:
+    """Rezessionsphasen nach der Datierung des Sachverständigenrats (Hochpunkt bis Tiefpunkt, Monate)."""
+    path = Path(__file__).resolve().parent.parent / "data" / "static" / "svr_recessions.csv"
+    if not path.exists():
+        return []
+    rows = [l.split(",") for l in path.read_text(encoding="utf-8").splitlines()[1:] if l.strip()]
+    return [{"peak": a.strip(), "trough": b.strip()} for a, b in rows]
+
+
+def _months(a: str, b: str) -> int:
+    return (int(b[:4]) - int(a[:4])) * 12 + int(b[5:7]) - int(a[5:7])
+
+
+def sahm_track(x: list[str], y: list[float], thr: float, recs: list[dict]) -> tuple[list[tuple[str, int]], list[str]]:
+    """Treffer (Rezession, Monate nach dem Hochpunkt bis zum ersten Signal) und Fehlalarme (Beginn je Signalphase).
+
+    Ein Signal gilt als Treffer, wenn es zwischen sechs Monaten vor dem Hochpunkt und sechs Monaten nach dem
+    Tiefpunkt beginnt. Rezessionen vor dem Datenbeginn bleiben unberücksichtigt.
+    """
+    starts = [x[i] for i in range(len(y)) if y[i] >= thr and (i == 0 or y[i - 1] < thr)]
+    hits, used = [], set()
+    for r in recs:
+        if r["peak"] < x[0]:
+            continue
+        cand = [s0 for s0 in starts if -6 <= _months(r["peak"], s0) <= _months(r["peak"], r["trough"]) + 6]
+        if cand:
+            hits.append((r["peak"][:4], _months(r["peak"], cand[0])))
+            used.update(cand)
+        else:
+            hits.append((r["peak"][:4], None))
+    false = [s0 for s0 in starts if s0 not in used]
+    return hits, false
+
+
+def sahm_facts(charts: list[dict], thr: float) -> list[str]:
+    """Kopierfertige Sätze zum Rezessionssignal: Stand, Teilsignale, Bilanz gegen die SVR-Datierung."""
+    main = next((c for c in charts if c.get("threshold") is not None), None)
+    parts = next((c for c in charts if c is not main), None)
+    if not main or not main["series"] or not main["series"][0]["y"]:
+        return []
+    s = main["series"][0]
+    date, val = s["x"][-1], s["y"][-1]
+    out = [f"{_when(date, 'monatlich')} lag das Rezessionssignal für DE bei {_num2(val)} Pp und damit "
+           + ("über" if val >= thr else "unter") + f" der Schwelle von {_num2(thr)} Pp."]
+    if parts:
+        vals = {p["label"]: p["y"][-1] for p in parts["series"] if p["y"] and p["x"][-1] == date}
+        if len(vals) == 2:
+            out.append("Teilsignale: " + _join([f"{k} {_num2(v)} Pp" for k, v in vals.items()])
+                       + ". Das Signal ist das kleinere von beiden; es steigt nur, wenn die Arbeitslosigkeit zunimmt und zugleich die offenen Stellen abnehmen.")
+    hits, false = sahm_track(s["x"], s["y"], thr, main.get("recessions") or [])
+    if hits:
+        def lag(m):
+            if m is None:
+                return "gar nicht"
+            if m < 0:
+                return "einen Monat vor dem Hochpunkt" if m == -1 else f"{-m} Monate vor dem Hochpunkt"
+            return "im Monat des Hochpunkts" if m == 0 else ("nach einem Monat" if m == 1 else f"nach {m} Monaten")
+        found = [f"{yr} {lag(m)}" for yr, m in hits]
+        out.append(f"Gegen die Rezessionsdatierung des Sachverständigenrats: Signal bei den Rezessionen ab {_join(found)} "
+                   f"(gezählt ab dem Hochpunkt); Fehlalarme seit {s['x'][0][:4]}: "
+                   + (_join([f[:7].replace('-', '/') for f in false]) if false else "keine") + ".")
+    return out
+
+
+def _num2(v: float) -> str:
+    return f"{v:.2f}".replace(".", ",").replace("-", "−")
+
+
 def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
     """Kernindikatoren: je Panel links der lange Rand, rechts der aktuelle Rand."""
     obs = result.observations
@@ -423,10 +491,14 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                     "id": f"{p['id']}_{cfg['chart']}", "title": cfg.get("title") or base.title, "full": True, "years": None,
                     "y_min": cfg.get("y_min", base.y_min), "y_max": cfg.get("y_max", base.y_max), "kind": base.kind,
                     "decimals": cfg.get("decimals", base.decimals), "note": cfg.get("note", ""),
+                    "recessions": _recessions() if cfg.get("recessions") else None, "threshold": cfg.get("threshold"),
                     "series": [dict(_item(s, grouped.get(s.id), statuses.get(s.id)), license=license_for(s, by_id),
                                     note=s.note or "") for s in specs]})
+            facts = list(p.get("facts_text") or [])
+            if p.get("sahm"):
+                facts = sahm_facts(charts, float(p["sahm"]["threshold"])) + facts
             out.append({"id": p["id"], "page": p.get("page", "konjunktur"), "title": p["title"], "question": p.get("question", ""), "text": p.get("text", ""),
-                        "facts": list(p.get("facts_text") or []), "charts": charts})
+                        "facts": facts, "charts": charts})
             continue
         sides = {}
         for side in ("left", "right"):

@@ -179,3 +179,29 @@ def test_write_downloads(tmp_path):
     d = pd.read_stata(tmp_path / files["dta"])
     assert list(d.columns) == ["date", "deutschland", "frankreich"] and len(d) == 2
     assert "1,0" in (tmp_path / files["csv"]).read_text(encoding="utf-8-sig")
+
+
+def test_sahm_frame_minimum_of_u_and_v():
+    import pandas as pd
+    from konjunkturwolf.fetchers import sahm_frame
+
+    d = pd.date_range("2000-01-01", periods=30, freq="MS")
+    rate = pd.DataFrame({"date": d, "value": [5.0] * 20 + [5.0 + 0.2 * k for k in range(1, 11)]})
+    level = pd.DataFrame({"date": d, "value": rate["value"] * 400.0})  # L = 40 000 Tausend
+    vac = pd.DataFrame({"date": d, "value": [800_000.0] * 20 + [800_000.0 - 40_000 * k for k in range(1, 11)]})
+    f = sahm_frame(rate, {"level": level, "vac": vac}).set_index("date")
+    assert abs(f["u"].iloc[-1] - 1.8) < 1e-9          # 3-Monats-Mittel 6,8 minus Tief 5,0
+    assert abs(f["v"].iloc[-1] - 0.9) < 1e-9          # Vakanzquote 2,0 -> 3-Monats-Mittel 1,1
+    assert f["min"].iloc[-1] == min(f["u"].iloc[-1], f["v"].iloc[-1])
+    assert f["u"].iloc[:5].abs().max() == 0
+
+
+def test_sahm_track_hits_and_false_alarms():
+    from konjunkturwolf.dashboard import sahm_track
+
+    x = [f"{2000 + i // 12}-{i % 12 + 1:02d}-01" for i in range(60)]
+    y = [0.0] * 60
+    y[14] = y[15] = 0.5            # Fehlalarm März 2001
+    y[40] = y[41] = 0.6            # Mai 2003, drei Monate nach dem Hochpunkt Februar 2003
+    hits, false = sahm_track(x, y, 0.3, [{"peak": "2003-02-01", "trough": "2003-09-01"}, {"peak": "1999-01-01", "trough": "1999-06-01"}])
+    assert hits == [("2003", 3)] and false == ["2001-03-01"]
