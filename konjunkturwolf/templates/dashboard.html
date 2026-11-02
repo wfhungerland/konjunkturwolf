@@ -18,12 +18,14 @@
   body { margin: 0; font: 15px/1.45 "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", serif;
          background: var(--bg); color: var(--text); }
   header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); }
-  .bar { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px;
+  .bar { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 12px;
          align-items: center; flex-wrap: wrap; }
   .bar h1 { font-size: 18px; margin: 0 4px 0 0; }
   .stand { color: var(--muted); font-size: 13px; margin-right: 12px; }
   .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
   .pair > .card { min-width: 0; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .ctab, .factbox .facts { min-width: 0; overflow-wrap: anywhere; }
   .card .chart { width: 100%; overflow: hidden; }
   @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
   section > .question { font-size: 17px; font-style: italic; margin: -4px 0 6px; }
@@ -47,7 +49,8 @@
   nav a, .btn { color: var(--text); text-decoration: none; padding: 5px 10px; border: 1px solid var(--line);
                 border-radius: 6px; background: transparent; font: inherit; font-size: 14px; cursor: pointer; }
   nav a:hover, .btn:hover { border-color: var(--accent); }
-  nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; flex: 1 1 240px; }
+  nav a { white-space: nowrap; }
   .jump select { font: inherit; font-size: 14px; padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--text); max-width: 60vw; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .lnk { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; margin-right: 8px; cursor: pointer; }
@@ -133,7 +136,7 @@
   @media (max-width: 700px) {
     header { position: static; }
     .bar { gap: 8px; }
-    nav { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; }
+    nav { order: 3; flex: 1 0 100%; flex-wrap: wrap; }
     nav a { white-space: nowrap; }
     .ranges { margin-left: 0; }
     .card .chart { aspect-ratio: 4 / 3; min-height: 260px; }
