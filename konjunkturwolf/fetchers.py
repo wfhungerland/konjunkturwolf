@@ -320,6 +320,16 @@ def derive_series(spec: SeriesSpec, base: pd.DataFrame, other: pd.DataFrame | No
         merged = base.merge(prev, on="date", how="inner")
         merged["value"] = (merged["value"] / merged["prev"] - 1.0) * 100.0
         return merged[["date", "value"]].dropna().reset_index(drop=True)
+    if op == "acr":
+        # Handelsgewinne nach Arkolakis, Costinot, Rodríguez-Clare (2012): 1 - lambda^(1/theta),
+        # lambda = Inlandsanteil der Ausgaben; base = Exporte, other = Importe, beide in % des BIP
+        if other is None:
+            raise ValueError("Ableitung acr braucht Exporte (from) und Importe (plus).")
+        theta = float(spec.derive.get("theta", 5))
+        merged = base.merge(other.rename(columns={"value": "m"}), on="date", how="inner")
+        lam = (100 - merged["value"]) / (100 - merged["value"] + merged["m"])
+        merged["value"] = (1 - lam ** (1 / theta)) * 100
+        return merged[["date", "value"]].dropna().reset_index(drop=True)
     if op in ("diff", "sum"):
         if other is None:
             raise ValueError(f"Ableitung {op} braucht eine zweite Reihe (minus bzw. plus).")

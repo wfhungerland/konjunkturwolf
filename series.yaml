@@ -106,6 +106,25 @@ panels:
     facts: [volatility]
     left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914, % gg. Vorjahresmonat", note: "Der Hamburger Index enthält vor allem Rohstoffe und Lebensmittel, die Erzeugerpreise heute gewerbliche Produkte. Beide reagieren stark auf Rohstoffpreise, sind aber nicht deckungsgleich."}
     right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell, % gg. Vorjahresmonat", decimals: 1}
+  - id: handelsgewinne
+    title: Handelsgewinne
+    comparable: false
+    question: "Wie viel Realeinkommen verdankt Deutschland dem Außenhandel, heute und in der ersten Globalisierung? Dazu {abb}."
+    left: {chart: lang_acr, title: "Handelsgewinne seit 1827 (ACR, θ = 5), % des Realeinkommens", note: "Arkolakis, Costinot und Rodríguez-Clare (2012): Gewinn gegenüber Autarkie = 1 − λ^(1/θ), λ = Anteil der Inlandsausgaben, die auf heimische Güter entfallen; aus TRADHIST-Gesamtexporten und -importen (Waren) und BIP. θ = 5 als mittlerer Literaturwert; mit θ = 4 sind die Gewinne höher, mit θ = 8 niedriger (dünne Linien). Bis 1870 Zollverein, 1950 bis 1990 Bundesrepublik."}
+    right: {chart: eu_acr, title: "Handelsgewinne aktuell (ACR, θ = 5), % des Realeinkommens", decimals: 1, note: "Aus Exporten und Importen von Waren und Dienstleistungen in % des BIP (Eurostat); die lange Reihe enthält nur Waren, daher liegt das Niveau höher."}
+  - id: gravitation
+    title: Gravitation
+    question: "Wie haben sich Handelskosten und Handelsbeziehungen Deutschlands seit 1870 verändert? Dazu {abb}."
+    facts_text:
+      - "Handelskosten zu Frankreich (Zolläquivalent): 1913 64 %, 1938 104 %, 2014 46 %. Die Zwischenkriegszeit machte die erste Globalisierung rückgängig, erst Ende der 1960er Jahre lag es wieder unter dem Niveau von 1913."
+      - "Die Distanzelastizität stieg betragsmäßig von −0,29 (Mittel 1870 bis 1913) auf −0,86 (2000 bis 2014). Entfernung bremst den Handel heute nicht weniger als damals; die Literatur kennt das als Distanzrätsel (Disdier und Head 2008)."
+      - "Russland nahm 1870 rund ein Viertel der deutschen Exporte auf, 1913 noch 11 %, seit 1929 fast immer unter 4 % (Ausnahme 1932 mit 10 %). Frühe Anteile beruhen auf wenigen gemeldeten Partnern und sind vorsichtig zu lesen."
+    charts:
+      - {chart: grav_novy, note: "Novy (2013): Zolläquivalent = ((x_ii · x_jj) / (x_ij · x_ji))^(1/(2θ)) − 1 mit θ = 8; x_ij bilaterale Ströme, x_ii Binnenhandel als BIP minus Exporte. Misst alle Handelskosten (Transport, Zölle, Sprache, Politik) relativ zum Binnenhandel. Achse bei 200 % abgeschnitten; in den Weltkriegen liegen einzelne Werte darüber."}
+      - {chart: grav_resid, note: "Tatsächliche deutsche Exporte geteilt durch die Vorhersage einer PPML-Gravitationsgleichung je Jahr (Exporteur- und Importeur-Effekte, Distanz, Grenze, Sprache, Kolonialbeziehung). Über 1: mehr Handel als erwartet. Zentriertes 5-Jahres-Mittel, weil Einzeljahre in Kriegen und bei Grenzänderungen stark springen. Der niedrige Wert für die Niederlande dürfte auch daran liegen, wie der Transithandel über Rotterdam erfasst wird."}
+      - {chart: grav_mrt, note: "Aus den Exporteur- und Importeur-Effekten der PPML-Schätzung je Jahr (Fally 2015), θ = 5, relativ zu den USA, weil die Effekte nur bis auf eine Normierung bestimmt sind. Höher: Deutschland ist relativ zu den USA schlechter an den Weltmarkt angebunden. Vorsichtig deuten."}
+      - {chart: grav_dist, note: "Koeffizient der logarithmierten Distanz in der PPML-Schätzung je Jahr (alle Länderpaare in TRADHIST). Fehlende Distanzen (etwa Bundesrepublik 1950 bis 1990) sind mit dem Wert des Länderpaars aus anderen Jahren ergänzt. Der Länderkreis wächst über die Zeit; das erklärt einen Teil des Trends."}
+      - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST. Vor 1870 und um 1945 sind nur wenige Partner erfasst; die Anteile sind dort überhöht und vorsichtig zu lesen."}
   - id: offenheit
     title: Offenheit
     question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
@@ -186,6 +205,13 @@ charts:
   eu_ip: {title: "Industrieproduktion, Index 2021 = 100", decimals: 0}
   eu_ppi_yoy: {title: "Erzeugerpreise Industrie, % gg. Vorjahresmonat", decimals: 1}
   nber_wpi_yoy: {title: "Großhandelspreise Hamburg, % gg. Vorjahresmonat", decimals: 1, y_min: -20, y_max: 30}
+  lang_acr: {title: "Handelsgewinne nach ACR, % des Realeinkommens", decimals: 1}
+  eu_acr: {title: "Handelsgewinne nach ACR, % des Realeinkommens", decimals: 1}
+  grav_novy: {title: "Handelskosten Deutschlands nach Novy, Zolläquivalent in %", decimals: 0, y_min: 0, y_max: 200}
+  grav_mrt: {title: "Multilaterale Widerstände Deutschlands relativ zu den USA, log-Punkte", decimals: 2}
+  grav_dist: {title: "Distanzelastizität des Welthandels (PPML)", decimals: 2}
+  grav_share: {title: "Anteil an den deutschen Exporten, %", decimals: 0}
+  grav_resid: {title: "Deutsche Exporte im Verhältnis zur Gravitationserwartung (5-Jahres-Mittel)", decimals: 2, y_min: 0, y_max: 4}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
   lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -20, y_max: 40, decimals: 1}
   lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -20, y_max: 20}
@@ -948,6 +974,19 @@ series:
     chart: eu_ppi_yoy
     label: "{geo_name}"
 
+  - id: eu_acr
+    expand: {geo: [DE, FR, IT, ES, NL, PL]}
+    block: eu
+    source: derived
+    derive: {from: "eu_exp_gdp_{geo_id}", plus: "eu_imp_gdp_{geo_id}", op: acr, theta: 5}
+    title: "Handelsgewinne nach ACR {geo_name} (θ = 5)"
+    unit: "% des Realeinkommens"
+    frequency: Q
+    adjustment: saison- und kalenderbereinigt
+    chart: eu_acr
+    label: "{geo_name}"
+    note: Eigene Berechnung nach Arkolakis, Costinot und Rodríguez-Clare (2012) aus Eurostat namq_10_gdp (P6, P7 in % des BIP).
+
   # ------------------------------------------------------------------
   # 5. Langfristig: Global Macro Database (Makro) und JST (Finanzen)
   # ------------------------------------------------------------------
@@ -1190,3 +1229,389 @@ series:
     start: "1827-01-01"
     stale_after_months: 2400
     note: "Fouquin und Hugot (2016), TRADHIST, eigene Summen der bilateralen Ströme je Jahr geteilt durch BIP. Bilaterale Summen erfassen nicht den ganzen Handel und liegen unter dem JST-Niveau (1872 rund 21 % gegen rund 35 %); daher als eigene Linie, nicht angeschlossen."
+
+  - id: grav_acr_ger
+    member: DEU
+    block: lang
+    source: static
+    key: grav_acr_ger
+    title: "Handelsgewinne nach ACR Deutschland (θ = 5)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Deutschland"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_acr_fra
+    member: FRA
+    block: lang
+    source: static
+    key: grav_acr_fra
+    title: "Handelsgewinne nach ACR Frankreich (θ = 5)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Frankreich"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_acr_ita
+    member: ITA
+    block: lang
+    source: static
+    key: grav_acr_ita
+    title: "Handelsgewinne nach ACR Italien (θ = 5)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Italien"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_acr_esp
+    member: ESP
+    block: lang
+    source: static
+    key: grav_acr_esp
+    title: "Handelsgewinne nach ACR Spanien (θ = 5)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Spanien"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_acr_nld
+    member: NLD
+    block: lang
+    source: static
+    key: grav_acr_nld
+    title: "Handelsgewinne nach ACR Niederlande (θ = 5)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Niederlande"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_acr_ger_t4
+    block: lang
+    source: static
+    key: grav_acr_ger_t4
+    title: "Handelsgewinne nach ACR Deutschland (θ = 4)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Deutschland, θ = 4"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_acr_ger_t8
+    block: lang
+    source: static
+    key: grav_acr_ger_t8
+    title: "Handelsgewinne nach ACR Deutschland (θ = 8)"
+    unit: "% des Realeinkommens"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: lang_acr
+    label: "Deutschland, θ = 8"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_novy_fra
+    block: lang
+    source: static
+    key: grav_novy_fra
+    title: "Handelskosten Deutschland–Frankreich (Novy, θ = 8)"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_novy
+    label: "Frankreich"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_novy_gbr
+    block: lang
+    source: static
+    key: grav_novy_gbr
+    title: "Handelskosten Deutschland–Großbritannien (Novy, θ = 8)"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_novy
+    label: "Großbritannien"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_novy_usa
+    block: lang
+    source: static
+    key: grav_novy_usa
+    title: "Handelskosten Deutschland–USA (Novy, θ = 8)"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_novy
+    label: "USA"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_novy_nld
+    block: lang
+    source: static
+    key: grav_novy_nld
+    title: "Handelskosten Deutschland–Niederlande (Novy, θ = 8)"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_novy
+    label: "Niederlande"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_novy_ita
+    block: lang
+    source: static
+    key: grav_novy_ita
+    title: "Handelskosten Deutschland–Italien (Novy, θ = 8)"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_novy
+    label: "Italien"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_novy_rus
+    block: lang
+    source: static
+    key: grav_novy_rus
+    title: "Handelskosten Deutschland–Russland/UdSSR (Novy, θ = 8)"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_novy
+    label: "Russland/UdSSR"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_mrt_in
+    block: lang
+    source: static
+    key: grav_mrt_in
+    title: "Innerer multilateraler Widerstand Deutschland relativ zu USA"
+    unit: "log-Punkte"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_mrt
+    label: "Einfuhrseite (P)"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_mrt_out
+    block: lang
+    source: static
+    key: grav_mrt_out
+    title: "Äußerer multilateraler Widerstand Deutschland relativ zu USA"
+    unit: "log-Punkte"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_mrt
+    label: "Ausfuhrseite (Π)"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_dist
+    block: lang
+    source: static
+    key: grav_dist
+    title: "Distanzelastizität des Welthandels (PPML je Jahr)"
+    unit: "Elastizität"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_dist
+    label: "Distanzelastizität"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_share_fra
+    block: lang
+    source: static
+    key: grav_share_fra
+    title: "Anteil Frankreich an den deutschen Exporten"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_share
+    label: "Frankreich"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_share_gbr
+    block: lang
+    source: static
+    key: grav_share_gbr
+    title: "Anteil Großbritannien an den deutschen Exporten"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_share
+    label: "Großbritannien"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_share_usa
+    block: lang
+    source: static
+    key: grav_share_usa
+    title: "Anteil USA an den deutschen Exporten"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_share
+    label: "USA"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_share_nld
+    block: lang
+    source: static
+    key: grav_share_nld
+    title: "Anteil Niederlande an den deutschen Exporten"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_share
+    label: "Niederlande"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+
+  - id: grav_share_rus
+    block: lang
+    source: static
+    key: grav_share_rus
+    title: "Anteil Russland/UdSSR an den deutschen Exporten"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_share
+    label: "Russland/UdSSR"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+
+  - id: grav_share_chn
+    block: lang
+    source: static
+    key: grav_share_chn
+    title: "Anteil China an den deutschen Exporten"
+    unit: "%"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_share
+    label: "China"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_resid_fra
+    block: lang
+    source: static
+    key: grav_resid_fra
+    title: "Deutsche Exporte nach Frankreich: tatsächlich zu erwartet"
+    unit: "× Erwartung"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_resid
+    label: "Frankreich"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_resid_gbr
+    block: lang
+    source: static
+    key: grav_resid_gbr
+    title: "Deutsche Exporte nach Großbritannien: tatsächlich zu erwartet"
+    unit: "× Erwartung"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_resid
+    label: "Großbritannien"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_resid_usa
+    block: lang
+    source: static
+    key: grav_resid_usa
+    title: "Deutsche Exporte nach USA: tatsächlich zu erwartet"
+    unit: "× Erwartung"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_resid
+    label: "USA"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: grav_resid_nld
+    block: lang
+    source: static
+    key: grav_resid_nld
+    title: "Deutsche Exporte nach Niederlande: tatsächlich zu erwartet"
+    unit: "× Erwartung"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_resid
+    label: "Niederlande"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+
+  - id: grav_resid_rus
+    block: lang
+    source: static
+    key: grav_resid_rus
+    title: "Deutsche Exporte nach Russland/UdSSR: tatsächlich zu erwartet"
+    unit: "× Erwartung"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: grav_resid
+    label: "Russland/UdSSR"
+    start: "1827-01-01"
+    stale_after_months: 2400
+    note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
