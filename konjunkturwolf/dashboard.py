@@ -614,9 +614,13 @@ PAGES = {
                    "claim": "Deutschlands Wirtschaft heute, verglichen mit früher und mit den europäischen Nachbarn.",
                    "key_panels": ["inflation", "wachstum", "arbeit"]},
     "trade": {"file": "tradewolf.html", "name": "tradewolf", "title": "tradewolf: Außenhandel seit 1827",
-              "claim": "Deutschlands Außenhandel seit 1827: wie offen, wie viel er bringt, was er kostet.",
+              "claim": "Deutschlands Außenhandel seit 1827: wie offen, wie viel er bringt, was er kostet, und wie verflochten die Wirtschaft ist.",
               "key_panels": ["offenheit", "handelsgewinne"]},
+    "finance": {"file": "moneywolf.html", "name": "moneywolf", "title": "moneywolf: Zinsen seit 1870",
+                "claim": "Zinsen in Deutschland und Europa seit 1870: Niveau, Zinsstruktur und Renditeabstände.",
+                "key_panels": ["zinsen", "zinsstruktur", "spreads"]},
 }
+IO_PAGE = "trade"  # Verflechtung 1936 und heute
 
 
 def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_path: str | Path | None) -> Path:
@@ -629,7 +633,7 @@ def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_p
     for key, cfg in PAGES.items():
         sub = dict(payload)
         sub["panels"] = [pn for pn in payload["panels"] if pn.get("page", "konjunktur") == key]
-        if key != "konjunktur":
+        if key != IO_PAGE:
             sub["io"] = None
         other = [{"name": c["name"], "href": c["file"]} for k, c in PAGES.items() if k != key]
         sub["page"] = {"key": key, "name": cfg["name"], "claim": cfg["claim"], "key_panels": cfg["key_panels"],

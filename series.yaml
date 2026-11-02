@@ -97,6 +97,7 @@ panels:
       - {chart: de_sahm_parts, recessions: true, note: "Arbeitslosigkeit: 3-Monats-Mittel der Quote minus Tief der letzten 12 Monate. Vakanzen: Hoch der letzten 12 Monate minus 3-Monats-Mittel der Vakanzquote (gemeldete Stellen je Erwerbsperson)."}
   - id: zinsen
     title: Zinsen
+    page: finance
     say: {subject: "die Rendite zehnjähriger Staatsanleihen", short: "die Rendite"}
     question: "Sind die Zinsen nach der Nullzinsphase wieder normal? Dazu {abb}."
     left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870"}
@@ -153,12 +154,14 @@ panels:
       - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST. Vor 1870 und um 1945 sind nur wenige Partner erfasst; die Anteile sind dort überhöht und vorsichtig zu lesen."}
   - id: zinsstruktur
     title: Zinsabstand
+    page: finance
     say: {subject: "der Abstand zwischen zehnjähriger Rendite und Tagesgeld", short: "der Abstand"}
     question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand gilt vor allem in den USA als Rezessionssignal. Dazu {abb}."
     left: {chart: lang_term, title: "Zinsabstand lang minus kurz seit 1870"}
     right: {chart: now_term, title: "Zinsabstand aktuell", decimals: 1}
   - id: spreads
     title: Spreads
+    page: finance
     say: {spread: "auf zehnjährige Staatsanleihen"}
     question: "Wie viel mehr Zins zahlen die Nachbarn als Deutschland? Steigende Abstände zeigen Stress im Euroraum. Dazu {abb}."
     left: {chart: lang_spread, title: "Renditeabstand zu Deutschland seit 1870"}
