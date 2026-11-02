@@ -831,7 +831,7 @@ function build() {
     const sec = document.createElement("section"); sec.id = panel.id;
     const charts = panel.charts || [panel.left, panel.right];
     const n0 = chartNo + 1, n1 = chartNo + charts.length;
-    const abb = charts.length === 2 ? `Abb. ${n0} und ${n1}` : `Abb. ${n0} bis ${n1}`;
+    const abb = charts.length === 1 ? `Abb. ${n0}` : charts.length === 2 ? `Abb. ${n0} und ${n1}` : `Abb. ${n0} bis ${n1}`;
     const scaleBtn = panel.charts || panel.left.kind === "episodes" ? "" : '<button class="btn scale" type="button" aria-pressed="false">Gemeinsame y-Skala: aus</button>';
     sec.innerHTML = `<div class="head2"><h2>${esc(panel.title)}</h2>${scaleBtn}</div>`
       + (panel.question ? `<p class="question">${esc(panel.question.replace("{abb}", abb))}</p>` : "")
