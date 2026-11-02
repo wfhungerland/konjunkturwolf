@@ -12,10 +12,10 @@ rows = []
 for name, df in sheets.items():
     t = df.astype(object).where(df.notna(), "").astype(str)
     if name != "Arbeitsausfall": continue
-    for i in range(0, 16): print("RAW", i, [repr(v)[:30] for v in df.iloc[i].tolist()[:9]])
+    pass
     print("SHEET", name, df.shape, "|", " ".join(t.iloc[2].tolist())[:150])
     for r in df.values.tolist():
-        js = [j for j, v in enumerate(r[:4]) if hasattr(v, "year") or re.match(r"(\w+ \d{4}|\d{4}[-/]\d{2})", str(v).strip())]
+        js = [j for j, v in enumerate(r[:6]) if hasattr(v, "year") or re.match(r"(\w+ \d{4}|\d{4}[-/]\d{2})", str(v).strip())]
         if not js: continue
         COL = js[0] + 1
         c0 = r[js[0]]
