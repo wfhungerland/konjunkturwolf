@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: "17 5 * * 1"   # montags 05:17 UTC
   workflow_dispatch:
+  push:
+    # nach jedem Merge neu bauen und veröffentlichen (Daten-Commits des Bots lösen nichts aus)
+    branches: [main]
+    paths:
+      - series.yaml
+      - "konjunkturwolf/**"
+      - "data/static/**"
   pull_request:
     paths:
       - series.yaml
