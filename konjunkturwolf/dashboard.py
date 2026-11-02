@@ -26,6 +26,10 @@ REFERENCES = [
     "and Research Strategy. Jahrbuch für Wirtschaftsgeschichte / Economic History Yearbook 2014/2. https://doi.org/10.1515/jbwg-2014-0018.",
     "Anderson, James E. und Eric van Wincoop (2003): Gravity with Gravitas. A Solution to the Border Puzzle. American Economic Review 93(1), "
     "S. 170–192, https://doi.org/10.1257/000282803321455214.",
+    "Michaillat, Pascal und Emmanuel Saez (2025): Has the Recession Started? Oxford Bulletin of Economics and Statistics; "
+    "Arbeitspapier: https://arxiv.org/abs/2408.05856. Sahm, Claudia (2019): Direct Stimulus Payments to Individuals. Hamilton Project.",
+    "Sachverständigenrat zur Begutachtung der gesamtwirtschaftlichen Entwicklung: Datierung der Konjunkturzyklen in Deutschland, "
+    "https://www.sachverstaendigenrat-wirtschaft.de/themen/konjunktur-und-wachstum/konjunkturzyklus-datierung.html.",
     "Arkolakis, Costas, Arnaud Costinot und Andrés Rodríguez-Clare (2012): New Trade Models, Same Old Gains? American Economic Review 102(1), "
     "S. 94–130, https://doi.org/10.1257/aer.102.1.94.",
     "Disdier, Anne-Célia und Keith Head (2008): The Puzzling Persistence of the Distance Effect on Bilateral Trade. Review of Economics and "
@@ -431,10 +435,10 @@ def sahm_track(x: list[str], y: list[float], thr: float, recs: list[dict]) -> tu
             continue  # Rezession liegt vor dem Datenbeginn; liegt nur der Hochpunkt davor, zählt sie mit
         cand = [s0 for s0 in starts if -6 <= _months(r["peak"], s0) <= _months(r["peak"], r["trough"]) + 6]
         if cand:
-            hits.append((r["peak"][:4], _months(r["peak"], cand[0])))
+            hits.append((r["peak"][:4], _months(r["peak"], cand[0]), _months(r["peak"], r["trough"])))
             used.update(cand)
         else:
-            hits.append((r["peak"][:4], None))
+            hits.append((r["peak"][:4], None, _months(r["peak"], r["trough"])))
     false = [s0 for s0 in starts if s0 not in used]
     return hits, false
 
@@ -462,7 +466,7 @@ def sahm_facts(charts: list[dict], thr: float) -> list[str]:
             if m < 0:
                 return "einen Monat vor dem Hochpunkt" if m == -1 else f"{-m} Monate vor dem Hochpunkt"
             return "im Monat des Hochpunkts" if m == 0 else ("nach einem Monat" if m == 1 else f"nach {m} Monaten")
-        found = [f"{yr} {lag(m)}" for yr, m in hits]
+        found = [f"{yr} {lag(m)} (Tiefpunkt nach {t} Monaten)" for yr, m, t in hits]
         out.append(f"Gegen die Rezessionsdatierung des Sachverständigenrats: Signal bei den Rezessionen ab {_join(found)} "
                    f"(gezählt ab dem Hochpunkt); Fehlalarme seit {s['x'][0][:4]}: "
                    + (_join([f[:7].replace('-', '/') for f in false]) if false else "keine") + ".")

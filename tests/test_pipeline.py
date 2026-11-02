@@ -204,4 +204,4 @@ def test_sahm_track_hits_and_false_alarms():
     y[14] = y[15] = 0.5            # Fehlalarm März 2001
     y[40] = y[41] = 0.6            # Mai 2003, drei Monate nach dem Hochpunkt Februar 2003
     hits, false = sahm_track(x, y, 0.3, [{"peak": "2003-02-01", "trough": "2003-09-01"}, {"peak": "1999-01-01", "trough": "1999-06-01"}])
-    assert hits == [("2003", 3)] and false == ["2001-03-01"]
+    assert hits == [("2003", 3, 7)] and false == ["2001-03-01"]

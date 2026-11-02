@@ -91,7 +91,7 @@ panels:
     title: Rezessionssignal
     sahm: {threshold: 0.25}
     question: "Kündigt der Arbeitsmarkt eine Rezession an? Das Signal steigt nur, wenn die Arbeitslosigkeit zunimmt und zugleich die offenen Stellen schrumpfen. Dazu {abb}."
-    text: "Nach Michaillat und Saez (2025), einer Erweiterung der Sahm-Regel: Ein Teilsignal misst, wie weit das 3-Monats-Mittel der Arbeitslosenquote über ihrem Tief der letzten 12 Monate liegt, das andere, wie weit die Vakanzquote unter ihrem Hoch liegt. Gezeigt wird das kleinere der beiden. Weil der deutsche Arbeitsmarkt über Kurzarbeit träge reagiert, ist die Schwelle an den Rezessionen laut Sachverständigenrat geeicht."
+    text: "Nach Michaillat und Saez (2025), einer Erweiterung der Sahm-Regel: Ein Teilsignal misst, wie weit das 3-Monats-Mittel der Arbeitslosenquote über ihrem Tief der letzten 12 Monate liegt, das andere, wie weit die Vakanzquote unter ihrem Hoch liegt. Gezeigt wird das kleinere der beiden. Weil der deutsche Arbeitsmarkt über Kurzarbeit träge reagiert, ist die Arbeitslosigkeit um Kurzarbeit in Vollzeitäquivalenten ergänzt und die Schwelle an den Rezessionen laut Sachverständigenrat geeicht (0,25 Pp: keine Fehlalarme seit 2001). Das Signal bestätigt Rezessionen in Deutschland eher, als dass es sie früh anzeigt; 2008 kam es erst nach dem Tiefpunkt."
     charts:
       - {chart: de_sahm, recessions: true, threshold: 0.25, note: "Graue Bänder: Rezessionen nach der Datierung des Sachverständigenrats (Hochpunkt bis Tiefpunkt). Rote Linie: Schwelle. Registrierte Arbeitslose und gemeldete Stellen der BA, saisonbereinigt (Bundesbank); Erwerbspersonen als Arbeitslose geteilt durch die Quote. Kurzarbeit (§ 96 SGB III, Bundesbank) wird mit dem Arbeitsausfall je Kurzarbeiter laut BA in Vollzeitäquivalente umgerechnet und der Arbeitslosigkeit zugeschlagen; fehlende jüngste Monate werden fortgeschrieben. Die gemeldeten Stellen liegen erst ab 2000 vor."}
       - {chart: de_sahm_parts, recessions: true, note: "Arbeitslosigkeit: 3-Monats-Mittel der Quote minus Tief der letzten 12 Monate. Vakanzen: Hoch der letzten 12 Monate minus 3-Monats-Mittel der Vakanzquote (gemeldete Stellen je Erwerbsperson)."}
@@ -195,7 +195,7 @@ names:
 
 charts:
   de_labour_ba: {title: "Registrierte Arbeitslosenquote (BA)", decimals: 1}
-  de_sahm_parts: {title: "Teilsignale: Arbeitslosigkeit und Vakanzen", decimals: 2}
+  de_sahm_parts: {title: "Teilsignale: Arbeitslosigkeit und Vakanzen", decimals: 2, y_min: 0, y_max: 2}
   de_sahm: {title: "Rezessionssignal Deutschland", decimals: 2}
   de_gdp: {title: "BIP real"}
   de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal", kind: stacked}

@@ -308,7 +308,7 @@ function houseAxes(el, chart) {
                   line: { color: PALETTE[1], width: 1.5, dash: "dash" }, layer: "below" });
   }
   (chart.recessions || []).forEach(r => shapes.push({ type: "rect", xref: "x", yref: "paper", x0: r.peak, x1: r.trough, y0: 0, y1: 1,
-    fillcolor: "rgba(0,0,0,0.10)", line: { width: 0 }, layer: "below" }));
+    fillcolor: "rgba(90,90,90,0.28)", line: { width: 0 }, layer: "below" }));
   if (chart.threshold != null) shapes.push({ type: "line", xref: "paper", yref: "y", x0: 0, x1: 1, y0: chart.threshold, y1: chart.threshold,
     line: { color: "#C00000", width: 1.5, dash: "dash" } });
   const ext = data.map(s => s.ext_from).filter(Boolean).sort()[0];
