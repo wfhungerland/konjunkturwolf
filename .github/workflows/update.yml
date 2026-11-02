@@ -56,8 +56,8 @@ jobs:
         run: python -m konjunkturwolf summary >> "$GITHUB_STEP_SUMMARY"
 
       - name: Daten und Excel committen
-        # bei Pull Requests nur für Branches dieses Repositorys
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        # nur außerhalb von Pull Requests: sonst kollidieren Daten-Commits im Branch mit denen auf main
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "konjunkturwolf-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -45,6 +45,17 @@
   nav a, .btn { color: var(--text); text-decoration: none; padding: 5px 10px; border: 1px solid var(--line);
                 border-radius: 6px; background: transparent; font: inherit; font-size: 14px; cursor: pointer; }
   nav a:hover, .btn:hover { border-color: var(--accent); }
+  nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .jump select { font: inherit; font-size: 14px; padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--text); max-width: 60vw; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .lnk { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; margin-right: 8px; cursor: pointer; }
+  .btn.scale[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  @media (pointer: coarse) {
+    .btn, nav a { padding: 9px 12px; min-height: 40px; }
+    .copy { padding: 6px 10px; font-size: 13px; }
+    .card .dl a, .lnk { display: inline-block; padding: 8px 6px 8px 0; }
+    .card details.notes summary { padding: 8px 0; }
+  }
   .btn.primary { background: var(--accent); color: var(--card); border-color: var(--accent); }
   main { max-width: 1280px; margin: 0 auto; padding: 16px; }
   .meta { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
@@ -125,7 +136,7 @@
   <div class="bar">
     <h1>konjunkturwolf</h1>
     <span class="stand" id="stand"></span>
-    <nav id="nav"><a href="#top">Übersicht</a></nav>
+    <nav id="nav"><a href="#top">Übersicht</a><label class="jump"><span class="sr">Thema wählen</span><select id="jump" aria-label="Thema wählen"><option value="">Thema wählen …</option></select></label></nav>
   </div>
 </header>
 <main>
@@ -322,6 +333,8 @@ function lastLine(s, d = 1) {
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+const ISO2 = { DEU: "DE", FRA: "FR", ITA: "IT", ESP: "ES", NLD: "NL", POL: "PL", GBR: "GB", USA: "US", AUT: "AT", CHN: "CN", RUS: "RU" };
+const code2 = m => ISO2[m] || m;
 // Werte außerhalb fester Achsengrenzen: am Rand als Dreieck zeigen, echter Wert im Tooltip
 function clippedPoints(chart) {
   const out = [];
@@ -443,8 +456,14 @@ function renderChart(el, chart) {
              ticks: "", tickmode: "array",
              showgrid: true, gridcolor: HS.gridH, gridwidth: HS.thin, automargin: true, fixedrange: TOUCH },
   };
-  Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: TOUCH ? false : "hover",
-    modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"], locale: "de" })
+  // Endpunkt Deutschlands direkt beschriften (Land und letzter Wert), damit der Blick nicht zur Legende muss
+  const focusS = chart.kind === "episodes" ? null : chart.series.find(x => ((DATA.comparison || {}).focus || []).includes(x.member) && x.x.length);
+  if (focusS) layout.annotations = [{ x: focusS.x[focusS.x.length - 1], y: focusS.y[focusS.y.length - 1], xref: "x", yref: "y",
+    text: `<b>${esc(code2(focusS.member))} ${num1(focusS.y[focusS.y.length - 1], chart.decimals > 1 ? chart.decimals : 1)}</b>`,
+    showarrow: false, xanchor: "right", yanchor: "bottom", yshift: 4, font: { family: HS.font, size: 12, color: PALETTE[0] },
+    bgcolor: "rgba(255,255,255,0.8)" }];
+  Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: false, locale: "de",
+    doubleClick: "reset" })
     .then(() => Plotly.relayout(el, houseAxes(el, chart)));
   el.on && el.on("plotly_relayout", ev => {
     if (ev && ev["xaxis.range[0]"] && !el._kwBusy && chart.kind !== "episodes") {
@@ -483,7 +502,7 @@ function makeCard(chart, observer) {
   const cmp0 = DATA.comparison || {};
   const peersHere = chart.series.filter(x => (cmp0.peers || []).includes(x.member) && x.x.length);
   if (peersHere.length >= 2 && chart.series.some(x => (cmp0.focus || []).includes(x.member) && x.x.length))
-    flags.push(`Graue Fläche: Spanne von ${peersHere.map(x => x.member).join(", ")}`);
+    flags.push(`Graue Fläche: Spanne von ${peersHere.map(x => code2(x.member)).join(", ")}`);
   const extS = chart.series.find(x => x.ext_from && (cmp0.focus || []).includes(x.member)) || chart.series.find(x => x.ext_from);
   if (extS) flags.push(`┆ ab ${extS.ext_from.slice(0, 4)}: Jahresmittel der aktuellen Reihe${extS.ext_source ? " (" + extS.ext_source + ")" : ""}`);
   const partS = chart.series.find(x => x.partial_last && x.partial_label && (cmp0.focus || []).includes(x.member));
@@ -504,6 +523,21 @@ function makeCard(chart, observer) {
   card.appendChild(src);
   const lics = [...new Set(chart.series.filter(x => x.x.length && x.license).map(x => x.license))];
   if (lics.length) { const l = document.createElement("div"); l.className = "lic"; l.textContent = "Lizenz: " + lics.join("; "); card.appendChild(l); }
+  card.id = `abb-${chartNo}`;
+  const act = document.createElement("div"); act.className = "dl acts";
+  act.innerHTML = `Abbildung: <button type="button" class="lnk" data-act="png">als PNG</button>`
+    + `<button type="button" class="lnk" data-act="link">Link kopieren</button>`
+    + `<button type="button" class="lnk" data-act="cite">Quelle kopieren</button>`;
+  const no = chartNo, ttl = chart.title;
+  act.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const flash = t => { const o = b.textContent; b.textContent = t; setTimeout(() => { b.textContent = o; }, 1500); };
+    const copy = t => (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => flash("kopiert"), () => flash("nicht möglich"));
+    if (b.dataset.act === "png") Plotly.downloadImage(el, { format: "png", width: 1200, height: 520, filename: `abb${String(no).padStart(2, "0")}` });
+    if (b.dataset.act === "link") copy(location.href.split("#")[0] + "#abb-" + no);
+    if (b.dataset.act === "cite") copy(`Abb. ${no} ${ttl}. ${src.textContent.split("Zuletzt")[0].trim()}. Aus: ${DATA.citation || ""}`);
+  });
+  card.appendChild(act);
   const dl = chart.downloads || {};
   if (dl.xlsx || dl.csv || dl.dta) {
     const d = document.createElement("div"); d.className = "dl";
@@ -772,12 +806,15 @@ function build() {
   buildOverview();
   if (DATA.citation) document.getElementById("citation").textContent = DATA.citation;
   (DATA.references || []).forEach(r => { const li = document.createElement("li"); li.textContent = r; document.getElementById("references").appendChild(li); });
+  const jump = document.getElementById("jump");
+  jump.addEventListener("change", () => { if (jump.value) { location.hash = jump.value; jump.value = ""; } });
   (DATA.panels || []).forEach((panel, pi) => {
+    jump.insertAdjacentHTML("beforeend", `<option value="${esc(panel.id)}">${esc(panel.title)}</option>`);
     const sec = document.createElement("section"); sec.id = panel.id;
     const charts = panel.charts || [panel.left, panel.right];
     const n0 = chartNo + 1, n1 = chartNo + charts.length;
     const abb = charts.length === 2 ? `Abb. ${n0} und ${n1}` : `Abb. ${n0} bis ${n1}`;
-    const scaleBtn = panel.charts || panel.left.kind === "episodes" ? "" : '<button class="btn scale" type="button">Gleiche Skala</button>';
+    const scaleBtn = panel.charts || panel.left.kind === "episodes" ? "" : '<button class="btn scale" type="button" aria-pressed="false">Gemeinsame y-Skala: aus</button>';
     sec.innerHTML = `<div class="head2"><h2>${esc(panel.title)}</h2>${scaleBtn}</div>`
       + (panel.question ? `<p class="question">${esc(panel.question.replace("{abb}", abb))}</p>` : "")
       + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "")
@@ -789,7 +826,8 @@ function build() {
       const els = [...pair.querySelectorAll(".chart")];
       const on = !btn.classList.contains("on");
       btn.classList.toggle("on", on);
-      btn.textContent = on ? "Eigene Skala" : "Gleiche Skala";
+      btn.textContent = `Gemeinsame y-Skala: ${on ? "an" : "aus"}`;
+      btn.setAttribute("aria-pressed", String(on));
       let shared = null;
       if (on) {
         const b = els.map(el => {
