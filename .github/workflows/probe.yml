@@ -10,5 +10,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - run: pip install -q requests pandas openpyxl xlrd
+      - run: pip install -q requests pandas openpyxl xlrd && pip install -q -e .
       - run: python .github/probe/probe.py
