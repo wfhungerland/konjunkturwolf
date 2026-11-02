@@ -22,7 +22,9 @@
          align-items: center; flex-wrap: wrap; }
   .bar h1 { font-size: 18px; margin: 0 4px 0 0; }
   .stand { color: var(--muted); font-size: 13px; margin-right: 12px; }
-  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  .pair > .card { min-width: 0; }
+  .card .chart { width: 100%; overflow: hidden; }
   @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
   section > .question { font-size: 17px; font-style: italic; margin: -4px 0 6px; }
   section > .facts { font-size: 14px; margin: 0 0 12px; padding-left: 18px; }
@@ -82,6 +84,12 @@
   .key { margin: 0 0 14px; padding-left: 18px; font-size: 15px; }
   .key a { color: var(--text); font-weight: bold; }
   .ovnote { font: 12px "Arial Narrow", Arial, sans-serif; color: var(--muted); margin: -18px 0 24px; }
+  /* mittlere Breite (z. B. eingebettet in eine Homepage): Übersicht ohne lange Sparkline, Einordnung umbrechen */
+  @media (max-width: 960px) {
+    .ov .c-hist { display: none; }
+    .ov .lage { white-space: normal; display: block; }
+    .ov .c-lage svg { width: 100px; }
+  }
   @media (max-width: 700px) {
     /* Handy: zuerst das Aktuelle (letzte fünf Jahre, letzter Wert, Veränderung); Geschichte in den Abbildungen */
     .ov .c-hist, .ov .c-lage { display: none; }
@@ -472,7 +480,16 @@ function renderChart(el, chart) {
     bgcolor: "rgba(255,255,255,0.8)" }];
   Plotly.newPlot(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: false, locale: "de",
     doubleClick: "reset" })
-    .then(() => Plotly.relayout(el, houseAxes(el, chart)));
+    .then(() => Plotly.relayout(el, houseAxes(el, chart)))
+    .then(() => {
+      // Breite an den Rahmen anpassen (wichtig in eingebetteten, schmalen Fenstern)
+      Plotly.Plots.resize(el);
+      if ("ResizeObserver" in window && !el._ro) {
+        let w = el.clientWidth;
+        el._ro = new ResizeObserver(() => { if (Math.abs(el.clientWidth - w) > 4) { w = el.clientWidth; Plotly.Plots.resize(el); } });
+        el._ro.observe(el);
+      }
+    });
   el.on && el.on("plotly_relayout", ev => {
     if (ev && ev["xaxis.range[0]"] && !el._kwBusy && chart.kind !== "episodes") {
       el._kwBusy = true;
