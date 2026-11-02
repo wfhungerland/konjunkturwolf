@@ -33,23 +33,5 @@ for name, df in sheets.items():
                 rows.append((d, vals[0], round(fte / vals[0], 4), name))
     break
 ratio = pd.DataFrame(rows, columns=["date", "persons", "ratio", "sheet"]).drop_duplicates("date").sort_values("date")
-print("RATIO_CSV_START")
-print("date,value"); [print(f"{d},{v}") for d, v in zip(ratio.date, ratio.ratio)]
-print("RATIO_CSV_END")
-subprocess.run(["python", "-m", "konjunkturwolf", "run", "--no-cache", "--only", "de_alq_sa", "de_alo_sa", "de_vac_sa", "de_ka_sa"], check=False)
-obs = pd.read_csv("data/processed/observations.csv", parse_dates=["date"])
-g = {k: obs[obs.series_id == k][["date", "value"]].reset_index(drop=True) for k in ("de_alq_sa", "de_alo_sa", "de_vac_sa", "de_ka_sa")}
-for k, v in g.items(): print(k, len(v), v.head(1).values.tolist(), v.tail(1).values.tolist())
-rt = pd.DataFrame({"date": pd.to_datetime(ratio.date), "value": ratio.ratio})
-from konjunkturwolf.fetchers import sahm_frame
-from konjunkturwolf.dashboard import sahm_track, _recessions
-recs = _recessions()
-base = {"level": g["de_alo_sa"], "vac": g["de_vac_sa"]}
-for label, extra in [("ohne KA", base), ("KA FTE", dict(base, ka=g["de_ka_sa"], ka_ratio=rt))]:
-    f = sahm_frame(g["de_alq_sa"], extra)
-    x = f.date.dt.strftime("%Y-%m-01").tolist()
-    print("==", label, x[0], x[-1], f[["u", "v", "min"]].iloc[-1].round(3).tolist())
-    for col in ("u", "v", "min"):
-        for thr in [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.7]:
-            hits, false = sahm_track(x, f[col].tolist(), thr, recs)
-            print(f"  {col} {thr}: {hits} false {len(false)} {[z[:7] for z in false]}")
+ratio[["date", "ratio"]].rename(columns={"ratio": "value"}).to_csv("data/static/ba_ka_fte_ratio.csv", index=False)
+print("geschrieben", len(ratio), ratio.date.min(), ratio.date.max())
