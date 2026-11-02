@@ -299,6 +299,21 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
     by_id = catalog.by_id()
     out = []
     for p in catalog.panels:
+        if p.get("charts"):
+            charts = []
+            for c in p["charts"]:
+                cfg = c if isinstance(c, dict) else {"chart": c}
+                specs = [s for s in catalog.series if s.chart_id == cfg["chart"]]
+                base = catalog.chart(cfg["chart"], specs[0] if specs else None)
+                charts.append({
+                    "id": f"{p['id']}_{cfg['chart']}", "title": cfg.get("title") or base.title, "full": True, "years": None,
+                    "y_min": cfg.get("y_min", base.y_min), "y_max": cfg.get("y_max", base.y_max), "kind": base.kind,
+                    "decimals": cfg.get("decimals", base.decimals), "note": cfg.get("note", ""),
+                    "series": [dict(_item(s, grouped.get(s.id), statuses.get(s.id)), license=license_for(s, by_id),
+                                    note=s.note or "") for s in specs]})
+            out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""), "text": p.get("text", ""),
+                        "facts": list(p.get("facts_text") or []), "charts": charts})
+            continue
         sides = {}
         for side in ("left", "right"):
             cfg = p.get(side) or {}
@@ -406,12 +421,13 @@ def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_p
     payload = build_payload(catalog, result)
     from .downloads import write_downloads
 
-    for pi, panel in enumerate(payload["panels"]):
-        for k, side in enumerate(("left", "right")):
-            sd = panel[side]
+    number = 0
+    for panel in payload["panels"]:
+        for sd in (panel["charts"] if panel.get("charts") else [panel["left"], panel["right"]]):
+            number += 1
             note = "Quelle: " + ", ".join(dict.fromkeys(s["source"] for s in sd["series"] if s["x"])) + ". konjunkturwolf, Stand " + str(payload["generated_at"])[:10]
             try:
-                sd["downloads"] = write_downloads(sd, 2 * pi + k + 1, site / "downloads", note, payload["citation"])
+                sd["downloads"] = write_downloads(sd, number, site / "downloads", note, payload["citation"])
             except Exception as exc:  # Downloads dürfen die Seite nicht verhindern
                 sd["downloads"] = {}
                 print(f"Download für {sd['id']} fehlgeschlagen: {exc}")

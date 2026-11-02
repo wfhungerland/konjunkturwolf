@@ -128,9 +128,9 @@ def test_repository_catalog_resolves_names_and_comparison():
 
 def test_repository_panels_are_valid():
     cat = load_catalog(ROOT / "series.yaml")
-    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen", "krise", "preise", "offenheit", "zinsstruktur", "spreads"]
+    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen", "krise", "preise", "handelsgewinne", "gravitation", "offenheit", "zinsstruktur", "spreads"]
     for p in cat.panels:
-        assert p["left"] and p["right"]
+        assert p.get("charts") or (p["left"] and p["right"])
 
 
 def test_panel_sides_show_same_countries():
@@ -138,7 +138,7 @@ def test_panel_sides_show_same_countries():
     cat = load_catalog(ROOT / "series.yaml")
     iso3 = {"DEU": "DE", "FRA": "FR", "ITA": "IT", "ESP": "ES", "NLD": "NL", "POL": "PL"}
     for p in cat.panels:
-        if "episodes" in p["left"] or p["id"] == "preise":
+        if p.get("charts") or "episodes" in p["left"] or p["id"] == "preise":
             continue  # Krisenvergleich bzw. nur deutsche Geschichte (NBER)
         members = []
         for side in ("left", "right"):
