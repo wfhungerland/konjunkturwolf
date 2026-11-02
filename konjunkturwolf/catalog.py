@@ -13,7 +13,7 @@ import yaml
 SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "static", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
-DERIVE_OPS = {"yoy_pct", "diff", "sum", "acr"}
+DERIVE_OPS = {"yoy_pct", "diff", "sum", "acr", "sahm"}
 REQUIRED_FIELDS = ("id", "source", "title", "unit", "frequency", "adjustment", "block")
 SOURCE_LICENSES = {
     "ecb": "Wiederverwendung mit Quellenangabe (EZB)",
@@ -305,6 +305,9 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                 errors.append(f"{s.id}: abgeleitet von unbekannter Reihe '{src}'.")
             elif by_id[src].source == "derived":
                 errors.append(f"{s.id}: Ableitung von abgeleiteter Reihe wird nicht unterstützt.")
+            for k, other in (s.derive.get("with") or {}).items():
+                if other not in ids:
+                    errors.append(f"{s.id}: 'derive.with.{k}' ist unbekannt ('{other}').")
             if s.derive.get("op") in ("diff", "sum", "acr"):
                 key = "minus" if s.derive.get("op") == "diff" else "plus"
                 other = s.derive.get(key)

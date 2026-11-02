@@ -298,7 +298,7 @@ function houseAxes(el, chart) {
   const units = [...new Set(data.map(s => s.unit))];
   const h = chart.history;
   const ya = yAxis(data, range, shortUnit(units), [chart.y_min, chart.y_max], chart.decimals,
-                   el._shared || null, h ? [h.p25, h.p75] : null);
+                   el._shared || null, (h ? [h.p25, h.p75] : []).concat(chart.threshold != null ? [chart.threshold, 0] : []));
   const xa = xAxis(range, el.clientWidth || 560);
   const shapes = xa.shapes.slice();
   if (h) {
@@ -307,6 +307,10 @@ function houseAxes(el, chart) {
     shapes.push({ type: "line", xref: "paper", yref: "y", x0: 0, x1: 1, y0: h.p50, y1: h.p50,
                   line: { color: PALETTE[1], width: 1.5, dash: "dash" }, layer: "below" });
   }
+  (chart.recessions || []).forEach(r => shapes.push({ type: "rect", xref: "x", yref: "paper", x0: r.peak, x1: r.trough, y0: 0, y1: 1,
+    fillcolor: "rgba(90,90,90,0.28)", line: { width: 0 }, layer: "below" }));
+  if (chart.threshold != null) shapes.push({ type: "line", xref: "paper", yref: "y", x0: 0, x1: 1, y0: chart.threshold, y1: chart.threshold,
+    line: { color: "#C00000", width: 1.5, dash: "dash" } });
   const ext = data.map(s => s.ext_from).filter(Boolean).sort()[0];
   if (ext) shapes.push({ type: "line", xref: "x", yref: "paper", x0: ext, x1: ext, y0: 0, y1: 1,
                          line: { color: "#7F7F7F", width: 1, dash: "dot" } });
@@ -511,6 +515,8 @@ function makeCard(chart, observer) {
   if (extS) flags.push(`┆ ab ${extS.ext_from.slice(0, 4)}: Jahresmittel der aktuellen Reihe${extS.ext_source ? " (" + extS.ext_source + ")" : ""}`);
   const partS = chart.series.find(x => x.partial_last && x.partial_label && (cmp0.focus || []).includes(x.member));
   if (partS) flags.push(`○ ${partS.x[partS.x.length - 1].slice(0, 4)}: ${partS.partial_label}, Jahr unvollständig`);
+  if ((chart.recessions || []).length) flags.push("Grau: Rezessionen laut Sachverständigenrat");
+  if (chart.threshold != null) flags.push(`Rot gestrichelt: Schwelle ${num1(chart.threshold, 2)} Pp`);
   const clipped = clippedPoints(chart);
   if (clipped.length) {
     const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : minus(v.toLocaleString("de-DE")));
