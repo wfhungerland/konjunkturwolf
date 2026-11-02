@@ -8,7 +8,7 @@
 <style>
   :root {
     --bg: #f7f7f5; --card: #ffffff; --text: #1d232b; --muted: #5d6673; --line: #dfe3e8;
-    --accent: #1f5fbf; --warn: #a33a00; --grid: #e6e9ee;
+    --accent: #164a8c; --warn: #a33a00; --grid: #e6e9ee;
   }
   [data-theme="dark"] {
     --bg: #12161c; --card: #1b2129; --text: #e6e9ee; --muted: #9aa4b1; --line: #2c3540;
@@ -69,6 +69,10 @@
   .card details.notes summary { font-family: "Arial Narrow", Arial, sans-serif; font-size: 12px; color: var(--accent); cursor: pointer; }
   .card details.notes .src { margin: 3px 0 3px 12px; }
   .card .sub { color: var(--muted); font-size: 13px; }
+  .card .unit { color: var(--muted); font-size: 12.5px; text-align: right; margin-top: 2px;
+                font-family: "Arial Narrow", Arial, sans-serif; font-stretch: condensed; }
+  a { text-decoration: none; }
+  a:hover { text-decoration: underline; }
   .head2 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .head2 h2 { margin: 8px 0 12px; }
   .scale { font-size: 13px; padding: 2px 10px; }
@@ -201,7 +205,7 @@ function yAxis(series, range, unit, limits, fixedDecimals, forced, extra) {
   if (!b) return null;
   let [lo, hi] = b;
   if (lo === hi) { lo -= 1; hi += 1; }
-  const step = niceStep(hi - lo, 4), d = fixedDecimals != null ? fixedDecimals : decimals(step);
+  const step = niceStep(hi - lo, 4), d = decimals(step);  // Achse: nur so viele Stellen, wie die Stufe braucht
   const first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
   const vals = [], text = [];
   for (let v = first; v <= last + step / 1000; v += step) {
@@ -209,7 +213,6 @@ function yAxis(series, range, unit, limits, fixedDecimals, forced, extra) {
     vals.push(r);
     text.push(minus(r.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d })));
   }
-  if (unit) text[text.length - 1] += " " + unit;
   return { range: [first - step / 3, last + step / 3], vals, text, zero: first < 0 && last > 0 };
 }
 // Zeitachse: Jahreszahl mittig unter dem Jahr, Gitterlinie an der Jahresgrenze, Jahresbänder
@@ -296,12 +299,13 @@ function lastLine(s, d = 1) {
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
-// Jahresreihen: Linie bei Datenlücken unterbrechen (statt Gerade über fehlende Jahre)
+// Datenlücken leer lassen: Linie unterbrechen, wenn der Abstand größer ist als die Frequenz erlaubt
+const MAX_GAP = { "jährlich": 400, "halbjährlich": 200, "vierteljährlich": 100, "monatlich": 40, "täglich": 10 };
+function isGap(a, b, freq) { return (Date.parse(b) - Date.parse(a)) / 864e5 > (MAX_GAP[freq] || 400); }
 function gapX(s) {
-  if (s.frequency !== "jährlich") return [s.x, s.y];
   const x = [], y = [];
   s.x.forEach((d, i) => {
-    if (i && Number(d.slice(0, 4)) - Number(s.x[i - 1].slice(0, 4)) > 1) { x.push(null); y.push(null); }
+    if (i && isGap(s.x[i - 1], d, s.frequency)) { x.push(null); y.push(null); }
     x.push(d); y.push(s.y[i]);
   });
   return [x, y];
@@ -320,25 +324,31 @@ function comparisonTraces(withData) {
   }));
   const xs = [...byX.keys()].sort();
   const names = peers.map(s => s.label).join(", ");
-  const traces = [
-    { x: xs, y: xs.map(x => byX.get(x)[0]), type: "scatter", mode: "lines", line: { width: 0 },
+  // Spanne in zusammenhängenden Stücken zeichnen, damit über Lücken keine Fläche entsteht
+  const segs = [];
+  xs.forEach((x, i) => {
+    if (!i || isGap(xs[i - 1], x, peers[0].frequency)) segs.push([]);
+    segs[segs.length - 1].push(x);
+  });
+  const traces = [];
+  segs.forEach((seg, k) => traces.push(
+    { x: seg, y: seg.map(x => byX.get(x)[0]), type: "scatter", mode: "lines", line: { width: 0 },
       hoverinfo: "skip", showlegend: false, legendgroup: "peers" },
-    { x: xs, y: xs.map(x => byX.get(x)[1]), type: "scatter", mode: "lines", line: { width: 0 },
+    { x: seg, y: seg.map(x => byX.get(x)[1]), type: "scatter", mode: "lines", line: { width: 0 },
       fill: "tonexty", fillcolor: HS.peerBand, hoverinfo: "skip", name: TOUCH ? "Vergleichsländer" : "Spanne Vergleichsländer",
-      legendgroup: "peers" },
-  ];
+      legendgroup: "peers", showlegend: k === 0 }));
   peers.forEach((s, i) => traces.push({
     x: gapX(s)[0], y: gapX(s)[1], type: "scatter", mode: "lines", name: s.label, legendgroup: "peers",
     showlegend: false, line: { color: HS.peerLine, width: 1.2 },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   others.forEach((s, i) => traces.push({
-    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
+    x: gapX(s)[0], y: gapX(s)[1], type: "scatter", mode: "lines", name: s.label,
     line: { color: PALETTE[(i + 2) % PALETTE.length], width: HS.line * 0.6 },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
   focus.forEach(s => traces.push({
-    x: s.x, y: s.y, type: "scatter", mode: "lines", name: s.label,
+    x: gapX(s)[0], y: gapX(s)[1], type: "scatter", mode: "lines", name: s.label,
     line: { color: PALETTE[0], width: HS.line },
     hovertemplate: `%{y:,.1f} ${esc(hoverUnit(s.unit))}<extra>${esc(s.label)}</extra>`,
   }));
@@ -424,8 +434,10 @@ function makeCard(chart, observer) {
   const dLast = chart.decimals > 1 ? chart.decimals : 1;
   const lasts = chart.kind === "episodes" ? [] : (focusSer.length ? focusSer : chart.series.filter(s => s.x.length)).map(s => lastLine(s, dLast));
   chartNo += 1;
-  card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(chart.title)}</h3>
-    <div class="sub">Einheit: ${esc(units)} · ${esc([...new Set(chart.series.map(s => s.frequency))].join(", "))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>`;
+  const freqTxt = [...new Set(chart.series.map(s => s.frequency))].join(", ");
+  card.innerHTML = `<h3>Abb. ${chartNo} ${esc(chart.title)}</h3>
+    <div class="sub">${esc(freqTxt.charAt(0).toUpperCase() + freqTxt.slice(1))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>
+    <div class="unit">${esc(units)}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
   const src = document.createElement("div"); src.className = "src";
   let lastTxt = lasts.map(esc).join(" · ");
@@ -495,7 +507,7 @@ function makeCard(chart, observer) {
     card.appendChild(m);
   }
   el.setAttribute("role", "img");
-  el.setAttribute("aria-label", `Abb. ${chartNo}: ${chart.title}. ` + (lasts.length ? "Zuletzt " + lasts.join("; ") + "." : ""));
+  el.setAttribute("aria-label", `Abb. ${chartNo} ${chart.title}. ` + (lasts.length ? "Zuletzt " + lasts.join("; ") + "." : ""));
   if (!chart.series.some(s => s.x.length)) { el.style.height = "auto"; el.textContent = "Keine Daten verfügbar."; }
   else if (observer) observer.observe(el); else renderChart(el, chart);
   return card;
@@ -568,9 +580,9 @@ function buildOverview() {
 function ioCard(title, sub, draw, io) {
   chartNo += 1;
   const card = document.createElement("div"); card.className = "card";
-  card.innerHTML = `<h3>Abb. ${chartNo}: ${esc(title)}</h3><div class="sub">${esc(sub)}</div>`;
+  card.innerHTML = `<h3>Abb. ${chartNo} ${esc(title)}</h3><div class="sub">${esc(sub)}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el.style.aspectRatio = "auto"; el.style.height = "420px";
-  el.setAttribute("role", "img"); el.setAttribute("aria-label", `Abb. ${chartNo}: ${title}. ${sub}`);
+  el.setAttribute("role", "img"); el.setAttribute("aria-label", `Abb. ${chartNo} ${title}. ${sub}`);
   card.appendChild(el);
   const c = io.citation;
   const src = document.createElement("div"); src.className = "src";
