@@ -470,6 +470,7 @@ series:
   # Rezessionssignal nach Michaillat und Saez (2025), angepasst an Deutschland
   - id: de_alq_sa
     block: konjunktur
+    start: "1991-01-01"
     source: bundesbank
     key: BBDL1/M.DE.Y.UNE.UBA000.A0000.A01.D00.0.R00.A
     title: Arbeitslosenquote (BA, registriert)
@@ -481,6 +482,7 @@ series:
 
   - id: de_alo_sa
     block: konjunktur
+    start: "1991-01-01"
     source: bundesbank
     key: BBDL1/M.DE.Y.UNE.UBA000.A0000.A01.D00.0.ABA.A
     title: Registrierte Arbeitslose (BA)
@@ -490,6 +492,7 @@ series:
 
   - id: de_vac_sa
     block: konjunktur
+    start: "1991-01-01"
     source: bundesbank
     key: BBDL1/M.DE.Y.VAC.VBA000.A0000.A00.D00.0.ABA.A
     title: Gemeldete Arbeitsstellen (BA)
@@ -499,6 +502,7 @@ series:
 
   - id: de_ka_sa
     block: konjunktur
+    start: "1991-01-01"
     source: bundesbank
     key: BBDL1/M.DE.Y.LMP.LKA100.A0000.A02.D00.0.ABA.A
     title: Kurzarbeiter, konjunkturell (§ 96 SGB III)

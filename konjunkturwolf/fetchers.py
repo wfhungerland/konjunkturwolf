@@ -326,12 +326,24 @@ def sahm_frame(rate: pd.DataFrame, extra: dict[str, pd.DataFrame]) -> pd.DataFra
     v: Hoch der letzten 12 Monate minus 3-Monats-Mittel der Vakanzquote V/L.
     """
     df = rate.rename(columns={"value": "rate"}).set_index("date")
-    for k in ("level", "vac", "ka"):
+    for k in ("level", "vac", "ka", "ka_ratio"):
         if k in extra and extra[k] is not None:
             df = df.join(extra[k].set_index("date")["value"].rename(k), how="left")
     df = df.sort_index()
     L = df["level"] / (df["rate"] / 100.0)
-    ka = _to_level_unit(df["ka"], df["level"]).fillna(0.0) if "ka" in df else 0.0
+    if "ka" in df:
+        # Kurzarbeit: vor Datenbeginn null, fehlende jüngste Monate (Wartezeit der BA) mit dem letzten Wert fortschreiben
+        ka = _to_level_unit(df["ka"], df["level"])
+        first = ka.first_valid_index()
+        ka = ka.ffill()
+        if first is not None:
+            ka[ka.index < first] = 0.0
+        ka = ka.fillna(0.0)
+        if "ka_ratio" in df:
+            # Vollzeitäquivalente: Anteil des Arbeitsausfalls je Kurzarbeiter (BA), außerhalb der BA-Daten fortgeschrieben
+            ka = ka * df["ka_ratio"].ffill().bfill()
+    else:
+        ka = 0.0
     u = (df["level"] + ka) / L * 100.0
     v = _to_level_unit(df["vac"], df["level"]) / L * 100.0
     u3, v3 = u.rolling(3).mean(), v.rolling(3).mean()
