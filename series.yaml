@@ -152,6 +152,17 @@ panels:
       - {chart: grav_mrt, note: "Aus den Exporteur- und Importeur-Effekten der PPML-Schätzung je Jahr (Fally 2015), θ = 5, relativ zu den USA, weil die Effekte nur bis auf eine Normierung bestimmt sind. Höher: Deutschland ist relativ zu den USA schlechter an den Weltmarkt angebunden. Vorsichtig deuten."}
       - {chart: grav_dist, note: "Koeffizient der logarithmierten Distanz in der PPML-Schätzung je Jahr (alle Länderpaare in TRADHIST). Fehlende Distanzen (etwa Bundesrepublik 1950 bis 1990) sind mit dem Wert des Länderpaars aus anderen Jahren ergänzt. Der Länderkreis wächst über die Zeit; das erklärt einen Teil des Trends."}
       - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST. Vor 1870 und um 1945 sind nur wenige Partner erfasst; die Anteile sind dort überhöht und vorsichtig zu lesen."}
+  - id: aehnlichkeit
+    title: Exportähnlichkeit
+    page: trade
+    text: "Der Index nach Finger und Kreinin (1979) vergleicht, welche Waren zwei Länder exportieren. Je Warengruppe zählt der kleinere der beiden Anteile an den Exporten; die Summe liegt zwischen 0 (keine Überschneidung) und 100 (gleiche Warenstruktur). Hohe Werte bedeuten, dass zwei Länder auf den Weltmärkten mit ähnlichen Waren antreten."
+    question: "Exportiert China heute mehr von dem, was auch Deutschland exportiert, als vor dreißig Jahren? Dazu {abb}."
+    facts_text:
+      - "Die Exportähnlichkeit zwischen Deutschland und China stieg von 51 (1995) auf 63 (2004), schwankte bis 2020 zwischen 60 und 65 und erreichte 2025 mit 67 ihren höchsten Wert."
+      - "2025 entfielen auf Maschinen (HS 84) 16, Elektrotechnik (HS 85) 11 und Fahrzeuge (HS 87) 7 der 67 Punkte. Die Überschneidung liegt also in den Kernbranchen der deutschen Industrie."
+      - "Mit den USA sank die Ähnlichkeit von 78 (1995) auf 70 (2025). Frankreich, Italien und Japan liegen seit 2010 stabil zwischen 74 und 79."
+    charts:
+      - {chart: esi, note: "Finger und Kreinin (1979): Summe über alle HS-Kapitel des kleineren Anteils an den Warenexporten in die Welt (ohne Kapitel 98 und 99). Eigene Berechnung aus UN Comtrade, Meldungen der Exportländer in US-Dollar. Auf Ebene der rund 95 Kapitel fällt der Index höher aus als auf feinerer Ebene, weil Unterschiede innerhalb eines Kapitels nicht zählen."}
   - id: zinsstruktur
     title: Zinsabstand
     page: finance
@@ -240,6 +251,7 @@ charts:
   grav_mrt: {title: "Multilaterale Widerstände Deutschlands relativ zu den USA", decimals: 2}
   grav_dist: {title: "Distanzelastizität des Welthandels (PPML)", decimals: 2}
   grav_share: {title: "Anteil an den deutschen Exporten", decimals: 0}
+  esi: {title: "Exportähnlichkeit mit Deutschland (Finger-Kreinin)", decimals: 0}
   grav_resid: {title: "Deutsche Exporte im Verhältnis zur Gravitationserwartung (5-Jahres-Mittel)", decimals: 2, y_min: 0, y_max: 4}
   eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins)"}
   lang_infl: {title: "Inflation", y_min: -20, y_max: 40, decimals: 1}
@@ -1736,3 +1748,99 @@ series:
     start: "1827-01-01"
     stale_after_months: 2400
     note: "Eigene Berechnung aus TRADHIST (Fouquin und Hugot 2016)."
+
+  - id: esi_chn
+    block: lang
+    source: static
+    key: esi_chn
+    title: "Exportähnlichkeit Deutschland–China (Finger-Kreinin, HS-Kapitel)"
+    unit: "Index 0–100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: esi
+    label: "China"
+    start: "1995-01-01"
+    stale_after_months: 60
+    link: "https://comtradeplus.un.org/"
+    license: "UN Comtrade: Nutzungsbedingungen der Vereinten Nationen; Quellenangabe erforderlich"
+    note: "Eigene Berechnung aus UN Comtrade (Warenexporte in die Welt nach HS-Kapiteln, ohne 98 und 99, Meldungen der Exportländer): Summe über alle Kapitel des kleineren Anteils an den Exporten Deutschlands und Chinas."
+
+  - id: esi_usa
+    block: lang
+    source: static
+    key: esi_usa
+    title: "Exportähnlichkeit Deutschland–USA (Finger-Kreinin, HS-Kapitel)"
+    unit: "Index 0–100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: esi
+    label: "USA"
+    start: "1995-01-01"
+    stale_after_months: 60
+    link: "https://comtradeplus.un.org/"
+    license: "UN Comtrade: Nutzungsbedingungen der Vereinten Nationen; Quellenangabe erforderlich"
+    note: "Eigene Berechnung aus UN Comtrade (Warenexporte in die Welt nach HS-Kapiteln, ohne 98 und 99, Meldungen der Exportländer): Summe über alle Kapitel des kleineren Anteils an den Exporten Deutschlands und der USA."
+
+  - id: esi_jpn
+    block: lang
+    source: static
+    key: esi_jpn
+    title: "Exportähnlichkeit Deutschland–Japan (Finger-Kreinin, HS-Kapitel)"
+    unit: "Index 0–100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: esi
+    label: "Japan"
+    start: "1995-01-01"
+    stale_after_months: 60
+    link: "https://comtradeplus.un.org/"
+    license: "UN Comtrade: Nutzungsbedingungen der Vereinten Nationen; Quellenangabe erforderlich"
+    note: "Eigene Berechnung aus UN Comtrade (Warenexporte in die Welt nach HS-Kapiteln, ohne 98 und 99, Meldungen der Exportländer): Summe über alle Kapitel des kleineren Anteils an den Exporten Deutschlands und Japans."
+
+  - id: esi_kor
+    block: lang
+    source: static
+    key: esi_kor
+    title: "Exportähnlichkeit Deutschland–Südkorea (Finger-Kreinin, HS-Kapitel)"
+    unit: "Index 0–100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: esi
+    label: "Südkorea"
+    start: "1995-01-01"
+    stale_after_months: 60
+    link: "https://comtradeplus.un.org/"
+    license: "UN Comtrade: Nutzungsbedingungen der Vereinten Nationen; Quellenangabe erforderlich"
+    note: "Eigene Berechnung aus UN Comtrade (Warenexporte in die Welt nach HS-Kapiteln, ohne 98 und 99, Meldungen der Exportländer): Summe über alle Kapitel des kleineren Anteils an den Exporten Deutschlands und Südkoreas."
+
+  - id: esi_fra
+    block: lang
+    source: static
+    key: esi_fra
+    title: "Exportähnlichkeit Deutschland–Frankreich (Finger-Kreinin, HS-Kapitel)"
+    unit: "Index 0–100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: esi
+    label: "Frankreich"
+    start: "1995-01-01"
+    stale_after_months: 60
+    link: "https://comtradeplus.un.org/"
+    license: "UN Comtrade: Nutzungsbedingungen der Vereinten Nationen; Quellenangabe erforderlich"
+    note: "Eigene Berechnung aus UN Comtrade (Warenexporte in die Welt nach HS-Kapiteln, ohne 98 und 99, Meldungen der Exportländer): Summe über alle Kapitel des kleineren Anteils an den Exporten Deutschlands und Frankreichs."
+
+  - id: esi_ita
+    block: lang
+    source: static
+    key: esi_ita
+    title: "Exportähnlichkeit Deutschland–Italien (Finger-Kreinin, HS-Kapitel)"
+    unit: "Index 0–100"
+    frequency: A
+    adjustment: nicht bereinigt
+    chart: esi
+    label: "Italien"
+    start: "1995-01-01"
+    stale_after_months: 60
+    link: "https://comtradeplus.un.org/"
+    license: "UN Comtrade: Nutzungsbedingungen der Vereinten Nationen; Quellenangabe erforderlich"
+    note: "Eigene Berechnung aus UN Comtrade (Warenexporte in die Welt nach HS-Kapiteln, ohne 98 und 99, Meldungen der Exportländer): Summe über alle Kapitel des kleineren Anteils an den Exporten Deutschlands und Italiens."
