@@ -117,9 +117,22 @@ def test_panel_facts_rank_and_history():
                               [float(i % 4) for i in range(40)], "jährlich")]},
     }
     facts = panel_facts(Cat(), sides)
-    assert facts[0] == "Zuletzt (September 2026): Deutschland 2,0 %."
-    assert facts[1].startswith("Von 2 Nachbarn liegen 1 höher und 1 niedriger")
-    assert "Der aktuelle Wert ist höher als 50 % der Jahreswerte" in facts[2]
+    assert facts[0] == "Im September 2026 lag der Wert in DE bei 2,0 %, in FR bei 3,0 % und IT 1,0 %."
+    assert facts[1] == "DE liegt damit unter einem und über einem von zwei Vergleichsländern."
+    assert "Im Mittel der letzten zwölf Monate" not in facts[2]  # nur ein Monatswert vorhanden
+    assert facts[2].startswith("Das ist mehr als in 50 % der Jahre 1900 bis 1939")
+
+
+def test_panel_facts_spread_sentence():
+    from konjunkturwolf.dashboard import panel_facts
+
+    class Cat:
+        comparison = {"focus": ["DE"]}
+
+    sides = {"right": {"series": [{"member": m, "label": m, "x": ["2026-09-01"], "y": [v], "frequency": "monatlich",
+                                   "unit": "Pp"} for m, v in (("FR", 1.0), ("PL", 2.8))]}, "left": {"series": []}}
+    facts = panel_facts(Cat(), sides, say={"spread": "auf zehnjährige Staatsanleihen"})
+    assert facts == ["Im September 2026 zahlte PL auf zehnjährige Staatsanleihen 2,8 Pp mehr als DE, FR 1,0 Pp mehr."]
 
 
 def test_extend_long_appends_annual_means():

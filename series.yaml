@@ -71,47 +71,54 @@ geo_names:
 panels:
   - id: inflation
     title: Inflation
+    say: {subject: "die Inflation (HVPI)", short: "die Inflation"}
     question: "Ist die Inflation heute hoch, gemessen an 150 Jahren und an den Nachbarn? Dazu {abb}."
-    left: {chart: lang_infl, title: "Inflation seit 1870, % gg. Vorjahr", decimals: 1}
-    right: {chart: eu_hicp, title: "Inflation aktuell (HVPI), % gg. Vorjahresmonat", decimals: 1}
+    left: {chart: lang_infl, title: "Inflation seit 1870", decimals: 1}
+    right: {chart: eu_hicp, title: "Inflation aktuell (HVPI)", decimals: 1}
   - id: wachstum
     title: Wachstum
+    say: {subject: "das Wachstum des realen BIP gegenüber dem Vorjahresquartal", short: "das Wachstum"}
     question: "Wächst Deutschland heute langsamer als früher und als die Nachbarn? Dazu {abb}."
-    left: {chart: lang_growth, title: "Reales BIP seit 1870, % gg. Vorjahr"}
-    right: {chart: eu_gdp, title: "Reales BIP aktuell, % gg. Vorjahresquartal", decimals: 1}
+    left: {chart: lang_growth, title: "Reales BIP seit 1870"}
+    right: {chart: eu_gdp, title: "Reales BIP aktuell", decimals: 1}
   - id: arbeit
     title: Arbeitslosigkeit
+    say: {subject: "die Erwerbslosenquote (ILO)", short: "die Erwerbslosenquote"}
     question: "Ist die Arbeitslosigkeit im langen Vergleich niedrig? Dazu {abb}."
-    left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870, %", note: "Frühe Jahre beruhen auf anderen Erhebungen (z. B. Gewerkschaftsstatistiken) und sind nur grob mit der heutigen ILO-Quote vergleichbar; seit 2010 stimmt die Reihe mit der ILO-Quote überein."}
-    right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell, %", decimals: 1}
+    left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870", note: "Frühe Jahre beruhen auf anderen Erhebungen (z. B. Gewerkschaftsstatistiken) und sind nur grob mit der heutigen ILO-Quote vergleichbar; seit 2010 stimmt die Reihe mit der ILO-Quote überein."}
+    right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell", decimals: 1}
   - id: zinsen
     title: Zinsen
+    say: {subject: "die Rendite zehnjähriger Staatsanleihen", short: "die Rendite"}
     question: "Sind die Zinsen nach der Nullzinsphase wieder normal? Dazu {abb}."
-    left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870, % p. a."}
-    right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell, % p. a.", decimals: 1}
+    left: {chart: lang_ltrate, title: "Rendite Staatsanleihen 10 Jahre seit 1870"}
+    right: {chart: eu_ltrate, title: "Rendite Staatsanleihen 10 Jahre aktuell", decimals: 1}
   - id: krise
-    title: Industrie in der Krise
+    title: "Industrie: drei Krisen im Vergleich"
+    say: {subject: "die Industrieproduktion", short: "die Industrieproduktion"}
     question: "Wie tief und wie lang ist der jüngste Rückgang der Industrie, verglichen mit der Weltwirtschaftskrise und der Finanzkrise? Dazu {abb}."
     left:
-      title: "Industrieproduktion nach dem Hoch, Hoch = 100"
+      title: "Industrieproduktion nach dem Hoch"
       years: 8
       episodes:
         - {series: nber_ip_2537, window: [1927, 1930], label: Weltwirtschaftskrise}
         - {series: eu_ip_de, window: [2007, 2008], label: Finanzkrise}
         - {series: eu_ip_de, window: [2016, 2019], label: Heute}
-    right: {chart: eu_ip, title: "Industrieproduktion aktuell, Index 2021 = 100", decimals: 0}
+    right: {chart: eu_ip, title: "Industrieproduktion aktuell", decimals: 0}
   - id: preise
     title: Erzeugerpreise
+    say: {subject: "der Anstieg der Erzeugerpreise gegenüber dem Vorjahresmonat", short: "der Anstieg der Preise", history: "damals Großhandelspreise Hamburg"}
     question: "Schwanken die Preise heute stärker als im Kaiserreich? Großhandelspreise damals, Erzeugerpreise heute. Dazu {abb}."
     facts: [volatility]
-    left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914, % gg. Vorjahresmonat", note: "Der Hamburger Index enthält vor allem Rohstoffe und Lebensmittel, die Erzeugerpreise heute gewerbliche Produkte. Beide reagieren stark auf Rohstoffpreise, sind aber nicht deckungsgleich."}
-    right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell, % gg. Vorjahresmonat", decimals: 1}
+    left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914", note: "Der Hamburger Index enthält vor allem Rohstoffe und Lebensmittel, die Erzeugerpreise heute gewerbliche Produkte. Beide reagieren stark auf Rohstoffpreise, sind aber nicht deckungsgleich."}
+    right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell", decimals: 1}
   - id: handelsgewinne
     title: Handelsgewinne
+    say: {subject: "die Handelsgewinne nach ACR", short: "die Handelsgewinne", verb: lagen, unit: "% des Realeinkommens"}
     comparable: false
     question: "Wie viel Realeinkommen verdankt Deutschland dem Außenhandel, heute und in der ersten Globalisierung? Dazu {abb}."
-    left: {chart: lang_acr, title: "Handelsgewinne seit 1827 (ACR, θ = 5), % des Realeinkommens", note: "Arkolakis, Costinot und Rodríguez-Clare (2012): Gewinn gegenüber Autarkie = 1 − λ^(1/θ), λ = Anteil der Inlandsausgaben, die auf heimische Güter entfallen; aus TRADHIST-Gesamtexporten und -importen (Waren) und BIP. θ = 5 als mittlerer Literaturwert; mit θ = 4 sind die Gewinne höher, mit θ = 8 niedriger (dünne Linien). Bis 1870 Zollverein, 1950 bis 1990 Bundesrepublik."}
-    right: {chart: eu_acr, title: "Handelsgewinne aktuell (ACR, θ = 5), % des Realeinkommens", decimals: 1, note: "Aus Exporten und Importen von Waren und Dienstleistungen in % des BIP (Eurostat); die lange Reihe enthält nur Waren, daher liegt das Niveau höher."}
+    left: {chart: lang_acr, title: "Handelsgewinne seit 1827 (ACR, θ = 5)", note: "Arkolakis, Costinot und Rodríguez-Clare (2012): Gewinn gegenüber Autarkie = 1 − λ^(1/θ), λ = Anteil der Inlandsausgaben, die auf heimische Güter entfallen; aus TRADHIST-Gesamtexporten und -importen (Waren) und BIP. θ = 5 als mittlerer Literaturwert; mit θ = 4 sind die Gewinne höher, mit θ = 8 niedriger (dünne Linien). Bis 1870 Zollverein, 1950 bis 1990 Bundesrepublik."}
+    right: {chart: eu_acr, title: "Handelsgewinne aktuell (ACR, θ = 5)", decimals: 1, note: "Aus Exporten und Importen von Waren und Dienstleistungen in % des BIP (Eurostat); die lange Reihe enthält nur Waren, daher liegt das Niveau höher."}
   - id: gravitation
     title: Gravitation
     question: "Wie haben sich Handelskosten und Handelsbeziehungen Deutschlands seit 1870 verändert? Dazu {abb}."
@@ -127,19 +134,22 @@ panels:
       - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST. Vor 1870 und um 1945 sind nur wenige Partner erfasst; die Anteile sind dort überhöht und vorsichtig zu lesen."}
   - id: offenheit
     title: Offenheit
+    say: {subject: "die Summe aus Exporten und Importen", short: "die Summe aus Exporten und Importen", unit: "% des BIP"}
     question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
-    left: {chart: lang_open, title: "Exporte plus Importe seit 1827, % des BIP", note: "Hellblau: Fouquin und Hugot (2016), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
-    right: {chart: eu_open, title: "Exporte plus Importe aktuell, % des BIP", decimals: 0}
+    left: {chart: lang_open, title: "Exporte plus Importe seit 1827", note: "Hellblau: Fouquin und Hugot (2016), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
+    right: {chart: eu_open, title: "Exporte plus Importe aktuell", decimals: 0}
   - id: zinsstruktur
     title: Zinsabstand
+    say: {subject: "der Abstand zwischen zehnjähriger Rendite und Tagesgeld", short: "der Abstand"}
     question: "Ist der Abstand zwischen langen und kurzen Zinsen ungewöhnlich? Ein negativer Abstand gilt vor allem in den USA als Rezessionssignal. Dazu {abb}."
-    left: {chart: lang_term, title: "Zinsabstand lang minus kurz seit 1870, Pp"}
-    right: {chart: now_term, title: "Zinsabstand aktuell, Pp", decimals: 1}
+    left: {chart: lang_term, title: "Zinsabstand lang minus kurz seit 1870"}
+    right: {chart: now_term, title: "Zinsabstand aktuell", decimals: 1}
   - id: spreads
     title: Spreads
+    say: {spread: "auf zehnjährige Staatsanleihen"}
     question: "Wie viel mehr Zins zahlen die Nachbarn als Deutschland? Steigende Abstände zeigen Stress im Euroraum. Dazu {abb}."
-    left: {chart: lang_spread, title: "Renditeabstand zu Deutschland seit 1870, Pp"}
-    right: {chart: eu_spread, title: "Renditeabstand zu Deutschland aktuell, Pp", decimals: 1, note: "Polen: Anleihen in Zloty, der Abstand enthält auch Währungs- und Inflationserwartungen."}
+    left: {chart: lang_spread, title: "Renditeabstand zu Deutschland seit 1870"}
+    right: {chart: eu_spread, title: "Renditeabstand zu Deutschland aktuell", decimals: 1, note: "Polen: Anleihen in Zloty, der Abstand enthält auch Währungs- und Inflationserwartungen."}
 
 # Nur diese Länder erscheinen in den Panels (links und rechts dieselbe Gruppe)
 panel_members: [DE, FR, IT, ES, NL, PL, DEU, FRA, ITA, ESP, NLD, POL]
@@ -171,57 +181,57 @@ names:
     "16": Thüringen
 
 charts:
-  de_gdp: {title: "BIP real, Veränderung in %"}
-  de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal, Prozentpunkte", kind: stacked}
-  de_cpi: {title: "Verbraucherpreisindex (VPI), 2020=100"}
-  de_cpi_rate: {title: "VPI, % gg. Vorjahresmonat", decimals: 1}
-  de_cpi_laender: {title: "VPI der Bundesländer, % gg. Vorjahresmonat", decimals: 1}
-  de_cpi_laender_index: {title: "VPI der Bundesländer, 2020=100"}
+  de_gdp: {title: "BIP real"}
+  de_gdp_contrib: {title: "Wachstumsbeiträge zum realen BIP gg. Vorquartal", kind: stacked}
+  de_cpi: {title: "Verbraucherpreisindex (VPI)"}
+  de_cpi_rate: {title: "VPI, Inflationsrate", decimals: 1}
+  de_cpi_laender: {title: "VPI der Bundesländer, Inflationsrate", decimals: 1}
+  de_cpi_laender_index: {title: "VPI der Bundesländer, Index"}
   de_perceived: {title: "Gefühlte und erwartete Inflation (Verbraucherumfrage)"}
   de_labour_rate: {title: "Arbeitslosenquote (ILO)"}
   de_employment: {title: "Erwerbstätige (Inland)"}
-  de_production: {title: "Industrieproduktion und Auftragseingang, Index"}
+  de_production: {title: "Industrieproduktion und Auftragseingang"}
   de_energy_prices_hh: {title: "Strom- und Gaspreise Haushalte"}
   de_energy_prices_nonhh: {title: "Strom- und Gaspreise Nicht-Haushalte"}
-  de_ppi: {title: "Erzeugerpreise gewerblicher Produkte, Index"}
+  de_ppi: {title: "Erzeugerpreise gewerblicher Produkte"}
   de_energy_use: {title: "Energieverbrauch Deutschland"}
   ecb_rates: {title: "EZB-Leitzinsen"}
   de_yields: {title: "Renditen deutscher Bundeswertpapiere"}
-  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand, €Mrd."}
+  de_loans_stock: {title: "Kredite an Unternehmen und Haushalte, Bestand"}
   de_loans_growth: {title: "Kredite an Unternehmen und Haushalte, Wachstum"}
   fx_major: {title: "Wechselkurse: USD, GBP, CHF je Euro"}
   fx_asia: {title: "Wechselkurse: JPY, CNY je Euro"}
-  eu_gdp: {title: "BIP real, % gg. Vorjahresquartal"}
-  eu_hicp: {title: "HVPI-Inflationsrate, % gg. Vorjahresmonat", decimals: 1}
-  eu_unemp: {title: "Arbeitslosenquote (ILO), %"}
-  eu_elec_hh: {title: "Strompreise Haushalte, EUR/kWh"}
-  eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte, EUR/kWh"}
-  lang_term: {title: "Zinsabstand lang minus kurz, Pp", y_min: -10, y_max: 10, decimals: 1}
-  now_term: {title: "Zinsabstand 10 Jahre minus Tagesgeld, Pp", decimals: 1}
-  lang_spread: {title: "Renditeabstand zu Deutschland, Pp", y_min: -5, y_max: 15, decimals: 1}
-  eu_spread: {title: "Renditeabstand zu Deutschland (10 Jahre), Pp", decimals: 1}
-  lang_open: {title: "Exporte plus Importe, % des BIP", decimals: 0}
-  eu_open: {title: "Exporte plus Importe, % des BIP", decimals: 0}
-  eu_ip: {title: "Industrieproduktion, Index 2021 = 100", decimals: 0}
-  eu_ppi_yoy: {title: "Erzeugerpreise Industrie, % gg. Vorjahresmonat", decimals: 1}
-  nber_wpi_yoy: {title: "Großhandelspreise Hamburg, % gg. Vorjahresmonat", decimals: 1, y_min: -20, y_max: 30}
-  lang_acr: {title: "Handelsgewinne nach ACR, % des Realeinkommens", decimals: 1}
-  eu_acr: {title: "Handelsgewinne nach ACR, % des Realeinkommens", decimals: 1}
-  grav_novy: {title: "Handelskosten Deutschlands nach Novy, Zolläquivalent in %", decimals: 0, y_min: 0, y_max: 200}
-  grav_mrt: {title: "Multilaterale Widerstände Deutschlands relativ zu den USA, log-Punkte", decimals: 2}
+  eu_gdp: {title: "BIP real"}
+  eu_hicp: {title: "HVPI-Inflationsrate", decimals: 1}
+  eu_unemp: {title: "Arbeitslosenquote (ILO)"}
+  eu_elec_hh: {title: "Strompreise Haushalte"}
+  eu_elec_nonhh: {title: "Strompreise Nicht-Haushalte"}
+  lang_term: {title: "Zinsabstand lang minus kurz", y_min: -10, y_max: 10, decimals: 1}
+  now_term: {title: "Zinsabstand 10 Jahre minus Tagesgeld", decimals: 1}
+  lang_spread: {title: "Renditeabstand zu Deutschland", y_min: -5, y_max: 15, decimals: 1}
+  eu_spread: {title: "Renditeabstand zu Deutschland (10 Jahre)", decimals: 1}
+  lang_open: {title: "Exporte plus Importe", decimals: 0}
+  eu_open: {title: "Exporte plus Importe", decimals: 0}
+  eu_ip: {title: "Industrieproduktion", decimals: 0}
+  eu_ppi_yoy: {title: "Erzeugerpreise Industrie", decimals: 1}
+  nber_wpi_yoy: {title: "Großhandelspreise Hamburg", decimals: 1, y_min: -20, y_max: 30}
+  lang_acr: {title: "Handelsgewinne nach ACR", decimals: 1}
+  eu_acr: {title: "Handelsgewinne nach ACR", decimals: 1}
+  grav_novy: {title: "Handelskosten Deutschlands nach Novy (Zolläquivalent)", decimals: 0, y_min: 0, y_max: 200}
+  grav_mrt: {title: "Multilaterale Widerstände Deutschlands relativ zu den USA", decimals: 2}
   grav_dist: {title: "Distanzelastizität des Welthandels (PPML)", decimals: 2}
-  grav_share: {title: "Anteil an den deutschen Exporten, %", decimals: 0}
+  grav_share: {title: "Anteil an den deutschen Exporten", decimals: 0}
   grav_resid: {title: "Deutsche Exporte im Verhältnis zur Gravitationserwartung (5-Jahres-Mittel)", decimals: 2, y_min: 0, y_max: 4}
-  eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins), % p. a."}
-  lang_infl: {title: "Inflation, % gg. Vorjahr", y_min: -20, y_max: 40, decimals: 1}
-  lang_growth: {title: "Reales BIP, % gg. Vorjahr", y_min: -20, y_max: 20}
-  lang_debt: {title: "Staatsschulden, % des BIP"}
-  lang_unemp: {title: "Arbeitslosenquote, %"}
-  lang_ca: {title: "Leistungsbilanz, % des BIP"}
-  lang_ltrate: {title: "Langfristiger Zins, % p. a."}
-  lang_stir: {title: "Kurzfristiger Zins, % p. a."}
-  lang_credit: {title: "Kredite an den privaten Sektor, % des BIP"}
-  lang_house: {title: "Reale Hauspreise, Index 1990=100"}
+  eu_ltrate: {title: "Rendite Staatsanleihen 10 Jahre (Konvergenzzins)"}
+  lang_infl: {title: "Inflation", y_min: -20, y_max: 40, decimals: 1}
+  lang_growth: {title: "Reales BIP", y_min: -20, y_max: 20}
+  lang_debt: {title: "Staatsschulden"}
+  lang_unemp: {title: "Arbeitslosenquote"}
+  lang_ca: {title: "Leistungsbilanz"}
+  lang_ltrate: {title: "Langfristiger Zins"}
+  lang_stir: {title: "Kurzfristiger Zins"}
+  lang_credit: {title: "Kredite an den privaten Sektor"}
+  lang_house: {title: "Reale Hauspreise"}
 
 series:
 

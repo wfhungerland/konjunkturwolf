@@ -102,84 +102,149 @@ def _std(ys: list[float]) -> float:
     return (sum((v - m) ** 2 for v in ys) / max(len(ys) - 1, 1)) ** 0.5
 
 
+NUM_WORDS = ["null", "einem", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf", "zwölf"]
+QUARTERS = ["ersten", "zweiten", "dritten", "vierten"]
+
+
+def _n(k: int, dative: bool = True) -> str:
+    """Kleine Zahlen als Wort (Dativ: einem), sonst Ziffern."""
+    if k == 1 and not dative:
+        return "eins"
+    return NUM_WORDS[k] if 0 <= k < len(NUM_WORDS) else str(k)
+
+
+def _years(k: int) -> str:
+    return "einem Jahr" if k == 1 else f"{_n(k)} Jahren"
+
+
+def _when(date: str, freq: str) -> str:
+    """Zeitangabe als Satzanfang: Im September 2026, Im dritten Quartal 2026, Im Jahr 2014."""
+    y, m = int(date[:4]), int(date[5:7])
+    if freq == "vierteljährlich":
+        return f"Im {QUARTERS[(m - 1) // 3]} Quartal {y}"
+    if freq == "jährlich":
+        return f"Im Jahr {y}"
+    return f"Im {MONTHS[m - 1]} {y}"
+
+
+def _join(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " und " + items[-1]
+
+
 def episode_facts(eps: list[dict]) -> list[str]:
-    """Krisenvergleich: Tiefpunkt und Erholung je Episode."""
+    """Krisenvergleich: Tiefpunkt und Erholung je Episode, als vollständige Sätze."""
     out = []
     for e in eps:
         if len(e["y"]) < 2:
             continue
-        name = e["label"]
+        name = e["label"].split(" (")[0]
+        peak = e["label"].split("Hoch ")[-1].rstrip(")") if "Hoch " in e["label"] else ""
         low = min(e["y"]); t_low = e["x"][e["y"].index(low)]
         back = next((x for x, y in zip(e["x"], e["y"]) if x > t_low and y >= 100), None)
         last_x, last_y = e["x"][-1], e["y"][-1]
-        def yrs(n):
-            return "einem Jahr" if n == 1 else f"{n} Jahren"
+        if name.lower() == "heute":
+            head = f"Seit dem Hoch {peak} ist die Industrieproduktion in DE"
+            if low == last_y:
+                out.append(f"{head} binnen {_years(last_x)} auf {_num(last_y)} % gefallen, so tief wie noch nie seit dem Hoch.")
+            elif back is not None:
+                out.append(f"{head} binnen {_years(t_low)} auf {_num(low)} % gefallen und war nach {_years(back)} wieder auf dem Hoch.")
+            else:
+                out.append(f"{head} binnen {_years(t_low)} auf {_num(low)} % gefallen und liegt nach {_years(last_x)} "
+                           f"bei {_num(last_y)} % des Hochs.")
+            continue
+        head = f"In der {name} fiel die Industrieproduktion vom Hoch {peak} binnen {_years(t_low)} auf {_num(low)} %"
         if back is not None:
-            out.append(f"{name}: Tiefpunkt nach {yrs(t_low)} bei {_num(low)} % des Hochs, "
-                       f"nach {yrs(back)} wieder auf dem Hoch.")
-        elif low == last_y:
-            out.append(f"{name}: nach {yrs(last_x)} bei {_num(last_y)} % des Hochs, so tief wie noch nie seit dem Hoch.")
+            out.append(f"{head} und war nach {_years(back)} wieder auf dem Hoch.")
         else:
-            out.append(f"{name}: nach {yrs(last_x)} bei {_num(last_y)} % des Hochs, Tiefpunkt bisher "
-                       f"{_num(low)} % nach {yrs(t_low)}; das Hoch ist nicht wieder erreicht.")
+            out.append(f"{head}; nach {_years(last_x)} lag sie bei {_num(last_y)} % des Hochs.")
     return out
 
 
-def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None) -> list[str]:
-    """Kurze Einordnung aus den Daten: aktueller Wert, Lage unter den Nachbarn, Lage zur Geschichte."""
+def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None, say: dict | None = None) -> list[str]:
+    """Einordnung aus den Daten als kopierfertige Sätze: aktueller Stand, Lage unter den Vergleichsländern, Geschichte.
+
+    say (aus series.yaml je Panel): subject (z.B. "die Inflation (HVPI)"), short ("die Inflation"), verb ("lag"/"lagen"),
+    unit (Einheit im Satz, sonst aus der Reihe), spread (Satz für Abstände zu DE ohne Fokusland).
+    """
+    say = say or {}
     focus = set(catalog.comparison.get("focus") or [])
     right = [s for s in sides["right"]["series"] if s["y"] and s["member"]]
     left = [s for s in sides["left"]["series"] if s["y"]]
     de = next((s for s in right if s["member"] in focus), None)
+    subj = say.get("subject") or sides["right"].get("title", "der Wert")
+    short = say.get("short") or subj
+    verb = say.get("verb", "lag")
     if de is None:
-        # ohne Fokusland (z.B. Renditeabstände zu Deutschland): letzte Werte je Land
+        # ohne Fokusland (Renditeabstände zu Deutschland): Abstand je Land, absteigend
         if not right:
             return []
         date = max(s["x"][-1] for s in right)
-        vals = sorted(((s["y"][-1], s["label"]) for s in right if s["x"][-1] == date), reverse=True)
-        u = _unit(right[0]["unit"])
-        return [f"Zuletzt ({_period(date, right[0]['frequency'])}): "
-                + ", ".join(f"{lab} {_num(v)} {u}" for v, lab in vals) + "."]
-    u = _unit(de["unit"])
+        vals = sorted(((s["y"][-1], s["member"]) for s in right if s["x"][-1] == date), reverse=True)
+        u = say.get("unit") or _unit(right[0]["unit"])
+        what = say.get("spread", "auf zehnjährige Staatsanleihen")
+        def item(v, code, first):
+            word = "mehr" if v >= 0 else "weniger"
+            return f"{code} {what if first else ''}{' ' if first else ''}{_num(abs(v))} {u} {word}".replace("  ", " ")
+        parts = [item(v, c, i == 0) for i, (v, c) in enumerate(vals)]
+        return [f"{_when(date, right[0]['frequency'])} zahlte {parts[0]} als DE"
+                + (", " + _join(parts[1:]) if len(parts) > 1 else "") + "."]
+    u = say.get("unit") or _unit(de["unit"])
     date, value = de["x"][-1], de["y"][-1]
-    if de["unit"].startswith("Index") and "=100" in de["unit"].replace(" ", ""):
+    when = _when(date, de["frequency"])
+    peers = {s["member"]: dict(zip(s["x"], s["y"]))[date] for s in right if s is not de and date in s["x"]}
+    order = sorted(peers, key=peers.get, reverse=True)
+    is_index = de["unit"].startswith("Index") and "=100" in de["unit"].replace(" ", "")
+    if is_index:
         base = de["unit"].split()[-1].split("=")[0]
-        facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} ({base} = 100), "
-                 f"also {_num(abs(value - 100))} % {'unter' if value < 100 else 'über'} {base}."]
+        first = (f"{when} {verb} {subj} in DE bei {_num(value)} ({base} = 100) und damit "
+                 f"{_num(abs(value - 100))} % {'unter' if value < 100 else 'über'} {base}")
+        rest = [f"{c} {_num(peers[c])}" for c in order]
     else:
-        facts = [f"Zuletzt ({_period(date, de['frequency'])}): Deutschland {_num(value)} {u}."]
-    peers = {s["label"]: dict(zip(s["x"], s["y"]))[date]
-             for s in right if s is not de and date in s["x"]}
+        first = f"{when} {verb} {subj} in DE bei {_num(value)} {u}"
+        su = _unit(de["unit"])  # Vergleichsländer mit kurzer Einheit, damit der Satz lesbar bleibt
+        rest = [f"{c} {_num(peers[c])} {su}" for c in order]
+    if rest:
+        rest[0] = "in " + rest[0].replace(" ", " bei ", 1)
+        first += ("; " if is_index else ", ") + _join(rest)
+    facts = [first + "."]
     if peers:
-        higher = sum(v > value for v in peers.values())
-        lo, hi = min(peers, key=peers.get), max(peers, key=peers.get)
-        missing = [s["label"] for s in right if s is not de and s["label"] not in peers]
-        n = len(peers)
-        lage = (f"Höher als bei allen {n} Nachbarn" if higher == 0 else f"Niedriger als bei allen {n} Nachbarn"
-                if higher == n else f"Von {n} Nachbarn liegen {higher} höher und {n - higher} niedriger")
-        facts.append(f"{lage} (Spanne {lo} {_num(peers[lo])} bis {hi} {_num(peers[hi])} {u})"
-                     + (f"; {', '.join(missing)} noch ohne Wert." if missing else "."))
+        n, higher = len(peers), sum(v > value for v in peers.values())
+        if higher == 0:
+            rank = f"über allen {_n(n)} Vergleichsländern"
+        elif higher == n:
+            rank = f"unter allen {_n(n)} Vergleichsländern"
+        else:
+            rank = f"unter {_n(higher)} und über {_n(n - higher)} von {_n(n)} Vergleichsländern"
+        facts.append(f"DE liegt damit {rank}.")
+        missing = [s["member"] for s in right if s is not de and s["member"] not in peers]
+        if missing:
+            facts.append(f"Für {_join(missing)} liegt noch kein Wert vor.")
     hist = next((s for s in left if s["member"] in focus), None)
     if hist and len(hist["y"]) >= 30 and "no_history" not in (extra or []):
         ys = hist["y"]
-        what = "Monatswerte" if hist["frequency"] == "monatlich" else "Jahreswerte"
+        monthly = hist["frequency"] == "monatlich"
         span = f"{hist['x'][0][:4]} bis {hist['x'][-1][:4]}"
-        # Gleiche Frequenz vergleichen: Jahreswerte der Geschichte gegen das Mittel der letzten 12 Monate bzw. 4 Quartale
-        n = {"monatlich": 12, "vierteljährlich": 4}.get(de["frequency"], 1) if what == "Jahreswerte" else 1
+        # Gleiche Frequenz vergleichen: Jahreswerte gegen das Mittel der letzten 12 Monate bzw. 4 Quartale
+        n = 1 if monthly else {"monatlich": 12, "vierteljährlich": 4}.get(de["frequency"], 1)
         if len(de["y"]) < n:
             n = 1
         cmp_value = sum(de["y"][-n:]) / n
         sides["right"]["hist_value"] = round(cmp_value, 4)
-        lead = ("Das Mittel der letzten 12 Monate" if n == 12 else "Das Mittel der letzten vier Quartale" if n == 4
-                else "Der aktuelle Wert") + (f" ({_num(cmp_value)} {u})" if n > 1 else "")
+        lead = "Im Mittel der letzten zwölf Monate" if n == 12 else "Im Mittel der letzten vier Quartale" if n == 4 else when
         share = round(100 * sum(v < cmp_value for v in ys) / len(ys))
-        unit_word = "Monat" if what == "Monatswerte" else "Jahr"
+        unit_word = "Monat" if monthly else "Jahr"
+        med = f"Median {_num(_quantile(ys, 0.5))} {u}"
+        src = f"; {say['history']}" if say.get("history") else ""
         if share >= 99:
-            facts.append(f"{lead} ist so hoch wie in keinem {unit_word} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+            tail = f"so hoch wie in keinem {unit_word} {span} ({med}{src})"
         elif share <= 1:
-            facts.append(f"{lead} ist so niedrig wie in keinem {unit_word} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+            tail = f"so niedrig wie in keinem {unit_word} {span} ({med}{src})"
         else:
-            facts.append(f"{lead} ist höher als {share} % der {what} {span}; Median {_num(_quantile(ys, 0.5))} {u}.")
+            tail = f"höher als in {share} % der {unit_word}e {span} ({med}{src})"
+        if n == 1:
+            facts.append(f"Das ist {tail}.".replace("Das ist höher", "Das ist mehr"))
+        else:
+            facts.append(f"{lead} {verb} {short} in DE bei {_num(cmp_value)} {u}, {tail}.")
         if "volatility" in (extra or []):
             cut = f"{int(date[:4]) - 5}{date[4:]}"
             recent = [y for x, y in zip(de["x"], de["y"]) if x > cut]
@@ -188,8 +253,9 @@ def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None) -
                 rolling = [_std(ys[k:k + win]) for k in range(0, len(ys) - win + 1)]
                 now_sd = _std(recent)
                 pct = round(100 * sum(r < now_sd for r in rolling) / len(rolling))
-                facts.append(f"Schwankung der letzten fünf Jahre (Standardabweichung {_num(now_sd)} Pp): höher als in {pct} % "
-                             f"aller Fünfjahresfenster {span} (Median {_num(_quantile(rolling, 0.5))} Pp).")
+                cmp = "in jedem Fünfjahresfenster" if pct >= 100 else f"in {pct} % der Fünfjahresfenster"
+                facts.append(f"In den letzten fünf Jahren schwankte {short} in DE stärker als {cmp} {span} "
+                             f"(Standardabweichung {_num(now_sd)} Pp, Median der Fenster {_num(_quantile(rolling, 0.5))} Pp).")
     return facts
 
 
@@ -359,7 +425,8 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                                    note="x-Achse: Jahre nach dem Hoch; Jahresmittel. 1929 beruht auf dem jährlichen NBER-Produktionsindex "
                                      "(Deutsches Reich), heute auf Eurostat (Industrie ohne Bau); Jahresmittel glätten den Tiefpunkt."
                                         + (f" Laufendes Jahr unvollständig ({'; '.join(partial)})." if partial else ""))
-        facts = panel_facts(catalog, sides, list(p.get("facts") or []) + ([] if p.get("comparable", True) else ["no_history"]))
+        facts = panel_facts(catalog, sides, list(p.get("facts") or []) + ([] if p.get("comparable", True) else ["no_history"]),
+                            p.get("say"))
         if sides["left"].get("kind") == "episodes":
             facts = episode_facts(sides["left"]["series"]) + facts
         # comparable: false = lange und aktuelle Reihe messen Verschiedenes (kein Band, keine Verlängerung)

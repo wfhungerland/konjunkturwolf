@@ -46,7 +46,7 @@ def write_downloads(side: dict, number: int, folder: Path, source_note: str, cit
     folder.mkdir(parents=True, exist_ok=True)
     stem = f"abb{number:02d}_{side['id']}"
     df, key = chart_frame(side)
-    title = f"Abb. {number}: {side['title']}"
+    title = f"Abb. {number} {side['title']}"
     files = {}
 
     # CSV: Semikolon und Dezimalkomma (öffnet direkt im deutschen Excel)
