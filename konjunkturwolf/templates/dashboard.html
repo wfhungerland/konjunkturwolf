@@ -75,6 +75,10 @@
   .ov svg { display: block; }
   .ov .lage { font-size: 11px; color: var(--muted); }
   .claim { font-size: 19px; margin: 12px 0 6px; }
+  section, .card, #top { scroll-margin-top: 64px; }
+  h2.group { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: normal;
+             border-top: 2px solid var(--text); padding-top: 6px; margin: 28px 0 4px; }
+  details.method summary { font: 13px "Arial Narrow", Arial, sans-serif; color: var(--accent); cursor: pointer; margin-bottom: 8px; }
   .key { margin: 0 0 14px; padding-left: 18px; font-size: 15px; }
   .key a { color: var(--text); font-weight: bold; }
   .ovnote { font: 12px "Arial Narrow", Arial, sans-serif; color: var(--muted); margin: -18px 0 24px; }
@@ -134,13 +138,13 @@
 <body>
 <header>
   <div class="bar">
-    <h1>konjunkturwolf</h1>
+    <h1 id="brand">konjunkturwolf</h1>
     <span class="stand" id="stand"></span>
     <nav id="nav"><a href="#top">Übersicht</a><label class="jump"><span class="sr">Thema wählen</span><select id="jump" aria-label="Thema wählen"><option value="">Thema wählen …</option></select></label></nav>
   </div>
 </header>
 <main>
-  <p class="claim">Deutschlands Wirtschaft heute, verglichen mit früher und mit den europäischen Nachbarn.</p>
+  <p class="claim" id="claim"></p>
   <ul class="key" id="key"></ul>
   <p class="meta" id="meta"></p>
   <table class="ov" id="top"><thead><tr><th>Thema</th><th class="c-hist">Historischer Verlauf</th><th class="c-recent">Letzte 5 Jahre</th><th class="num">Zuletzt</th><th class="num">Veränderung</th><th class="c-lage">Einordnung in die Geschichte</th></tr></thead><tbody id="ovbody"></tbody></table>
@@ -162,7 +166,7 @@
   <p>Alle Reihen mit Direktlinks: <a href="konjunkturwolf.xlsx" download>Excel-Workbook</a> (Blatt Quellen);
   Code und Methodik: <a href="https://github.com/wfhungerland/konjunkturwolf">GitHub</a>.</p>
 </section>
-<footer>konjunkturwolf · Wolf-Fabian Hungerland</footer>
+<footer><span id="foot">konjunkturwolf</span> · Wolf-Fabian Hungerland</footer>
 <script>
 const DATA = /*__DATA__*/null;
 // Hausstandard: Farben, Linien, Achsen (siehe README, Abschnitt Grafikstil)
@@ -766,14 +770,17 @@ function buildIO(content) {
   };
   const wavg = (m, w) => m.reduce((s, v, i) => s + v * w[i], 0) / w.reduce((s, v) => s + v, 0);
   const avg = a => a.reduce((s, v) => s + v, 0) / a.length;
+  content.insertAdjacentHTML("beforeend", '<h2 class="group">Historische Vertiefung</h2>');
   const sec = document.createElement("section"); sec.id = "verflechtung";
   sec.innerHTML = `<div class="head2"><h2>Verflechtung 1936 und heute</h2></div>`
     + `<p class="question">Ist die deutsche Wirtschaft heute stärker verflochten als 1936? Dazu Abb. ${chartNo + 1} bis ${chartNo + 5}.</p>`
-    + `<p class="cite">Die Werte für 1936 beruhen auf der Input-Output-Tabelle von <b>Rainer Fremdling und Reiner Stäglin</b>, zitiert nach: ${esc(io.citation.y1936)} `
+    + `<ul class="facts"><li>Mittlerer Multiplikator (gewichtet mit der Produktion): 1936 ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}, ${Y} ${num1(wavg(io.now.multiplier, io.now.output_share))}. `
+    + `Der Multiplikator sagt, wie viel Produktion in der ganzen Wirtschaft eine zusätzliche Einheit Endnachfrage auslöst (Leontief).</li>`
+    + `<li>Mittlere Vorleistungsquote: 1936 ${num1(avg(io.y1936.input_share))} %, ${Y} ${num1(avg(io.now.input_share))} %. Sie misst den Anteil inländischer Vorleistungen an der Produktion.</li></ul>`
+    + `<p class="cite">Quelle 1936: Input-Output-Tabelle von <b>Rainer Fremdling und Reiner Stäglin</b>, zitiert nach ${esc(io.citation.y1936)} `
     + `<a href="${io.citation.doi}" target="_blank" rel="noopener">${io.citation.doi}</a>. Die Rechte an der Tabelle liegen bei den Autoren und beim Verlag; `
-    + `diese Seite zeigt nur eigene, daraus abgeleitete Kennzahlen. ${esc(io.method)}</p>`
-    + `<ul class="facts"><li>Mittlerer Multiplikator (gewichtet mit der Produktion): 1936 ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}, ${Y} ${num1(wavg(io.now.multiplier, io.now.output_share))}.</li>`
-    + `<li>Mittlere Vorleistungsquote: 1936 ${num1(avg(io.y1936.input_share))} %, ${Y} ${num1(avg(io.now.input_share))} %.</li></ul>`;
+    + `diese Seite zeigt nur eigene, daraus abgeleitete Kennzahlen.</p>`
+    + `<details class="notes method"><summary>Methode</summary><p class="cite">${esc(io.method)}</p></details>`;
   const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
   pair.appendChild(ioCard("Produktionsmultiplikator je Sektor", `Produktion je Einheit Endnachfrage (Leontief); x-Achse 1936, y-Achse ${Y}`, scatter(io.y1936.multiplier, io.now.multiplier, ".2f", ""), io));
   pair.appendChild(ioCard("Vorleistungsquote je Sektor, %", `Inländische Vorleistungen in % der Bruttoproduktion; x-Achse 1936, y-Achse ${Y}`, scatter(io.y1936.input_share, io.now.input_share, ".1f", " %"), io));
@@ -792,7 +799,13 @@ function build() {
   const d = new Date(DATA.generated_at);
   document.getElementById("stand").textContent = "Stand: " + d.toLocaleDateString("de-DE");
   // Drei Kernaussagen: jeweils der erste Satz zu Deutschland aus den Fakten
-  ["inflation", "wachstum", "arbeit"].forEach(id => {
+  const page = DATA.page || { name: "konjunkturwolf", claim: "", key_panels: ["inflation", "wachstum", "arbeit"], other: [] };
+  document.getElementById("brand").textContent = page.name;
+  document.getElementById("foot").textContent = page.name;
+  document.getElementById("claim").textContent = page.claim;
+  (page.other || []).forEach(o => document.getElementById("nav").insertAdjacentHTML("beforeend", `<a href="${esc(o.href)}">${esc(o.name)} \u2192</a>`));
+  if (page.key === "konjunktur") content.insertAdjacentHTML("beforeend", '<h2 class="group">Aktuelle Konjunktur</h2>');
+  (page.key_panels || []).forEach(id => {
     const p = (DATA.panels || []).find(x => x.id === id);
     if (!p || !(p.facts || []).length) return;
     const li = document.createElement("li");

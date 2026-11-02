@@ -158,7 +158,12 @@ Welche Reihen beim letzten Lauf Daten lieferten, steht im Blatt Info der xlsx un
 
 ## Webseite
 
-Die Webseite zeigt sechs Kernindikatoren: Inflation, Wachstum, Arbeitslosigkeit, Zinsen, Zinsabstand und Spreads. Jeder bekommt eine Zeile mit zwei Abbildungen, links den langen Rand seit 1870, rechts die letzten fünf Jahre. Beide Seiten zeigen dieselbe Größe und dieselben Länder. Die lange Reihe wird mit Jahresmitteln der aktuellen Werte bis heute verlängert; rechts zeigt eine blaue Fläche die mittleren 50 % der deutschen Jahreswerte seit 1870. Der Knopf „Gleiche Skala“ legt beide Abbildungen auf eine Werteachse. Welche Diagramme oder Reihen dort stehen, steht in `series.yaml` unter `panels`. Alle übrigen Reihen liegen im Excel-Workbook.
+Aus einem Katalog entstehen zwei Seiten:
+
+- `index.html` (konjunkturwolf): aktuelle Konjunktur. Inflation, Wachstum, Arbeitslosigkeit, Zinsen, Krisenvergleich, Erzeugerpreise, Zinsabstand und Spreads, dazu als historische Vertiefung die Verflechtung 1936 und heute.
+- `tradewolf.html` (tradewolf): Außenhandel seit 1827. Offenheit, Handelsgewinne nach ACR und Gravitation.
+
+Welche Seite ein Thema zeigt, steht in `series.yaml` unter `panels` im Feld `page` (`trade` für tradewolf, sonst konjunkturwolf). Jedes Thema hat eine Leitfrage, kopierfertige Faktensätze (Formulierung über `say`) und eine Ländertabelle. Paare zeigen links den langen Rand und rechts die letzten fünf Jahre. Die lange Reihe wird mit Jahresmitteln der aktuellen Werte bis heute verlängert, außer bei `comparable: false`. Der Schalter „Gemeinsame y-Skala“ legt beide Abbildungen auf eine Werteachse. Alle übrigen Reihen liegen im Excel-Workbook.
 
 ## Grafikstil
 
