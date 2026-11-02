@@ -128,7 +128,7 @@ def test_repository_catalog_resolves_names_and_comparison():
 
 def test_repository_panels_are_valid():
     cat = load_catalog(ROOT / "series.yaml")
-    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "zinsen", "krise", "preise", "offenheit", "handelsgewinne", "gravitation", "zinsstruktur", "spreads"]
+    assert [p["id"] for p in cat.panels] == ["inflation", "wachstum", "arbeit", "rezession", "zinsen", "krise", "preise", "offenheit", "handelsgewinne", "gravitation", "zinsstruktur", "spreads"]
     for p in cat.panels:
         assert p.get("charts") or (p["left"] and p["right"])
 

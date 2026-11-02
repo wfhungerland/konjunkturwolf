@@ -87,6 +87,14 @@ panels:
     question: "Ist die Arbeitslosigkeit im langen Vergleich niedrig? Dazu {abb}."
     left: {chart: lang_unemp, title: "Arbeitslosenquote seit 1870", note: "Frühe Jahre beruhen auf anderen Erhebungen (z. B. Gewerkschaftsstatistiken) und sind nur grob mit der heutigen ILO-Quote vergleichbar; seit 2010 stimmt die Reihe mit der ILO-Quote überein."}
     right: {chart: eu_unemp, title: "Erwerbslosenquote (ILO) aktuell", decimals: 1}
+  - id: rezession
+    title: Rezessionssignal
+    sahm: {threshold: 0.3}
+    question: "Kündigt der Arbeitsmarkt eine Rezession an? Das Signal steigt nur, wenn die Arbeitslosigkeit zunimmt und zugleich die offenen Stellen schrumpfen. Dazu {abb}."
+    text: "Nach Michaillat und Saez (2025), einer Erweiterung der Sahm-Regel: Ein Teilsignal misst, wie weit das 3-Monats-Mittel der Arbeitslosenquote über ihrem Tief der letzten 12 Monate liegt, das andere, wie weit die Vakanzquote unter ihrem Hoch liegt. Gezeigt wird das kleinere der beiden. Weil der deutsche Arbeitsmarkt über Kurzarbeit träge reagiert, ist die Schwelle an den Rezessionen laut Sachverständigenrat geeicht."
+    charts:
+      - {chart: de_sahm, recessions: true, threshold: 0.3, note: "Graue Bänder: Rezessionen nach der Datierung des Sachverständigenrats (Hochpunkt bis Tiefpunkt). Rote Linie: Schwelle. Registrierte Arbeitslose und gemeldete Stellen der BA, saisonbereinigt (Bundesbank); Erwerbspersonen als Arbeitslose geteilt durch die Quote."}
+      - {chart: de_sahm_parts, recessions: true, note: "Arbeitslosigkeit: 3-Monats-Mittel der Quote minus Tief der letzten 12 Monate. Vakanzen: Hoch der letzten 12 Monate minus 3-Monats-Mittel der Vakanzquote (gemeldete Stellen je Erwerbsperson)."}
   - id: zinsen
     title: Zinsen
     say: {subject: "die Rendite zehnjähriger Staatsanleihen", short: "die Rendite"}
