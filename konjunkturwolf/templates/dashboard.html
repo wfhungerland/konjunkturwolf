@@ -776,7 +776,7 @@ function buildIO(content) {
   };
   const wavg = (m, w) => m.reduce((s, v, i) => s + v * w[i], 0) / w.reduce((s, v) => s + v, 0);
   const avg = a => a.reduce((s, v) => s + v, 0) / a.length;
-  content.insertAdjacentHTML("beforeend", '<h2 class="group">Historische Vertiefung</h2>');
+  content.insertAdjacentHTML("beforeend", '<h2 class="group">Wirtschaftsstruktur</h2>');
   const sec = document.createElement("section"); sec.id = "verflechtung";
   sec.innerHTML = `<div class="head2"><h2>Verflechtung 1936 und heute</h2></div>`
     + `<p class="question">Ist die deutsche Wirtschaft heute stärker verflochten als 1936? Dazu Abb. ${chartNo + 1} bis ${chartNo + 5}.</p>`
@@ -810,7 +810,6 @@ function build() {
   document.getElementById("foot").textContent = page.name;
   document.getElementById("claim").textContent = page.claim;
   (page.other || []).forEach(o => document.getElementById("nav").insertAdjacentHTML("beforeend", `<a href="${esc(o.href)}">${esc(o.name)} \u2192</a>`));
-  if (page.key === "konjunktur") content.insertAdjacentHTML("beforeend", '<h2 class="group">Aktuelle Konjunktur</h2>');
   (page.key_panels || []).forEach(id => {
     const p = (DATA.panels || []).find(x => x.id === id);
     if (!p || !(p.facts || []).length) return;
