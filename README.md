@@ -162,9 +162,9 @@ Aus einem Katalog entstehen drei Seiten:
 
 - `index.html` (konjunkturwolf): aktuelle Konjunktur. Inflation, Wachstum, Arbeitslosigkeit, Rezessionssignal (Michaillat und Saez 2025, mit Kurzarbeit), Krisenvergleich der Industrie und Erzeugerpreise.
 - `tradewolf.html` (tradewolf): Außenhandel und Wirtschaftsstruktur. Offenheit seit 1827, Handelsgewinne nach ACR, Gravitation und Verflechtung 1936 und heute.
-- `finanzwolf.html` (finanzwolf): Zinsen seit 1870. Rendite zehnjähriger Staatsanleihen, Zinsabstand und Renditeabstände zu Deutschland.
+- `moneywolf.html` (moneywolf): Zinsen seit 1870. Rendite zehnjähriger Staatsanleihen, Zinsabstand und Renditeabstände zu Deutschland.
 
-Welche Seite ein Thema zeigt, steht in `series.yaml` unter `panels` im Feld `page` (`trade` für tradewolf, `finance` für finanzwolf, sonst konjunkturwolf). Jedes Thema hat eine Leitfrage, kopierfertige Faktensätze (Formulierung über `say`) und eine Ländertabelle. Paare zeigen links den langen Rand und rechts die letzten fünf Jahre. Die lange Reihe wird mit Jahresmitteln der aktuellen Werte bis heute verlängert, außer bei `comparable: false`. Der Schalter „Gemeinsame y-Skala“ legt beide Abbildungen auf eine Werteachse. Alle übrigen Reihen liegen im Excel-Workbook.
+Welche Seite ein Thema zeigt, steht in `series.yaml` unter `panels` im Feld `page` (`trade` für tradewolf, `finance` für moneywolf, sonst konjunkturwolf). Jedes Thema hat eine Leitfrage, kopierfertige Faktensätze (Formulierung über `say`) und eine Ländertabelle. Paare zeigen links den langen Rand und rechts die letzten fünf Jahre. Die lange Reihe wird mit Jahresmitteln der aktuellen Werte bis heute verlängert, außer bei `comparable: false`. Der Schalter „Gemeinsame y-Skala“ legt beide Abbildungen auf eine Werteachse. Alle übrigen Reihen liegen im Excel-Workbook.
 
 ## Grafikstil
 

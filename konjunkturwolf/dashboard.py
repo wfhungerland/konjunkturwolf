@@ -616,7 +616,7 @@ PAGES = {
     "trade": {"file": "tradewolf.html", "name": "tradewolf", "title": "tradewolf: Außenhandel seit 1827",
               "claim": "Deutschlands Außenhandel seit 1827: wie offen, wie viel er bringt, was er kostet, und wie verflochten die Wirtschaft ist.",
               "key_panels": ["offenheit", "handelsgewinne"]},
-    "finance": {"file": "finanzwolf.html", "name": "finanzwolf", "title": "finanzwolf: Zinsen seit 1870",
+    "finance": {"file": "moneywolf.html", "name": "moneywolf", "title": "moneywolf: Zinsen seit 1870",
                 "claim": "Zinsen in Deutschland und Europa seit 1870: Niveau, Zinsstruktur und Renditeabstände.",
                 "key_panels": ["zinsen", "zinsstruktur", "spreads"]},
 }
