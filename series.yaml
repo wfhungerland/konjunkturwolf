@@ -112,8 +112,17 @@ panels:
     facts: [volatility]
     left: {chart: nber_wpi_yoy, title: "Großhandelspreise Hamburg 1880 bis 1914", note: "Der Hamburger Index enthält vor allem Rohstoffe und Lebensmittel, die Erzeugerpreise heute gewerbliche Produkte. Beide reagieren stark auf Rohstoffpreise, sind aber nicht deckungsgleich."}
     right: {chart: eu_ppi_yoy, title: "Erzeugerpreise Industrie aktuell", decimals: 1}
+  - id: offenheit
+    title: Offenheit
+    page: trade
+    say: {subject: "die Summe aus Exporten und Importen", short: "die Summe aus Exporten und Importen", unit: "% des BIP"}
+    question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
+    left: {chart: lang_open, title: "Exporte plus Importe seit 1827", note: "Hellblau: Fouquin und Hugot (2016), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
+    right: {chart: eu_open, title: "Exporte plus Importe aktuell", decimals: 0}
   - id: handelsgewinne
     title: Handelsgewinne
+    page: trade
+    text: "ACR steht für Arkolakis, Costinot und Rodríguez-Clare (2012): Wie viel Realeinkommen ginge verloren, wenn ein Land gar nicht mehr handeln würde? Die Antwort hängt nur vom Anteil heimischer Güter an den Ausgaben und von der Handelselastizität θ ab."
     say: {subject: "die Handelsgewinne nach ACR", short: "die Handelsgewinne", verb: lagen, unit: "% des Realeinkommens"}
     comparable: false
     question: "Wie viel Realeinkommen verdankt Deutschland dem Außenhandel, heute und in der ersten Globalisierung? Dazu {abb}."
@@ -121,6 +130,8 @@ panels:
     right: {chart: eu_acr, title: "Handelsgewinne aktuell (ACR, θ = 5)", decimals: 1, note: "Aus Exporten und Importen von Waren und Dienstleistungen in % des BIP (Eurostat); die lange Reihe enthält nur Waren, daher liegt das Niveau höher."}
   - id: gravitation
     title: Gravitation
+    page: trade
+    text: "Gravitationsmodelle erklären Handel aus Größe und Entfernung zweier Länder. Novy (2013) rechnet daraus alle Handelskosten als Zolläquivalent. PPML (Poisson-Schätzung nach Santos Silva und Tenreyro 2006) schätzt die Gleichung je Jahr; aus den Länder-Effekten folgen die multilateralen Widerstände (MRT), also wie gut ein Land insgesamt an den Weltmarkt angebunden ist."
     question: "Wie haben sich Handelskosten und Handelsbeziehungen Deutschlands seit 1870 verändert? Dazu {abb}."
     facts_text:
       - "Handelskosten zu Frankreich (Zolläquivalent): 1913 64 %, 1938 104 %, 2014 46 %. Die Zwischenkriegszeit machte die erste Globalisierung rückgängig, erst Ende der 1960er Jahre lag es wieder unter dem Niveau von 1913."
@@ -132,12 +143,6 @@ panels:
       - {chart: grav_mrt, note: "Aus den Exporteur- und Importeur-Effekten der PPML-Schätzung je Jahr (Fally 2015), θ = 5, relativ zu den USA, weil die Effekte nur bis auf eine Normierung bestimmt sind. Höher: Deutschland ist relativ zu den USA schlechter an den Weltmarkt angebunden. Vorsichtig deuten."}
       - {chart: grav_dist, note: "Koeffizient der logarithmierten Distanz in der PPML-Schätzung je Jahr (alle Länderpaare in TRADHIST). Fehlende Distanzen (etwa Bundesrepublik 1950 bis 1990) sind mit dem Wert des Länderpaars aus anderen Jahren ergänzt. Der Länderkreis wächst über die Zeit; das erklärt einen Teil des Trends."}
       - {chart: grav_share, note: "Anteil der Partner an den deutschen Exporten laut den bilateralen Strömen in TRADHIST. Vor 1870 und um 1945 sind nur wenige Partner erfasst; die Anteile sind dort überhöht und vorsichtig zu lesen."}
-  - id: offenheit
-    title: Offenheit
-    say: {subject: "die Summe aus Exporten und Importen", short: "die Summe aus Exporten und Importen", unit: "% des BIP"}
-    question: "Wie stark hängt Deutschland heute am Außenhandel, verglichen mit der ersten Globalisierung vor 1914 und mit den Nachbarn? Dazu {abb}."
-    left: {chart: lang_open, title: "Exporte plus Importe seit 1827", note: "Hellblau: Fouquin und Hugot (2016), Summe der bilateralen Ströme, bis 1870 Zollverein. Liegt unter dem JST-Niveau, weil nicht aller Handel erfasst ist; daher nicht angeschlossen."}
-    right: {chart: eu_open, title: "Exporte plus Importe aktuell", decimals: 0}
   - id: zinsstruktur
     title: Zinsabstand
     say: {subject: "der Abstand zwischen zehnjähriger Rendite und Tagesgeld", short: "der Abstand"}

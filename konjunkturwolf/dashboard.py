@@ -425,7 +425,7 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
                     "decimals": cfg.get("decimals", base.decimals), "note": cfg.get("note", ""),
                     "series": [dict(_item(s, grouped.get(s.id), statuses.get(s.id)), license=license_for(s, by_id),
                                     note=s.note or "") for s in specs]})
-            out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""), "text": p.get("text", ""),
+            out.append({"id": p["id"], "page": p.get("page", "konjunktur"), "title": p["title"], "question": p.get("question", ""), "text": p.get("text", ""),
                         "facts": list(p.get("facts_text") or []), "charts": charts})
             continue
         sides = {}
@@ -471,7 +471,7 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
         ext = extend_long(sides) if same else ""
         if ext:
             sides["left"]["note"] = " ".join(x for x in (sides["left"]["note"], ext) if x)
-        out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""),
+        out.append({"id": p["id"], "page": p.get("page", "konjunktur"), "title": p["title"], "question": p.get("question", ""),
                     "text": p.get("text", ""), "facts": facts, "table": country_table(catalog, sides["right"]), **sides})
     return out
 
@@ -532,26 +532,35 @@ def build_payload(catalog: Catalog, result: RunResult) -> dict:
     }
 
 
+# Zwei Seiten aus einem Katalog: aktuelle Konjunktur und Außenhandel in langer Frist (Panel-Feld page)
+PAGES = {
+    "konjunktur": {"file": "index.html", "name": "konjunkturwolf", "title": "konjunkturwolf: Wirtschaftsdaten",
+                   "claim": "Deutschlands Wirtschaft heute, verglichen mit früher und mit den europäischen Nachbarn.",
+                   "key_panels": ["inflation", "wachstum", "arbeit"]},
+    "trade": {"file": "tradewolf.html", "name": "tradewolf", "title": "tradewolf: Außenhandel seit 1827",
+              "claim": "Deutschlands Außenhandel seit 1827: wie offen, wie viel er bringt, was er kostet.",
+              "key_panels": ["offenheit", "handelsgewinne"]},
+}
+
+
 def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_path: str | Path | None) -> Path:
     site = Path(site_dir)
     site.mkdir(parents=True, exist_ok=True)
     payload = build_payload(catalog, result)
     from .downloads import write_downloads
 
-    number = 0
-    for panel in payload["panels"]:
-        for sd in (panel["charts"] if panel.get("charts") else [panel["left"], panel["right"]]):
-            number += 1
-            note = "Quelle: " + ", ".join(dict.fromkeys(s["source"] for s in sd["series"] if s["x"])) + ". konjunkturwolf, Stand " + str(payload["generated_at"])[:10]
-            try:
-                sd["downloads"] = write_downloads(sd, number, site / "downloads", note, payload["citation"])
-            except Exception as exc:  # Downloads dürfen die Seite nicht verhindern
-                sd["downloads"] = {}
-                print(f"Download für {sd['id']} fehlgeschlagen: {exc}")
-    data_js = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    template = resources.files("konjunkturwolf").joinpath("templates/dashboard.html").read_text(encoding="utf-8")
-    html = template.replace("/*__DATA__*/null", data_js)
-    (site / "index.html").write_text(html, encoding="utf-8")
+    pages = []
+    for key, cfg in PAGES.items():
+        sub = dict(payload)
+        sub["panels"] = [pn for pn in payload["panels"] if pn.get("page", "konjunktur") == key]
+        if key != "konjunktur":
+            sub["io"] = None
+        other = [{"name": c["name"], "href": c["file"]} for k, c in PAGES.items() if k != key]
+        sub["page"] = {"key": key, "name": cfg["name"], "claim": cfg["claim"], "key_panels": cfg["key_panels"],
+                       "title": cfg["title"], "other": other}
+        pages.append((cfg["file"], sub))
+    for file, sub in pages:
+        _write_page(site, file, sub)
     (site / "data.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     (site / ".nojekyll").write_text("", encoding="utf-8")
     plotly_js = resources.files("konjunkturwolf").joinpath("static/plotly.min.js")
@@ -559,3 +568,24 @@ def build_site(catalog: Catalog, result: RunResult, site_dir: str | Path, xlsx_p
     if xlsx_path and Path(xlsx_path).exists():
         shutil.copy2(xlsx_path, site / "konjunkturwolf.xlsx")
     return site / "index.html"
+
+
+def _write_page(site: Path, file: str, payload: dict) -> None:
+    """Eine Seite: Downloads je Abbildung (fortlaufend nummeriert) und HTML mit eingebetteten Daten."""
+    from .downloads import write_downloads
+
+    number = 0
+    for panel in payload["panels"]:
+        for sd in (panel["charts"] if panel.get("charts") else [panel["left"], panel["right"]]):
+            number += 1
+            note = "Quelle: " + ", ".join(dict.fromkeys(s["source"] for s in sd["series"] if s["x"])) + f". {payload['page']['name']}, Stand " + str(payload["generated_at"])[:10]
+            try:
+                sd["downloads"] = write_downloads(sd, number, site / "downloads", note, payload["citation"])
+            except Exception as exc:  # Downloads dürfen die Seite nicht verhindern
+                sd["downloads"] = {}
+                print(f"Download für {sd['id']} fehlgeschlagen: {exc}")
+    data_js = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    template = resources.files("konjunkturwolf").joinpath("templates/dashboard.html").read_text(encoding="utf-8")
+    html = template.replace("/*__DATA__*/null", data_js).replace("<title>konjunkturwolf: Wirtschaftsdaten</title>",
+                                                                 f"<title>{payload['page']['title']}</title>")
+    (site / file).write_text(html, encoding="utf-8")
