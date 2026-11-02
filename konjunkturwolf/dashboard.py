@@ -427,8 +427,8 @@ def sahm_track(x: list[str], y: list[float], thr: float, recs: list[dict]) -> tu
     starts = [x[i] for i in range(len(y)) if y[i] >= thr and (i == 0 or y[i - 1] < thr)]
     hits, used = [], set()
     for r in recs:
-        if r["peak"] < x[0]:
-            continue
+        if r["trough"] < x[0]:
+            continue  # Rezession liegt vor dem Datenbeginn; liegt nur der Hochpunkt davor, zählt sie mit
         cand = [s0 for s0 in starts if -6 <= _months(r["peak"], s0) <= _months(r["peak"], r["trough"]) + 6]
         if cand:
             hits.append((r["peak"][:4], _months(r["peak"], cand[0])))
