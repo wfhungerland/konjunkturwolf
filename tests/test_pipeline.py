@@ -118,7 +118,7 @@ def test_panel_facts_rank_and_history():
     }
     facts = panel_facts(Cat(), sides)
     assert facts[0] == "Im September 2026 lag der Wert in DE bei 2,0 %, in FR bei 3,0 % und IT 1,0 %."
-    assert facts[1] == "DE liegt damit unter einem und über einem von zwei Vergleichsländern."
+    assert facts[1] == "Von zwei Vergleichsländern liegen eines höher und eines niedriger."
     assert "Im Mittel der letzten zwölf Monate" not in facts[2]  # nur ein Monatswert vorhanden
     assert facts[2].startswith("Das ist mehr als in 50 % der Jahre 1900 bis 1939")
 

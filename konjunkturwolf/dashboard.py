@@ -208,14 +208,26 @@ def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None, s
         first += ("; " if is_index else ", ") + _join(rest)
     facts = [first + "."]
     if peers:
-        n, higher = len(peers), sum(v > value for v in peers.values())
-        if higher == 0:
-            rank = f"über allen {_n(n)} Vergleichsländern"
-        elif higher == n:
-            rank = f"unter allen {_n(n)} Vergleichsländern"
+        r = lambda v: round(v, 1)  # wie angezeigt vergleichen, sonst widerspricht der Satz den Zahlen
+        n = len(peers)
+        higher = [c for c in order if r(peers[c]) > r(value)]
+        lower = [c for c in order if r(peers[c]) < r(value)]
+        same = [c for c in order if r(peers[c]) == r(value)]
+        def cnt(k):
+            return "alle" if k == n else ("eines" if k == 1 else _n(k, False))
+        bits = []
+        if higher:
+            bits.append(f"{cnt(len(higher))} höher")
+        if lower:
+            bits.append(f"{cnt(len(lower))} niedriger")
+        if same:
+            bits.append(f"{_join(same)} gleichauf")
+        if len(higher) == n:
+            facts.append(f"Alle {_n(n, False)} Vergleichsländer liegen höher als DE.")
+        elif len(lower) == n:
+            facts.append(f"Alle {_n(n, False)} Vergleichsländer liegen niedriger als DE.")
         else:
-            rank = f"unter {_n(higher)} und über {_n(n - higher)} von {_n(n)} Vergleichsländern"
-        facts.append(f"DE liegt damit {rank}.")
+            facts.append(f"Von {_n(n, False)} Vergleichsländern liegen " + _join(bits) + ".")
         missing = [s["member"] for s in right if s is not de and s["member"] not in peers]
         if missing:
             facts.append(f"Für {_join(missing)} liegt noch kein Wert vor.")
@@ -230,6 +242,8 @@ def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None, s
             n = 1
         cmp_value = sum(de["y"][-n:]) / n
         sides["right"]["hist_value"] = round(cmp_value, 4)
+        sides["right"]["hist_label"] = ("12-Monats-Mittel" if n == 12 else "4-Quartals-Mittel" if n == 4
+                                        else _period(date, de["frequency"]))
         lead = "Im Mittel der letzten zwölf Monate" if n == 12 else "Im Mittel der letzten vier Quartale" if n == 4 else when
         share = round(100 * sum(v < cmp_value for v in ys) / len(ys))
         unit_word = "Monat" if monthly else "Jahr"
@@ -257,6 +271,21 @@ def panel_facts(catalog: Catalog, sides: dict, extra: list[str] | None = None, s
                 facts.append(f"In den letzten fünf Jahren schwankte {short} in DE stärker als {cmp} {span} "
                              f"(Standardabweichung {_num(now_sd)} Pp, Median der Fenster {_num(_quantile(rolling, 0.5))} Pp).")
     return facts
+
+
+def country_table(catalog: Catalog, side: dict) -> dict | None:
+    """Letzte Werte je Land am Stichtag des Fokuslandes (sonst am jüngsten Stichtag), absteigend sortiert."""
+    focus = set(catalog.comparison.get("focus") or [])
+    ser = [s for s in side.get("series", []) if s.get("y") and s.get("member")]
+    if len(ser) < 2 or side.get("kind") == "episodes":
+        return None
+    de = next((s for s in ser if s["member"] in focus), None)
+    date = de["x"][-1] if de else max(s["x"][-1] for s in ser)
+    rows = [{"code": s["member"], "label": s["label"], "value": dict(zip(s["x"], s["y"]))[date],
+             "focus": s["member"] in focus} for s in ser if date in s["x"]]
+    rows.sort(key=lambda r: -r["value"])
+    return {"period": _period(date, ser[0]["frequency"]), "unit": _unit(ser[0]["unit"]), "rows": rows,
+            "decimals": side.get("decimals") if side.get("decimals") is not None else 1}
 
 
 def history_band(catalog: Catalog, sides: dict) -> dict | None:
@@ -308,12 +337,19 @@ def extend_long(sides: dict) -> str:
             s["x"].append(f"{year}-01-01")
             s["y"].append(round(sum(new_years[year]) / len(new_years[year]), 6))
         s["ext_from"] = f"{min(new_years)}-01-01"
+        s["ext_source"] = cur.get("source", "")
         if cur.get("license") and cur["license"] not in s.get("license", ""):
             s["license"] = "; ".join(x for x in (s.get("license"), cur["license"]) if x)
         first_ext = min(first_ext or 9999, min(new_years))
         y_last = max(new_years)
         if per_year > 1 and len(new_years[y_last]) < per_year:
             s["partial_last"] = True
+            months = sorted(int(x[5:7]) for x in cur["x"] if int(x[:4]) == y_last)
+            if cur["frequency"] == "vierteljährlich":
+                span = f"Q1 bis Q{(months[-1] - 1) // 3 + 1}" if len(months) > 1 else "nur Q1"
+            else:
+                span = f"{MONTHS[months[0] - 1]} bis {MONTHS[months[-1] - 1]}" if len(months) > 1 else f"nur {MONTHS[months[0] - 1]}"
+            s["partial_label"] = f"Jahresmittel {span}"
             if not last_info or s["member"] in ("DEU", "DE"):
                 last_info = (f"; {y_last} nur bis {_period(cur['x'][-1], cur['frequency']).rsplit(' ', 1)[0]} "
                              f"(hohler Punkt)")
@@ -436,7 +472,7 @@ def build_panels(catalog: Catalog, result: RunResult) -> list[dict]:
         if ext:
             sides["left"]["note"] = " ".join(x for x in (sides["left"]["note"], ext) if x)
         out.append({"id": p["id"], "title": p["title"], "question": p.get("question", ""),
-                    "text": p.get("text", ""), "facts": facts, **sides})
+                    "text": p.get("text", ""), "facts": facts, "table": country_table(catalog, sides["right"]), **sides})
     return out
 
 

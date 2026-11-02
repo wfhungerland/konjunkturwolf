@@ -26,6 +26,20 @@
   @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
   section > .question { font-size: 17px; font-style: italic; margin: -4px 0 6px; }
   section > .facts { font-size: 14px; margin: 0 0 12px; padding-left: 18px; }
+  .factbox { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 24px; align-items: start; margin: 0 0 12px; }
+  .factbox .facts { font-size: 14px; margin: 0; padding-left: 18px; }
+  .factbox li { margin-bottom: 3px; }
+  .copy { font: 12px "Arial Narrow", Arial, sans-serif; color: var(--accent); background: none; border: 1px solid var(--line);
+          border-radius: 4px; padding: 1px 6px; margin-left: 6px; cursor: pointer; vertical-align: 1px; }
+  .copy.done { color: var(--muted); }
+  .ctab { border-collapse: collapse; font: 13px "Arial Narrow", Arial, sans-serif; font-stretch: condensed; }
+  .ctab caption { text-align: left; color: var(--muted); font-size: 12px; padding-bottom: 2px; }
+  .ctab td { padding: 1px 8px 1px 0; border-bottom: 1px solid #eee; }
+  .ctab td.v { text-align: right; font-variant-numeric: tabular-nums; }
+  .ctab tr.de td { font-weight: bold; }
+  .card .flags { font-family: "Arial Narrow", Arial, sans-serif; font-stretch: condensed; font-size: 12px; color: var(--text); margin: 4px 0 2px; }
+  .card .flags span { display: inline-block; margin-right: 12px; }
+  @media (max-width: 700px) { .factbox { grid-template-columns: 1fr; } }
   section > .lead { color: var(--muted); font-size: 14px; margin: -6px 0 12px; }
   nav { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
   nav a, .btn { color: var(--text); text-decoration: none; padding: 5px 10px; border: 1px solid var(--line);
@@ -43,6 +57,7 @@
   .ov { border-collapse: collapse; width: 100%; margin: 4px 0 24px; font-size: 14px; }
   .ov th { text-align: left; font-weight: normal; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); padding: 2px 10px 4px 0; }
   .ov td { padding: 4px 10px 4px 0; border-bottom: 1px solid #eee; vertical-align: middle; white-space: nowrap; }
+  .ov td.wrap { white-space: normal; }
   .ov td a { color: var(--text); text-decoration: none; border-bottom: 1px dotted #999; }
   .ov .num { text-align: right; font-variant-numeric: tabular-nums; }
   .ov .per { color: var(--muted); font-size: 11px; margin-left: 4px; }
@@ -294,10 +309,22 @@ const HOVER_FMT = { "jährlich": "%Y", "vierteljährlich": "Q%q %Y", "monatlich"
 function hoverUnit(u) { return u.startsWith("%") ? "%" : u; }
 function lastLine(s, d = 1) {
   if (!s.x.length) return "";
-  return `${s.label} ${num1(s.y[s.y.length - 1], d)} ${s.unit} (${periodLabel(s.x[s.x.length - 1], s.frequency)})`;
+  const per = periodLabel(s.x[s.x.length - 1], s.frequency) + (s.partial_last && s.partial_label ? ", " + s.partial_label : "");
+  return `${s.label} ${num1(s.y[s.y.length - 1], d)} ${s.unit} (${per})`;
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+// Werte außerhalb fester Achsengrenzen: am Rand als Dreieck zeigen, echter Wert im Tooltip
+function clippedPoints(chart) {
+  const out = [];
+  if (chart.y_min == null && chart.y_max == null) return out;
+  chart.series.forEach(s => s.x.forEach((d, i) => {
+    const v = s.y[i];
+    if (chart.y_max != null && v > chart.y_max) out.push({ x: d, y: chart.y_max, v, up: true, s });
+    else if (chart.y_min != null && v < chart.y_min) out.push({ x: d, y: chart.y_min, v, up: false, s });
+  }));
+  return out;
+}
 // Datenlücken leer lassen: Linie unterbrechen, wenn der Abstand größer ist als die Frequenz erlaubt
 const MAX_GAP = { "jährlich": 400, "halbjährlich": 200, "vierteljährlich": 100, "monatlich": 40, "täglich": 10 };
 function isGap(a, b, freq) { return (Date.parse(b) - Date.parse(a)) / 864e5 > (MAX_GAP[freq] || 400); }
@@ -387,6 +414,11 @@ function renderChart(el, chart) {
     traces.push({ x: [s.x[s.x.length - 1]], y: [s.y[s.y.length - 1]], type: "scatter", mode: "markers", showlegend: false,
       marker: { symbol: "circle-open", size: 10, color: PALETTE[0], line: { width: 2 } }, hoverinfo: "skip" });
   });
+  const clip = clippedPoints(chart);
+  if (clip.length) traces.push({ x: clip.map(c => c.x), y: clip.map(c => c.y), type: "scatter", mode: "markers", showlegend: false,
+    marker: { symbol: clip.map(c => c.up ? "triangle-up" : "triangle-down"), size: 7, color: "#7F7F7F" },
+    customdata: clip.map(c => [c.s.label, num1(c.v)]), hovertemplate: "%{customdata[0]}: %{customdata[1]} (außerhalb der Achse)<extra></extra>",
+    cliponaxis: false });
   if (chart.history) traces.push({ x: [null], y: [null], type: "scatter", mode: "lines", hoverinfo: "skip",
     name: `Median DE ${chart.history.from}\u2013${chart.history.to}`, line: { color: PALETTE[1], width: 1.5, dash: "dash" } });
   const layout = {
@@ -438,6 +470,22 @@ function makeCard(chart, observer) {
     <div class="sub">${esc(freqTxt.charAt(0).toUpperCase() + freqTxt.slice(1))} · ${esc([...new Set(chart.series.map(s => s.adjustment))].join("; "))}</div>
     <div class="unit">${esc(units)}</div>`;
   const el = document.createElement("div"); el.className = "chart"; el._chart = chart; card.appendChild(el);
+  // Was die Lesart direkt ändert, steht sichtbar unter der Grafik (nicht nur im Aufklapptext)
+  const flags = [];
+  const cmp0 = DATA.comparison || {};
+  const peersHere = chart.series.filter(x => (cmp0.peers || []).includes(x.member) && x.x.length);
+  if (peersHere.length >= 2 && chart.series.some(x => (cmp0.focus || []).includes(x.member) && x.x.length))
+    flags.push(`Graue Fläche: Spanne von ${peersHere.map(x => x.member).join(", ")}`);
+  const extS = chart.series.find(x => x.ext_from && (cmp0.focus || []).includes(x.member)) || chart.series.find(x => x.ext_from);
+  if (extS) flags.push(`┆ ab ${extS.ext_from.slice(0, 4)}: Jahresmittel der aktuellen Reihe${extS.ext_source ? " (" + extS.ext_source + ")" : ""}`);
+  const partS = chart.series.find(x => x.partial_last && x.partial_label && (cmp0.focus || []).includes(x.member));
+  if (partS) flags.push(`○ ${partS.x[partS.x.length - 1].slice(0, 4)}: ${partS.partial_label}, Jahr unvollständig`);
+  const clipped = clippedPoints(chart);
+  if (clipped.length) {
+    const lim = [chart.y_min, chart.y_max].map(v => v == null ? "" : minus(v.toLocaleString("de-DE")));
+    flags.push(`▲▼ Achse begrenzt auf ${lim[0]} bis ${lim[1]}; ${clipped.length} Werte außerhalb (Dreiecke)`);
+  }
+  if (flags.length) { const f = document.createElement("div"); f.className = "flags"; f.innerHTML = flags.map(t => `<span>${esc(t)}</span>`).join(""); card.appendChild(f); }
   const src = document.createElement("div"); src.className = "src";
   let lastTxt = lasts.map(esc).join(" · ");
   const lastSer = (focusSer.length ? focusSer : chart.series.filter(s => s.x.length));
@@ -485,13 +533,6 @@ function makeCard(chart, observer) {
       n.textContent = `Achse abgeschnitten bei ${lim[0]} und ${lim[1]}${u ? " " + u : ""}. Außerhalb: ${out.join("; ")}.`;
       notes.appendChild(n);
     }
-  }
-  const cmp = DATA.comparison || {};
-  const peerLabels = chart.series.filter(x => (cmp.peers || []).includes(x.member) && x.x.length).map(x => x.label);
-  if (peerLabels.length >= 2 && chart.series.some(x => (cmp.focus || []).includes(x.member))) {
-    const n = document.createElement("div"); n.className = "src";
-    n.textContent = "Graue Fläche: Spanne (Minimum bis Maximum) von " + peerLabels.join(", ") + ".";
-    notes.appendChild(n);
   }
   if (notes.children.length > 1) card.appendChild(notes);
   const old = chart.series.filter(s => s.x.length && s.outdated);
@@ -542,6 +583,25 @@ function lage(h, v, w) {
     + `<line x1="${X(h.p50)}" x2="${X(h.p50)}" y1="2" y2="12" stroke="#0070C0" stroke-width="1"/>`
     + `<circle cx="${X(v)}" cy="7" r="3.2" fill="#002060"/></svg>`;
 }
+// Fakten: jeder Satz mit Kopierknopf; daneben die Länderwerte als kleine Rangtabelle
+function factBox(panel) {
+  const facts = panel.facts || [];
+  if (!facts.length) return "";
+  const t = panel.table;
+  const tab = t ? `<table class="ctab"><caption>${esc(t.period)}, ${esc(t.unit)}</caption>`
+    + t.rows.map(r => `<tr class="${r.focus ? "de" : ""}"><td>${esc(r.code)}</td><td>${esc(r.label)}</td>`
+      + `<td class="v">${num1(r.value, Math.max(1, t.decimals || 1))}</td></tr>`).join("") + "</table>" : "";
+  return `<div class="factbox"><ul class="facts">${facts.map(f => `<li><span class="ft">${esc(f)}</span>`
+    + `<button class="copy" type="button" aria-label="Satz kopieren">kopieren</button></li>`).join("")}</ul>${tab}</div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest(".copy");
+  if (!b) return;
+  const txt = b.parentElement.querySelector(".ft").textContent;
+  const done = () => { b.textContent = "kopiert"; b.classList.add("done"); setTimeout(() => { b.textContent = "kopieren"; b.classList.remove("done"); }, 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, () => {});
+  else { const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); done(); }
+});
 function buildOverview() {
   const body = document.getElementById("ovbody");
   (DATA.panels || []).forEach(panel => {
@@ -549,7 +609,7 @@ function buildOverview() {
       const tr = document.createElement("tr");
       const c0 = panel.charts[0], s0 = c0 && pickSeries(c0);
       tr.innerHTML = `<td><a href="#${panel.id}">${esc(panel.title)}</a></td><td>${spark(s0, 150, 22)}</td>`
-        + `<td colspan="3" class="lage">${esc(panel.charts.map(c => c.title.split(",")[0]).join(" · "))}</td>`;
+        + `<td colspan="3" class="lage wrap">${esc(panel.charts.map(c => c.title.split(",")[0]).join(" · "))}</td>`;
       body.appendChild(tr);
       return;
     }
@@ -563,7 +623,7 @@ function buildOverview() {
     if (h && v != null) {
       const ys = (sl || {}).y || [];
       const below = ys.filter(y => y < hv).length;
-      if (ys.length) share = `über ${Math.round(100 * below / ys.length)} % der ${h.values}`;
+      if (ys.length) share = `${R.hist_label || "Wert"} über ${Math.round(100 * below / ys.length)} % der ${h.values}`;
     }
     const tr = document.createElement("tr");
     tr.innerHTML = `<td><a href="#${panel.id}">${esc(panel.title)}</a></td>`
@@ -663,7 +723,7 @@ function buildIO(content) {
   pair.appendChild(ioCard("Anteil an der Bruttoproduktion, %", "12 gemeinsame Sektoren", bars(io.y1936.output_share, io.now.output_share, ".1f"), io));
   content.appendChild(sec);
   const tr = document.createElement("tr");
-  tr.innerHTML = `<td><a href="#verflechtung">Verflechtung 1936 und heute</a></td><td colspan="2" class="lage">Fremdling und Stäglin (2014); Eurostat</td>`
+  tr.innerHTML = `<td><a href="#verflechtung">Verflechtung 1936 und heute</a></td><td colspan="2" class="lage wrap">Fremdling und Stäglin (2014); Eurostat</td>`
     + `<td class="num">${num1(wavg(io.now.multiplier, io.now.output_share))}<span class="per">Multiplikator ${Y}</span></td>`
     + `<td class="lage">1936: ${num1(wavg(io.y1936.multiplier, io.y1936.output_share))}</td>`;
   document.getElementById("ovbody").appendChild(tr);
@@ -690,7 +750,7 @@ function build() {
     sec.innerHTML = `<div class="head2"><h2>${esc(panel.title)}</h2>${scaleBtn}</div>`
       + (panel.question ? `<p class="question">${esc(panel.question.replace("{abb}", abb))}</p>` : "")
       + (panel.text ? `<p class="lead">${esc(panel.text)}</p>` : "")
-      + ((panel.facts || []).length ? `<ul class="facts">${panel.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "");
+      + factBox(panel);
     const pair = document.createElement("div"); pair.className = "pair"; sec.appendChild(pair);
     charts.forEach(chart => pair.appendChild(makeCard(chart, observer)));
     const btn = sec.querySelector(".scale");
