@@ -267,3 +267,10 @@ def test_parse_nber_monthly_and_annual():
     assert m["value"].tolist() == [5.5, 4.0] and m["date"].dt.month.tolist() == [1, 3]
     a = parse_nber("1925   85.0000\n1926   78.0000\n")
     assert a["date"].dt.year.tolist() == [1925, 1926]
+
+
+def test_parse_fred_skips_missing():
+    from konjunkturwolf.parsers import parse_fred
+
+    df = parse_fred("observation_date,MCOILBRENTEU\n2026-08-01,70.1\n2026-09-01,.\n2026-10-01,66.4\n")
+    assert len(df) == 2 and df["value"].iloc[-1] == 66.4
