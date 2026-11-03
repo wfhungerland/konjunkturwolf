@@ -262,11 +262,26 @@ def fetch_nber(spec: SeriesSpec, client: HttpClient) -> FetchResult:
 STATIC_URL = "https://github.com/wfhungerland/konjunkturwolf/blob/main/data/static"
 
 
+def static_dir():
+    """Ordner der statischen Reihen: KONJUNKTURWOLF_STATIC_DIR, sonst ./data/static, sonst der Ordner im Repo.
+
+    So können andere Projekte (z. B. konjunkturmonitor) die Pipeline mit eigenen statischen Dateien nutzen.
+    """
+    import os
+    from pathlib import Path
+
+    env = os.environ.get("KONJUNKTURWOLF_STATIC_DIR")
+    if env:
+        return Path(env)
+    here = Path.cwd() / "data" / "static"
+    return here if here.exists() else Path(__file__).resolve().parent.parent / "data" / "static"
+
+
 def fetch_static(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     """Fest im Repo abgelegte, einmalig aufbereitete Reihe (data/static/<key>.csv mit date,value)."""
     from pathlib import Path
 
-    path = Path(__file__).resolve().parent.parent / "data" / "static" / f"{spec.key}.csv"
+    path = static_dir() / f"{spec.key}.csv"
     if not path.exists():
         raise FetchError(f"Statische Datei fehlt: data/static/{spec.key}.csv")
     df = pd.read_csv(path, parse_dates=["date"])[["date", "value"]]
