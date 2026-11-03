@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "static", "derived"}
+SOURCES = {"ecb", "bundesbank", "eurostat", "genesis", "jst", "gmd", "nber", "fred", "static", "derived"}
 FREQUENCIES = {"D", "M", "Q", "S", "A"}
 STYLES = {"line", "step", "bar"}
 DERIVE_OPS = {"yoy_pct", "diff", "sum", "acr", "sahm"}
@@ -23,6 +23,7 @@ SOURCE_LICENSES = {
     "jst": "CC BY-NC-SA 4.0 (Jordà, Schularick, Taylor); abgeleitete Daten unter derselben Lizenz",
     "gmd": "Nur nicht-kommerzielle Nutzung mit Quellenangabe (Global Macro Database)",
     "nber": "Frei verfügbar mit Quellenangabe (NBER)",
+    "fred": "Nutzungsbedingungen der Originalquelle laut FRED (Federal Reserve Bank of St. Louis); Quellenangabe erforderlich",
     "static": "Nutzungsbedingungen von CEPII/TRADHIST (Fouquin, Hugot); Quellenangabe erforderlich",
 }
 
@@ -38,6 +39,7 @@ SOURCE_LABELS = {
     "gmd": "Global Macro Database",
     "derived": "Eigene Berechnung",
     "nber": "NBER Macrohistory Database",
+    "fred": "FRED (Federal Reserve Bank of St. Louis)",
     "static": "Eigene Aufbereitung",
 }
 

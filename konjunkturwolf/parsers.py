@@ -305,3 +305,15 @@ def _genesis_vars(df: pd.DataFrame, var_idx: list[int]) -> str:
     if "value_variable_code" in df.columns:
         parts.append("Wertmerkmale: " + ", ".join(sorted(df["value_variable_code"].unique())))
     return "; ".join(parts) or "keine weiteren Merkmale"
+
+
+# ---------------------------------------------------------------------------
+# FRED (Federal Reserve Bank of St. Louis)
+# ---------------------------------------------------------------------------
+def parse_fred(text: str) -> pd.DataFrame:
+    """fredgraph.csv: erste Spalte Datum, zweite Spalte Wert; '.' steht für fehlende Werte."""
+    text = text.lstrip("\ufeff")
+    df = pd.read_csv(io.StringIO(text), dtype=str)
+    if df.shape[1] < 2 or not len(df):
+        raise ParseError("FRED-Antwort ohne Datum und Wert.")
+    return _frame(list(zip(df.iloc[:, 0], df.iloc[:, 1])))

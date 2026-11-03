@@ -11,7 +11,7 @@ import pandas as pd
 
 from .catalog import SeriesSpec
 from .http import FetchError, HttpClient
-from .parsers import ParseError, parse_genesis_ffcsv, parse_jsonstat, parse_sdmx
+from .parsers import ParseError, parse_fred, parse_genesis_ffcsv, parse_jsonstat, parse_sdmx
 
 ECB_BASE = "https://data-api.ecb.europa.eu/service/data"
 BUNDESBANK_BASE = "https://api.statistiken.bundesbank.de/rest/data"
@@ -259,6 +259,15 @@ def fetch_nber(spec: SeriesSpec, client: HttpClient) -> FetchResult:
     return FetchResult(_since(parse_nber(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
 
 
+FRED_BASE = "https://fred.stlouisfed.org/graph/fredgraph.csv"
+
+
+def fetch_fred(spec: SeriesSpec, client: HttpClient) -> FetchResult:
+    """FRED-Reihe als CSV (Spalten observation_date und Reihen-ID; fehlende Werte als '.')."""
+    resp = client.get(f"{FRED_BASE}?id={spec.key}")
+    return FetchResult(_since(parse_fred(resp.text), spec), resp.url, resp.retrieved_at, resp.from_cache)
+
+
 STATIC_URL = "https://github.com/wfhungerland/konjunkturwolf/blob/main/data/static"
 
 
@@ -297,6 +306,7 @@ FETCHERS = {
     "jst": fetch_jst,
     "gmd": fetch_gmd,
     "nber": fetch_nber,
+    "fred": fetch_fred,
     "static": fetch_static,
 }
 
@@ -324,6 +334,8 @@ def api_url_hint(spec: SeriesSpec) -> str:
         return f"{STATIC_URL}/{spec.key}.csv"
     if spec.source == "nber":
         return f"{NBER_BASE}/{spec.key[1:3]}/{spec.key}.dat"
+    if spec.source == "fred":
+        return f"{FRED_BASE}?id={spec.key}"
     return ""
 
 
