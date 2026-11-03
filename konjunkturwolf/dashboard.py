@@ -397,6 +397,8 @@ def episode_items(cfg: dict, items: dict[str, dict]) -> list[dict]:
 
 def license_for(spec, by_id) -> str:
     """Lizenz einer Reihe; abgeleitete Reihen tragen die Lizenzen ihrer Basisreihen."""
+    if spec.license:
+        return spec.license
     if spec.source != "derived":
         return SOURCE_LICENSES.get(spec.source, "")
     parts = []

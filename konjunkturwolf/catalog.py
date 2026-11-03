@@ -88,6 +88,7 @@ class SeriesSpec:
     derive: dict[str, Any] = field(default_factory=dict)
     member: str = ""  # erster expand-Wert, z.B. Ländercode
     stale_after_months: int = 0  # 0 = Standard je Frequenz
+    license: str = ""  # überschreibt die Standardlizenz der Quelle (etwa static aus UN Comtrade)
 
     @property
     def source_label(self) -> str:
@@ -293,6 +294,7 @@ def parse_catalog(raw: dict[str, Any]) -> Catalog:
                     derive=dict(e.get("derive") or {}),
                     member=str(e.get("member") or ""),
                     stale_after_months=int(e.get("stale_after_months") or 0),
+                    license=str(e.get("license") or ""),
                 )
             )
 
