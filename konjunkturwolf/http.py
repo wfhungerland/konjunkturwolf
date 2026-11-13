@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -56,6 +57,7 @@ class HttpClient:
         self.timeout = timeout
         self.pause = pause
         self._memo: dict[Path, Response] = {}  # gleiche Anfrage nur einmal je Lauf
+        self._down: set[str] = set()  # Hosts ohne Antwort in diesem Lauf: weitere Abrufe dort sofort überspringen
         self.session = requests.Session()
         self.session.headers["User-Agent"] = USER_AGENT
         retry = Retry(
@@ -119,6 +121,11 @@ class HttpClient:
         if self.offline:
             raise FetchError("Offline-Modus und kein Cache vorhanden.")
 
+        host = urlparse(url).netloc
+        if host in self._down:
+            if cached:
+                return cached
+            raise FetchError(f"Netzwerkfehler: {host} antwortete in diesem Lauf nicht; Abruf übersprungen")
         hdrs = dict(headers or {})
         if accept:
             hdrs["Accept"] = accept
@@ -126,6 +133,8 @@ class HttpClient:
             time.sleep(self.pause)
             r = self.session.request(method, url, params=params, data=data, headers=hdrs, timeout=self.timeout)
         except requests.RequestException as exc:
+            if isinstance(exc, (requests.ConnectionError, requests.Timeout)):
+                self._down.add(host)  # ein Ausfall kostet mit allen Wiederholungen Minuten; nicht für jede Reihe erneut
             if cached:
                 log.warning("Abruf fehlgeschlagen, nutze veralteten Cache: %s", exc)
                 return cached
@@ -171,9 +180,14 @@ def get_bytes(client: "HttpClient", url: str) -> tuple[bytes, datetime, bool]:
             return body.read_bytes(), when, True
     if client.offline:
         raise FetchError("Offline-Modus und kein Cache vorhanden.")
+    host = urlparse(url).netloc
+    if host in client._down:
+        raise FetchError(f"Netzwerkfehler: {host} antwortete in diesem Lauf nicht; Abruf übersprungen")
     try:
         r = client.session.get(url, timeout=client.timeout * 3)
     except requests.RequestException as exc:
+        if isinstance(exc, (requests.ConnectionError, requests.Timeout)):
+            client._down.add(host)
         raise FetchError(f"Netzwerkfehler: {exc.__class__.__name__}: {exc}") from exc
     if r.status_code >= 400:
         raise FetchError(f"HTTP {r.status_code} für {url}")
